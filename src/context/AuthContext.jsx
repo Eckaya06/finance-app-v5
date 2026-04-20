@@ -1,11 +1,5 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { auth } from "../firebase";
-import { 
-  onAuthStateChanged, 
-  signInWithEmailAndPassword, 
-  signOut, 
-  createUserWithEmailAndPassword 
-} from "firebase/auth";
+import { createContext, useContext, useEffect, useState } from 'react';
+import api from '../api.js';
 
 const AuthContext = createContext();
 
@@ -13,22 +7,57 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Firebase'deki oturum durumunu takip et
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
-    return () => unsubscribe();
+    const initSession = async () => {
+      const token = localStorage.getItem('financeapp_token');
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const { data } = await api.get('/auth/me');
+        setUser(data.user);
+      } catch (err) {
+        localStorage.removeItem('financeapp_token');
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initSession();
   }, []);
 
-  // Giriş, Kayıt ve Çıkış Fonksiyonları
-  const signup = (email, password) => createUserWithEmailAndPassword(auth, email, password);
-  const login = (email, password) => signInWithEmailAndPassword(auth, email, password);
-  const logout = () => signOut(auth);
+  const signup = async (email, password) => {
+    const { data } = await api.post('/auth/signup', { email, password });
+    // Token döndürülmüyorsa (email doğrulaması gerekli), token kaydedme
+    if (data.token) {
+      localStorage.setItem('financeapp_token', data.token);
+      setUser(data.user);
+    }
+    return data;
+  };
+
+  const login = async (email, password) => {
+    const { data } = await api.post('/auth/login', { email, password });
+    localStorage.setItem('financeapp_token', data.token);
+    setUser(data.user);
+    return data;
+  };
+
+  const logout = async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch {
+      // ignore backend logout failure
+    }
+    localStorage.removeItem('financeapp_token');
+    setUser(null);
+  };
 
   // Dışarı aktarılan değerler
-  const value = { user, login, signup, logout };
+  const value = { user, login, signup, logout, loading };
 
   return (
     <AuthContext.Provider value={value}>

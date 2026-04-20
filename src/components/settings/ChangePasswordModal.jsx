@@ -1,48 +1,41 @@
-import { useState } from "react";
-import "./ChangePasswordModal.css";
-import { auth } from "../../firebase";
-import {
-  EmailAuthProvider,
-  reauthenticateWithCredential,
-  updatePassword,
-} from "firebase/auth";
+import { useState } from 'react';
+import './ChangePasswordModal.css';
+import { useAuth } from '../../context/AuthContext';
+import api from '../../api.js';
 
 const ChangePasswordModal = ({ onClose }) => {
-  const [currentPw, setCurrentPw] = useState("");
-  const [newPw, setNewPw] = useState("");
-  const [confirmPw, setConfirmPw] = useState("");
+  const { user } = useAuth();
+  const [currentPw, setCurrentPw] = useState('');
+  const [newPw, setNewPw] = useState('');
+  const [confirmPw, setConfirmPw] = useState('');
   const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState("");
+  const [err, setErr] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErr("");
+    setErr('');
 
     if (newPw.length < 6) {
-      setErr("New password must be at least 6 characters.");
+      setErr('New password must be at least 6 characters.');
       return;
     }
     if (newPw !== confirmPw) {
-      setErr("New password and confirm password do not match.");
+      setErr('New password and confirm password do not match.');
       return;
     }
 
-    const user = auth.currentUser;
-    if (!user || !user.email) {
-      setErr("No authenticated user found.");
+    if (!user) {
+      setErr('You must be logged in to change your password.');
       return;
     }
 
     try {
       setLoading(true);
-      const cred = EmailAuthProvider.credential(user.email, currentPw);
-      await reauthenticateWithCredential(user, cred);
-      await updatePassword(user, newPw);
+      await api.put('/auth/change-password', { currentPassword: currentPw, newPassword: newPw });
       onClose();
-      window.alert("Password updated successfully.");
+      window.alert('Password updated successfully.');
     } catch (e2) {
-      // common: auth/wrong-password, auth/too-many-requests, auth/requires-recent-login
-      setErr(e2?.message || "Failed to update password.");
+      setErr(e2.response?.data?.message || 'Failed to update password.');
     } finally {
       setLoading(false);
     }
@@ -52,7 +45,7 @@ const ChangePasswordModal = ({ onClose }) => {
     <div className="cp-modal">
       <div className="cp-header">
         <h2>Change password</h2>
-        <button className="cp-close" onClick={onClose} aria-label="Close">Ã—</button>
+        <button className="cp-close" onClick={onClose} aria-label="Close">×</button>
       </div>
 
       <p className="cp-desc">
@@ -96,7 +89,7 @@ const ChangePasswordModal = ({ onClose }) => {
         </div>
 
         <button className="cp-primary" type="submit" disabled={loading}>
-          {loading ? "Updating..." : "Update password"}
+          {loading ? 'Updating...' : 'Update password'}
         </button>
 
         <button className="cp-link" type="button" onClick={onClose} disabled={loading}>

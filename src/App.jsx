@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Login from './pages/auth/Login.jsx';
 import Signup from './pages/auth/Signup.jsx';
+import VerifyEmail from './pages/auth/VerifyEmail.jsx';
 import Home from './pages/home/Home.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx'; 
 import DashboardLayout from './layouts/DashboardLayout.jsx';
@@ -36,6 +37,7 @@ const App = () => {
               {/* Açık Rotalar */}
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/verify/:token" element={<VerifyEmail />} />
               <Route path="/" element={<Navigate to="/login" />} />
 
               {/* Korumalı Rotalar */}

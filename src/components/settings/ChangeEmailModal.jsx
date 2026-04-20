@@ -1,62 +1,36 @@
-import { useEffect, useState } from "react";
-import "./ChangeEmailModal.css";
-import { auth } from "../../firebase";
-import {
-  EmailAuthProvider,
-  onAuthStateChanged,
-  reauthenticateWithCredential,
-  verifyBeforeUpdateEmail,
-  updateEmail,
-} from "firebase/auth";
+import { useState } from 'react';
+import './ChangeEmailModal.css';
+import { useAuth } from '../../context/AuthContext';
+import api from '../../api.js';
 
 const ChangeEmailModal = ({ onClose }) => {
-  const [user, setUser] = useState(null);
-  const [currentPw, setCurrentPw] = useState("");
-  const [newEmail, setNewEmail] = useState("");
-  const [mode, setMode] = useState("verify"); // "verify" | "direct"
+  const { user } = useAuth();
+  const [currentPw, setCurrentPw] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+  const [mode, setMode] = useState('verify');
   const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState("");
-
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => setUser(u));
-    return () => unsub();
-  }, []);
+  const [err, setErr] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErr("");
+    setErr('');
 
     if (!user || !user.email) {
-      setErr("You must be logged in to change your email.");
+      setErr('You must be logged in to change your email.');
       return;
     }
-    if (!newEmail.includes("@")) {
-      setErr("Please enter a valid email address.");
+    if (!newEmail.includes('@')) {
+      setErr('Please enter a valid email address.');
       return;
     }
 
     try {
       setLoading(true);
-
-      // re-auth required
-      const cred = EmailAuthProvider.credential(user.email, currentPw);
-      await reauthenticateWithCredential(user, cred);
-
-      if (mode === "verify") {
-        // safer: sends verification link to new email
-        await verifyBeforeUpdateEmail(user, newEmail);
-        onClose();
-        window.alert(
-          "Verification email sent to your new address. Please verify to complete the change."
-        );
-      } else {
-        // direct: updates immediately (less safe)
-        await updateEmail(user, newEmail);
-        onClose();
-        window.alert("Email updated successfully.");
-      }
-    } catch (e2) {
-      setErr(e2?.message || "Failed to update email.");
+      await api.put('/auth/change-email', { currentPassword: currentPw, newEmail });
+      onClose();
+      window.alert('Email updated successfully.');
+    } catch (error) {
+      setErr(error.response?.data?.message || 'Failed to update email.');
     } finally {
       setLoading(false);
     }
@@ -66,11 +40,11 @@ const ChangeEmailModal = ({ onClose }) => {
     <div className="ce-modal">
       <div className="ce-header">
         <h2>Change email</h2>
-        <button className="ce-close" onClick={onClose} aria-label="Close">Ã—</button>
+        <button className="ce-close" onClick={onClose} aria-label="Close">×</button>
       </div>
 
       <p className="ce-desc">
-        For security, weâ€™ll ask for your current password. Choose a method below.
+        For security, we’ll ask for your current password. Choose a method below.
       </p>
 
       {err ? <div className="ce-error">{err}</div> : null}
@@ -103,8 +77,8 @@ const ChangeEmailModal = ({ onClose }) => {
             <input
               type="radio"
               name="emailMode"
-              checked={mode === "verify"}
-              onChange={() => setMode("verify")}
+              checked={mode === 'verify'}
+              onChange={() => setMode('verify')}
             />
             <span>
               Send verification to new email (recommended)
@@ -115,8 +89,8 @@ const ChangeEmailModal = ({ onClose }) => {
             <input
               type="radio"
               name="emailMode"
-              checked={mode === "direct"}
-              onChange={() => setMode("direct")}
+              checked={mode === 'direct'}
+              onChange={() => setMode('direct')}
             />
             <span>
               Update immediately (direct)
@@ -125,7 +99,7 @@ const ChangeEmailModal = ({ onClose }) => {
         </div>
 
         <button className="ce-primary" type="submit" disabled={loading}>
-          {loading ? "Updating..." : "Update email"}
+          {loading ? 'Updating...' : 'Update email'}
         </button>
 
         <button className="ce-link" type="button" onClick={onClose} disabled={loading}>

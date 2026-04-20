@@ -23,7 +23,6 @@ const IncomeExpensePage = () => {
   const confirmDelete = async () => {
     if (transactionToDelete) {
       await deleteTransaction(transactionToDelete); 
-      // ✅ Önce modalı kapatıp sonra ID'yi temizliyoruz
       setIsDeleteModalOpen(false); 
       setTransactionToDelete(null); 
     }
@@ -48,7 +47,6 @@ const IncomeExpensePage = () => {
     .filter(t => t.type === 'expense' && t.date === today)
     .reduce((acc, curr) => acc + parseFloat(curr.amount || 0), 0);
 
-  // Silinmek üzere olan objeyi güvenli bir şekilde bulalım
   const itemToBeDeleted = transactions.find(t => t.id === transactionToDelete);
 
   return (
@@ -76,14 +74,14 @@ const IncomeExpensePage = () => {
               <div className="ie-card-icon"><FiArrowDownLeft /></div>
               <div className="ie-card-info">
                 <span>Daily Income</span>
-                <h3>{dailyIncome.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} TL</h3>
+                <h3>{dailyIncome.toLocaleString('en-US', { minimumFractionDigits: 2 })} $</h3>
               </div>
             </div>
             <div className="ie-summary-card expense">
               <div className="ie-card-icon"><FiArrowUpRight /></div>
               <div className="ie-card-info">
                 <span>Daily Expense</span>
-                <h3>{dailyExpense.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} TL</h3>
+                <h3>{dailyExpense.toLocaleString('en-US', { minimumFractionDigits: 2 })} $</h3>
               </div>
             </div>
           </div>
@@ -118,7 +116,8 @@ const IncomeExpensePage = () => {
                     
                     <div className="ie-item-right">
                       <div className={`ie-item-amount ${item.type}`}>
-                        {item.type === 'income' ? '+' : '-'}{parseFloat(item.amount).toLocaleString('tr-TR', { minimumFractionDigits: 2 })} TL
+                        {item.type === 'income' ? '+' : '-'}
+                        {parseFloat(item.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })} $
                       </div>
                       
                       <button 
@@ -147,7 +146,6 @@ const IncomeExpensePage = () => {
       <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)}>
         <div className="delete-modal-content">
           <div className="delete-header">
-            {/* ✅ Optional chaining (?) ile crash olmasını önledik */}
             <h2>Delete '{itemToBeDeleted?.name}'?</h2>
           </div>
           <p className="delete-message">
