@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import './RecurringBillsPage.css';
 import Modal from '../../components/modal/Modal.jsx';
+import CustomDropdown from '../../components/dropdown/CustomDropdown.jsx';
 import { useTransactions } from '../../context/TransactionContext';
 import { useToast } from '../../context/ToastContext.jsx';
 import {
@@ -56,11 +57,22 @@ const RecurringBillsPage = () => {
   const { showToast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('latest');
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [openOptionsId, setOpenOptionsId] = useState(null);
   const [editingBill, setEditingBill] = useState(null);
 
   const optionsRef = useRef(null);
+
+  const sortOptions = [
+    { value: 'latest', label: t('bills.sortOptions.latest') },
+    { value: 'oldest', label: t('bills.sortOptions.oldest') },
+    { value: 'az', label: t('bills.sortOptions.az') },
+    { value: 'za', label: t('bills.sortOptions.za') },
+    { value: 'highest', label: t('bills.sortOptions.highest') },
+    { value: 'lowest', label: t('bills.sortOptions.lowest') },
+    { value: 'due', label: t('bills.sortOptions.due') },
+  ];
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -147,10 +159,6 @@ const RecurringBillsPage = () => {
     <div className="page-container bills-page">
       <div className="page-header">
         <h1 className="page-title">{t('bills.title')}</h1>
-        <button className="btn-add-bill" onClick={() => setIsAddModalOpen(true)}>
-          <FiPlus style={{ marginRight: 6, verticalAlign: 'middle' }} />
-          {t('bills.addNew')}
-        </button>
       </div>
 
       <div className="bills-layout">
@@ -203,17 +211,20 @@ const RecurringBillsPage = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <div className="bills-sort-wrapper">
-              <span>{t('bills.sortBy')}</span>
-              <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-                <option value="latest">{t('bills.sortOptions.latest')}</option>
-                <option value="oldest">{t('bills.sortOptions.oldest')}</option>
-                <option value="az">{t('bills.sortOptions.az')}</option>
-                <option value="za">{t('bills.sortOptions.za')}</option>
-                <option value="highest">{t('bills.sortOptions.highest')}</option>
-                <option value="lowest">{t('bills.sortOptions.lowest')}</option>
-                <option value="due">{t('bills.sortOptions.due')}</option>
-              </select>
+            <div className="bills-toolbar-right">
+              <CustomDropdown
+                options={sortOptions.map((opt) => opt.value)}
+                selectedValue={sortBy}
+                onChange={setSortBy}
+                labelPrefix={t('bills.sortBy').replace(/:$/, '')}
+                displayTransformer={(v) => sortOptions.find((opt) => opt.value === v)?.label || v}
+                isOpen={isSortDropdownOpen}
+                onToggle={() => setIsSortDropdownOpen((prev) => !prev)}
+              />
+              <button className="btn-add-bill" onClick={() => setIsAddModalOpen(true)}>
+                <FiPlus style={{ marginRight: 6, verticalAlign: 'middle' }} />
+                {t('bills.addNew')}
+              </button>
             </div>
           </div>
 
@@ -369,6 +380,12 @@ const BillForm = ({ bill, onSubmit, title }) => {
   const [dueDay, setDueDay] = useState(bill?.dueDay || 1);
   const [category, setCategory] = useState(bill?.category || 'General');
   const [theme, setTheme] = useState(bill?.theme || THEME_COLORS[0]);
+  const [openDropdown, setOpenDropdown] = useState(null); // 'dueDay' | 'category' | null
+
+  const dueDayOptions = Array.from({ length: 31 }, (_, i) => i + 1);
+
+  const toggleDropdown = (name) =>
+    setOpenDropdown((prev) => (prev === name ? null : name));
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -415,21 +432,27 @@ const BillForm = ({ bill, onSubmit, title }) => {
         </div>
         <div className="form-group">
           <label>{t('billForm.dueDay')}</label>
-          <select value={dueDay} onChange={(e) => setDueDay(e.target.value)}>
-            {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
-              <option key={d} value={d}>{d}{getOrdinal(d)}</option>
-            ))}
-          </select>
+          <CustomDropdown
+            options={dueDayOptions}
+            selectedValue={Number(dueDay)}
+            onChange={(v) => setDueDay(Number(v))}
+            displayTransformer={(d) => `${d}${getOrdinal(d)}`}
+            isOpen={openDropdown === 'dueDay'}
+            onToggle={() => toggleDropdown('dueDay')}
+          />
         </div>
       </div>
 
       <div className="form-group">
         <label>{t('billForm.category')}</label>
-        <select value={category} onChange={(e) => setCategory(e.target.value)}>
-          {BILL_CATEGORY_OPTIONS.map(opt => (
-            <option key={opt} value={opt}>{t(`categories.${opt}`, { defaultValue: opt })}</option>
-          ))}
-        </select>
+        <CustomDropdown
+          options={BILL_CATEGORY_OPTIONS}
+          selectedValue={category}
+          onChange={setCategory}
+          displayTransformer={(opt) => t(`categories.${opt}`, { defaultValue: opt })}
+          isOpen={openDropdown === 'category'}
+          onToggle={() => toggleDropdown('category')}
+        />
       </div>
 
       <div className="form-group">

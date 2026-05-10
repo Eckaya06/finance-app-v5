@@ -1,8 +1,9 @@
 /* Sayfa başlıklarındaki sağa yaslı butonların (Yenile, Yeni Fatura Ekle,
-   timeframe sekmeleri vb.) sabit dil switcher'ının altında kalmaması için
-   sağdan rezerve edilen alan. Switcher genişliği ~95px + güvenli buffer. */
+   timeframe sekmeleri vb.) sabit sağ üst alana takılmaması için sağdan
+   rezerve edilen alan. Bu alan iki sabit eleman içerir: LanguageSwitcher
+   (~95px) ve LogoutButton (~100px) + aralarındaki boşluk + güvenli buffer. */
 :root {
-  --lang-switcher-space: 115px;
+  --lang-switcher-space: 245px;
 }
 
 .lang-switcher {
@@ -25,11 +26,10 @@
 }
 
 /* Switcher'ın kapladığı sağ üst alanın altında kalan sayfa başlıkları.
-   Sadece sağ üstte sabit aksiyon butonu olan ve switcher'la çakışan iki
-   sayfa hedeflenir: Portfolio (Yenile) ve RecurringBills (Yeni Fatura Ekle).
-   Diğer sayfaların layout'u olduğu gibi kalır. */
-.portfolio-header,
-.bills-page .page-header {
+   Sadece sağ üstte sabit aksiyon butonu olan ve switcher/logout ile
+   çakışan tek sayfa kaldı: Portfolio (Yenile butonu). Bills sayfasındaki
+   "Add New Bill" butonu artık toolbar içinde olduğundan rezerve gerek yok. */
+.portfolio-header {
   padding-right: var(--lang-switcher-space);
 }
 

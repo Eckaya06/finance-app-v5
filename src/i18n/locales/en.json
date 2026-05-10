@@ -45,7 +45,9 @@
     "recurringBills": "Recurring Bills",
     "settings": "Settings",
     "minimizeMenu": "Minimize Menu",
-    "expandMenu": "Expand Menu"
+    "expandMenu": "Expand Menu",
+    "groupSpending": "SPENDING & TRACKING",
+    "groupAssets": "ASSETS"
   },
   "auth": {
     "login": {
@@ -369,7 +371,17 @@
       "1W": "Weekly",
       "1M": "Monthly",
       "1Y": "Yearly"
-    }
+    },
+    "pfCost": "Cost",
+    "pfValue": "Value",
+    "pfHolding": "Holding",
+    "pfRate": "Rate",
+    "pfPnl": "P&L",
+    "ppcTitle": "Portfolio P&L Timeline",
+    "ppcSub": "Your cumulative profit/loss over time",
+    "ppcCumPnl": "Cumulative P&L",
+    "ppcEmptyTitle": "No portfolio data yet",
+    "ppcEmptyMsg": "Start investing to see your performance chart here."
   },
   "portfolio": {
     "title": "Markets",
@@ -378,9 +390,11 @@
     "dataRefreshed": "Data refreshed",
     "exchangeRates": "Exchange Rates",
     "goldPrices": "Gold Prices",
-    "volume": "Volume",
-    "high": "High",
-    "low": "Low",
+    "buying": "Bid",
+    "selling": "Ask",
+    "spread": "Spread",
+    "marketClosed": "Markets Closed",
+    "marketClosedMsg": "Forex markets are closed on weekends. The displayed rates are from the last trading day.",
     "today": "today",
     "myHoldings": "💼 My Holdings",
     "asset": "asset",
@@ -567,5 +581,14 @@
     "switch": "Language",
     "en": "EN",
     "tr": "TR"
+  },
+  "logout": {
+    "button": "Log out",
+    "tooltip": "Log out of your account",
+    "loggingOut": "Logging out...",
+    "confirmTitle": "Log out?",
+    "confirmMessage": "Are you sure you want to log out? You will need to sign in again to access your account.",
+    "confirmYes": "Yes, log me out",
+    "confirmNo": "Cancel"
   }
 }

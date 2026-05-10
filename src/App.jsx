@@ -3,7 +3,8 @@ import Login from './pages/auth/Login.jsx';
 import Signup from './pages/auth/Signup.jsx';
 import VerifyEmail from './pages/auth/VerifyEmail.jsx';
 import Home from './pages/home/Home.jsx';
-import ProtectedRoute from './components/ProtectedRoute.jsx'; 
+import ProtectedRoute from './components/ProtectedRoute.jsx';
+import PublicRoute from './components/PublicRoute.jsx';
 import DashboardLayout from './layouts/DashboardLayout.jsx';
 import TransactionsPage from './pages/transactions/TransactionsPage.jsx';
 import PotsPage from './pages/pots/PotsPage.jsx';
@@ -18,6 +19,7 @@ import RecurringBillsPage from './pages/bills/RecurringBillsPage.jsx';
 import AiChatSystem from './components/chatbot/AiChatSystem.jsx';
 import ToastHost from './components/toast/ToastHost.jsx';
 import LanguageSwitcher from './components/language/LanguageSwitcher.jsx';
+import LogoutButton from './components/auth/LogoutButton.jsx';
 
 // Context Yapıları
 import { AuthProvider } from './context/AuthContext';
@@ -40,9 +42,9 @@ const App = () => {
           <TransactionProvider>
             <div>
               <Routes>
-                {/* Açık Rotalar */}
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
+                {/* Açık Rotalar — auth varsa /home'a redirect (PublicRoute) */}
+                <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+                <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
                 <Route path="/verify/:token" element={<VerifyEmail />} />
                 <Route path="/" element={<Navigate to="/login" />} />
 
@@ -61,6 +63,7 @@ const App = () => {
               </Routes>
               <AssistantWrapper />
               <ToastHost />
+              <LogoutButton />
               <LanguageSwitcher />
             </div>
           </TransactionProvider>

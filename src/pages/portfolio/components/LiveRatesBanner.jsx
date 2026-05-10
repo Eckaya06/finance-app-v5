@@ -5,26 +5,26 @@ const LiveRatesBanner = ({ rates }) => {
   const { t } = useTranslation();
   if (!rates) return null;
 
-  const { currencies, gold } = rates;
+  const { currencies, gold, marketOpen } = rates;
 
   const formatNum = (num, decimals = 4) =>
     num?.toLocaleString('tr-TR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
-
-  // Simulated volume, high, low for visual consistency
-  const getExtraStats = (rate, code) => {
-    const variance = rate * 0.008;
-    const volume = code === 'JPY' ? '3.1M' : code === 'CAD' ? '1.2M' : rate > 1000 ? '890K' : (Math.random() * 3 + 1).toFixed(1) + 'M';
-    return {
-      volume,
-      high: rate + variance,
-      low: rate - variance,
-    };
-  };
 
   const goldColors = ['#16a34a', '#7c3aed', '#f59e0b'];
 
   return (
     <div className="rates-banner">
+      {/* ── Market Closed Warning ── */}
+      {marketOpen === false && (
+        <div className="market-closed-banner" id="market-closed-banner">
+          <span className="market-closed-icon">🔒</span>
+          <div className="market-closed-text">
+            <strong>{t('portfolio.marketClosed', 'Piyasalar Kapalı')}</strong>
+            <span>{t('portfolio.marketClosedMsg', 'Hafta sonu olduğu için döviz piyasaları kapalıdır. Gösterilen veriler son işlem gününe aittir.')}</span>
+          </div>
+        </div>
+      )}
+
       {/* ── Exchange Rates ── */}
       <div className="rates-section">
         <div className="rates-section-header">
@@ -34,7 +34,6 @@ const LiveRatesBanner = ({ rates }) => {
           {Object.entries(currencies).map(([code, data]) => {
             const meta = ASSET_META[code] || {};
             const isPositive = data.change >= 0;
-            const extra = getExtraStats(data.rate, code);
 
             return (
               <div key={code} className="rate-card-v2" id={`rate-${code}`} style={{ '--accent': meta.color || '#6366f1' }}>
@@ -58,16 +57,16 @@ const LiveRatesBanner = ({ rates }) => {
 
                 <div className="rate-card-v2-stats">
                   <div className="rate-stat">
-                    <span className="rate-stat-label">{t('portfolio.volume')}</span>
-                    <span className="rate-stat-value">{extra.volume}</span>
+                    <span className="rate-stat-label">{t('portfolio.buying', 'Alış')}</span>
+                    <span className="rate-stat-value">₺{formatNum(data.buying)}</span>
                   </div>
                   <div className="rate-stat">
-                    <span className="rate-stat-label">{t('portfolio.high')}</span>
-                    <span className="rate-stat-value">₺{formatNum(extra.high)}</span>
+                    <span className="rate-stat-label">{t('portfolio.selling', 'Satış')}</span>
+                    <span className="rate-stat-value">₺{formatNum(data.selling)}</span>
                   </div>
                   <div className="rate-stat">
-                    <span className="rate-stat-label">{t('portfolio.low')}</span>
-                    <span className="rate-stat-value">₺{formatNum(extra.low)}</span>
+                    <span className="rate-stat-label">{t('portfolio.spread', 'Spread')}</span>
+                    <span className="rate-stat-value">%{data.spread?.toFixed(2) || '0.00'}</span>
                   </div>
                 </div>
               </div>

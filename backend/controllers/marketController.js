@@ -7,15 +7,29 @@
 // ─── Cache to avoid hitting rate limits ───
 let cachedRates = null;
 let cacheTimestamp = 0;
-const CACHE_DURATION = 60_000; // 1 minute cache
+const CACHE_DURATION_WEEKDAY = 60_000;   // 1 minute on weekdays
+const CACHE_DURATION_WEEKEND = 300_000;  // 5 minutes on weekends (markets closed)
+
+/**
+ * Check if forex markets are currently open.
+ * Forex: Mon 00:00 - Fri 22:00 UTC (approx).
+ * Turkish local time: markets are effectively closed Sat & Sun.
+ */
+const isForexMarketOpen = () => {
+  const now = new Date();
+  const day = now.getUTCDay(); // 0=Sun, 6=Sat
+  return day !== 0 && day !== 6;
+};
 
 export const getLiveRates = async (req, res) => {
   try {
     const now = Date.now();
+    const marketOpen = isForexMarketOpen();
+    const cacheDuration = marketOpen ? CACHE_DURATION_WEEKDAY : CACHE_DURATION_WEEKEND;
 
     // Return cached if fresh
-    if (cachedRates && (now - cacheTimestamp) < CACHE_DURATION) {
-      return res.json({ ...cachedRates, timestamp: new Date().toISOString() });
+    if (cachedRates && (now - cacheTimestamp) < cacheDuration) {
+      return res.json({ ...cachedRates, timestamp: new Date().toISOString(), marketOpen });
     }
 
     const response = await fetch('https://finans.truncgil.com/v3/today.json');
@@ -29,15 +43,16 @@ export const getLiveRates = async (req, res) => {
 
     const buildCurrency = (code, name, key) => {
       const item = data[key];
-      if (!item) return { code, name, buying: 0, selling: 0, rate: 0, change: 0, changePercent: 0 };
+      if (!item) return { code, name, buying: 0, selling: 0, rate: 0, change: 0, changePercent: 0, spread: 0 };
       
       const selling = parseNum(item.Selling);
       const buying = parseNum(item.Buying);
       const rate = selling;
       const changePercent = parseNum(item.Change);
       const change = rate * (changePercent / 100);
+      const spread = +((selling - buying) / selling * 100).toFixed(3);
 
-      return { code, name, buying, selling, rate, change, changePercent };
+      return { code, name, buying, selling, rate, change, changePercent, spread };
     };
 
     const usdRate = parseNum(data['USD']?.Selling) || 45.00;
@@ -68,6 +83,7 @@ export const getLiveRates = async (req, res) => {
     const rates = {
       timestamp: new Date().toISOString(),
       base: 'TRY',
+      marketOpen,
       currencies: {
         USD: buildCurrency('USD', 'US Dollar', 'USD'),
         EUR: buildCurrency('EUR', 'Euro', 'EUR'),

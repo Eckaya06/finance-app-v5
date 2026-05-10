@@ -16,6 +16,36 @@ body.theme-dark .refresh-btn:hover { color:#0f1115; }
 
 /* ── Rates Banner ── */
 .rates-banner { display:flex; flex-direction:column; gap:28px; }
+
+/* ── Market Closed Banner ── */
+.market-closed-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  border-radius: var(--radius, 12px);
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  animation: portfolioFadeIn 0.4s ease-out;
+}
+.market-closed-icon { font-size: 22px; flex-shrink: 0; }
+.market-closed-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.market-closed-text strong {
+  font-size: 13px;
+  color: #d97706;
+  font-weight: 700;
+}
+.market-closed-text span {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+
 .rates-section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
 .rates-section-title { font-size:16px; font-weight:600; color:var(--text); margin:0; }
 .rates-section-title.gold-title { color:#d97706; }

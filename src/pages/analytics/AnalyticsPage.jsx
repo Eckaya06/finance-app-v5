@@ -11,6 +11,8 @@ import {
 } from 'recharts';
 import { FiTrendingUp, FiTrendingDown, FiPieChart, FiBarChart2, FiActivity } from 'react-icons/fi';
 import { CATEGORY_COLORS, getCategoryColor } from '../../utils/categoryColors.js';
+import ASSET_META from '../portfolio/components/assetMeta.js';
+import PortfolioPerformanceChart from './PortfolioPerformanceChart.jsx';
 import './AnalyticsPage.css';
 
 const TIME_FILTERS = [
@@ -19,6 +21,13 @@ const TIME_FILTERS = [
   { value: '1M', tKey: 'analytics.timeframes.1M', days: 30 },
   { value: '1Y', tKey: 'analytics.timeframes.1Y', days: 365 }
 ];
+
+// ResponsiveContainer'ın resize debounce'u. Sidebar collapse/expand
+// transition'ı (Sidebar.css içinde 0.3s) süresince container ölçüsü
+// kademeli değiştiği için bu süre transition'dan kasten daha uzun
+// tutulur — chart yalnızca transition bittikten sonra TEK seferde
+// yeniden çizilir, ortada "morph" / "sıçrama" görüntüsü yaşanmaz.
+const CHART_RESIZE_DEBOUNCE = 350;
 
 // ─── Stable style/config objects (created once, never re-allocated) ───
 const CHART_MARGINS = { top: 10, right: 10, left: 0, bottom: 10 };
@@ -38,7 +47,7 @@ const formatLocale = (val) => val.toLocaleString('tr-TR', { minimumFractionDigit
 // Helper to reliably parse dates from MongoDB or Turkish formatted dates
 const getValidDate = (t) => {
   const dateStr = t.date;
-  
+
   // Prioritize the user-selected date formatted as DD.MM.YYYY
   if (typeof dateStr === 'string' && dateStr.includes('.')) {
     const parts = dateStr.split('.');
@@ -53,7 +62,7 @@ const getValidDate = (t) => {
     const parsed = new Date(t.createdAt);
     if (!isNaN(parsed.getTime())) return parsed;
   }
-  
+
   const parsed = new Date(dateStr || t.timestamp);
   return isNaN(parsed.getTime()) ? new Date() : parsed;
 };
@@ -86,7 +95,7 @@ TimeframeTabs.displayName = 'TimeframeTabs';
 // ─── Chart 1: Category Spending Bar Chart ───
 const CategorySpendingChart = memo(({ data }) => (
   <div className="chart-container" style={{ height: '320px' }}>
-    <ResponsiveContainer width="100%" height="100%" debounce={150}>
+    <ResponsiveContainer width="100%" height="100%" debounce={CHART_RESIZE_DEBOUNCE}>
       <BarChart data={data} margin={CHART_MARGINS}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
         <XAxis dataKey="name" type="category" axisLine={false} tickLine={false}
@@ -109,7 +118,7 @@ CategorySpendingChart.displayName = 'CategorySpendingChart';
 // ─── Chart 2: Cashflow Composed Chart ───
 const CashflowChart = memo(({ data, expenseCategories }) => (
   <div className="chart-container" style={{ height: '320px' }}>
-    <ResponsiveContainer width="100%" height="100%" debounce={150}>
+    <ResponsiveContainer width="100%" height="100%" debounce={CHART_RESIZE_DEBOUNCE}>
       <ComposedChart data={data} margin={CASHFLOW_MARGINS}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
         <XAxis dataKey="label" axisLine={false} tickLine={false} tick={AXIS_TICK_STYLE} dy={10} />
@@ -132,68 +141,126 @@ CashflowChart.displayName = 'CashflowChart';
 const ExpenseDistributionChart = memo(({ data, total }) => {
   const { t } = useTranslation();
   return (
-  <div className="chart-container" style={{ height: '300px', position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-    <div style={{ position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center', pointerEvents: 'none', top: '38%' }}>
-      <span style={{ fontSize: '22px', fontWeight: '800', color: 'var(--text)', letterSpacing: '-0.5px' }}>
-        ₺{total.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
-      </span>
-      <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: '600', marginTop: '2px' }}>{t('analytics.totalExpensesLabel')}</span>
+    <div className="chart-container" style={{ height: '300px', position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <div style={{ position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center', pointerEvents: 'none', top: '38%' }}>
+        <span style={{ fontSize: '22px', fontWeight: '800', color: 'var(--text)', letterSpacing: '-0.5px' }}>
+          ₺{total.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+        </span>
+        <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: '600', marginTop: '2px' }}>{t('analytics.totalExpensesLabel')}</span>
+      </div>
+      <ResponsiveContainer width="100%" height="100%" debounce={CHART_RESIZE_DEBOUNCE}>
+        <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 20 }}>
+          <Tooltip formatter={formatTooltipCurrency} contentStyle={TOOLTIP_STYLE} itemStyle={TOOLTIP_ITEM_STYLE} />
+          <Pie
+            data={data}
+            dataKey="value"
+            nameKey="name"
+            cx="50%"
+            cy="50%"
+            innerRadius={85}
+            outerRadius={115}
+            paddingAngle={4}
+            stroke="none"
+          >
+            {data.map((entry, i) => (
+              <Cell
+                key={`pie-${i}`}
+                fill={getCategoryColor(entry.name)}
+                stroke="var(--card)"
+                strokeWidth={3}
+                style={{ filter: 'drop-shadow(0px 4px 6px rgba(0,0,0,0.05))' }}
+              />
+            ))}
+          </Pie>
+          <Legend
+            layout="horizontal"
+            verticalAlign="bottom"
+            iconType="circle"
+            wrapperStyle={{ paddingTop: '10px', fontSize: '13px', color: 'var(--text)' }}
+          />
+        </PieChart>
+      </ResponsiveContainer>
     </div>
-    <ResponsiveContainer width="100%" height="100%" debounce={150}>
-      <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 20 }}>
-        <Tooltip formatter={formatTooltipCurrency} contentStyle={TOOLTIP_STYLE} itemStyle={TOOLTIP_ITEM_STYLE} />
-        <Pie 
-          data={data} 
-          dataKey="value" 
-          nameKey="name"
-          cx="50%"
-          cy="50%"
-          innerRadius={85} 
-          outerRadius={115} 
-          paddingAngle={4}
-          stroke="none"
-        >
-          {data.map((entry, i) => (
-            <Cell 
-              key={`pie-${i}`} 
-              fill={getCategoryColor(entry.name)} 
-              stroke="var(--card)" 
-              strokeWidth={3} 
-              style={{ filter: 'drop-shadow(0px 4px 6px rgba(0,0,0,0.05))' }}
-            />
-          ))}
-        </Pie>
-        <Legend
-          layout="horizontal"
-          verticalAlign="bottom"
-          iconType="circle"
-          wrapperStyle={{ paddingTop: '10px', fontSize: '13px', color: 'var(--text)' }}
-        />
-      </PieChart>
-    </ResponsiveContainer>
-  </div>
   );
 });
 ExpenseDistributionChart.displayName = 'ExpenseDistributionChart';
 
-// ─── Chart 4: Portfolio Performance Horizontal Bar Chart ───
-const PortfolioChart = memo(({ data }) => (
-  <div className="chart-container" style={{ height: '300px' }}>
-    <ResponsiveContainer width="100%" height="100%" debounce={150}>
-      <BarChart data={data} layout="vertical" margin={PORTFOLIO_MARGINS}>
-        <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="var(--border)" />
-        <XAxis type="number" hide />
-        <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={Y_AXIS_BOLD_TICK} />
-        <Tooltip formatter={formatTooltipCurrency} cursor={TRANSPARENT_CURSOR} contentStyle={TOOLTIP_STYLE} />
-        <Bar dataKey="Profit" radius={[0, 4, 4, 0]} barSize={24}>
-          {data.map((entry, index) => (
-            <Cell key={`pf-cell-${index}`} fill={entry.Profit >= 0 ? '#10b981' : '#ef4444'} />
-          ))}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
-  </div>
-));
+// ─── Chart 4: Portfolio Performance — Rich Card Layout ───
+const PortfolioChart = memo(({ data }) => {
+  const { t } = useTranslation();
+  // Find the max value for bar scaling
+  const maxVal = Math.max(...data.map(d => Math.max(d.cost || 0, d.currentValue || 0)), 1);
+
+  return (
+    <div className="portfolio-perf-list">
+      {data.map((asset, idx) => {
+        const meta = ASSET_META[asset.name] || {};
+        const isProfit = asset.Profit >= 0;
+        const pnlPct = asset.pnlPercent || 0;
+        const costWidth = maxVal > 0 ? Math.max((asset.cost / maxVal) * 100, 2) : 0;
+        const valueWidth = maxVal > 0 ? Math.max((asset.currentValue / maxVal) * 100, 2) : 0;
+        const displayName = meta.label || asset.name;
+
+        return (
+          <div key={asset.name} className="pf-perf-card" style={{ '--pf-accent': meta.color || '#6366f1', animationDelay: `${idx * 60}ms` }}>
+            {/* Header Row */}
+            <div className="pf-perf-header">
+              <div className="pf-perf-asset-info">
+                <span className="pf-perf-icon" style={{ background: meta.isGold ? 'rgba(245,158,11,0.1)' : `${meta.color || '#6366f1'}15` }}>
+                  {meta.icon || '💱'}
+                </span>
+                <div className="pf-perf-name-group">
+                  <span className="pf-perf-name">{displayName}</span>
+                  <span className="pf-perf-pair">{meta.pair || asset.name}</span>
+                </div>
+              </div>
+              <div className={`pf-perf-pnl-badge ${isProfit ? 'profit' : 'loss'}`}>
+                <span className="pf-perf-pnl-arrow">{isProfit ? '▲' : '▼'}</span>
+                <span>{isProfit ? '+' : ''}{pnlPct.toFixed(2)}%</span>
+              </div>
+            </div>
+
+            {/* Value Bars */}
+            <div className="pf-perf-bars">
+              <div className="pf-perf-bar-row">
+                <span className="pf-perf-bar-label">{t('analytics.pfCost', 'Maliyet')}</span>
+                <div className="pf-perf-bar-track">
+                  <div className="pf-perf-bar cost-bar" style={{ width: `${costWidth}%` }} />
+                </div>
+                <span className="pf-perf-bar-value">₺{formatLocale(asset.cost || 0)}</span>
+              </div>
+              <div className="pf-perf-bar-row">
+                <span className="pf-perf-bar-label">{t('analytics.pfValue', 'Değer')}</span>
+                <div className="pf-perf-bar-track">
+                  <div className={`pf-perf-bar value-bar ${isProfit ? 'bar-green' : 'bar-red'}`} style={{ width: `${valueWidth}%` }} />
+                </div>
+                <span className="pf-perf-bar-value">₺{formatLocale(asset.currentValue || 0)}</span>
+              </div>
+            </div>
+
+            {/* Footer Stats */}
+            <div className="pf-perf-footer">
+              <div className="pf-perf-stat">
+                <span className="pf-perf-stat-label">{t('analytics.pfHolding', 'Miktar')}</span>
+                <span className="pf-perf-stat-value">{asset.holding?.toFixed(asset.holding < 10 ? 4 : 2)}</span>
+              </div>
+              <div className="pf-perf-stat">
+                <span className="pf-perf-stat-label">{t('analytics.pfRate', 'Kur')}</span>
+                <span className="pf-perf-stat-value">₺{formatLocale(asset.rate || 0)}</span>
+              </div>
+              <div className="pf-perf-stat pf-perf-stat-pnl">
+                <span className="pf-perf-stat-label">{t('analytics.pfPnl', 'K/Z')}</span>
+                <span className={`pf-perf-stat-value ${isProfit ? 'text-green' : 'text-red'}`}>
+                  {isProfit ? '+' : ''}₺{formatLocale(asset.Profit)}
+                </span>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+});
 PortfolioChart.displayName = 'PortfolioChart';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -206,7 +273,7 @@ const AnalyticsPage = () => {
   const [portfolioTx, setPortfolioTx] = useState([]);
   const [marketRates, setMarketRates] = useState(null);
   const [loading, setLoading] = useState(true);
-  
+
   // Global timeframe for all charts and KPIs
   const [globalTimeframe, setGlobalTimeframe] = useState('1M');
 
@@ -231,11 +298,11 @@ const AnalyticsPage = () => {
           api.get('/portfolio/history?limit=5000'),
           api.get('/market/rates')
         ]);
-        
+
         cachedPortfolioHistory = portRes.data;
         cachedMarketRates = ratesRes.data;
         lastFetchTime = Date.now();
-        
+
         setPortfolioTx(cachedPortfolioHistory);
         setMarketRates(cachedMarketRates);
       } catch (err) {
@@ -293,13 +360,13 @@ const AnalyticsPage = () => {
       if (marketRates?.gold?.[assetType]) return marketRates.gold[assetType].rate;
       return 0;
     };
-    
+
     const calcPnl = (txList) => {
       const assetMap = {};
       let totalUnrealizedPnl = 0;
       let totalRealizedPnl = 0;
       const portfolioAssetsPnl = [];
-      
+
       for (const tx of txList) {
         if (!assetMap[tx.assetType]) assetMap[tx.assetType] = { totalBought: 0, totalBuyCost: 0, totalSold: 0, totalSellRevenue: 0 };
         if (tx.transactionType === 'BUY') {
@@ -312,15 +379,18 @@ const AnalyticsPage = () => {
       }
       for (const [assetType, entry] of Object.entries(assetMap)) {
         const avgBuyPrice = entry.totalBought > 0 ? entry.totalBuyCost / entry.totalBought : 0;
-        const currentHolding = entry.totalBought - entry.totalSold; 
+        const currentHolding = entry.totalBought - entry.totalSold;
         const rate = getRate(assetType);
         const unrealized = currentHolding > 0 ? (rate - avgBuyPrice) * currentHolding : 0;
         const realized = entry.totalSellRevenue - (avgBuyPrice * entry.totalSold);
-        
+
         totalUnrealizedPnl += unrealized;
         totalRealizedPnl += realized;
         if (unrealized !== 0 || realized !== 0 || currentHolding > 0) {
-           portfolioAssetsPnl.push({ name: assetType, Profit: unrealized + realized, holding: currentHolding, rate });
+          const cost = avgBuyPrice * currentHolding;
+          const currentValue = rate * currentHolding;
+          const pnlPercent = cost > 0 ? ((currentValue - cost) / cost) * 100 : 0;
+          portfolioAssetsPnl.push({ name: assetType, Profit: unrealized + realized, holding: currentHolding, rate, cost, currentValue, pnlPercent });
         }
       }
       portfolioAssetsPnl.sort((a, b) => b.Profit - a.Profit);
@@ -347,21 +417,21 @@ const AnalyticsPage = () => {
     }
     const mapByDate = new Map();
     if (cfFilterDays <= 31) {
-       for (let i = cfFilterDays - 1; i >= 0; i--) {
-          const d = new Date();
-          d.setDate(d.getDate() - i);
-          const dateKey = d.toISOString().split('T')[0];
-          const defaultRow = { date: dateKey, Income: 0 };
-          activeExpenseCategories.forEach(cat => { defaultRow[cat] = 0; });
-          mapByDate.set(dateKey, defaultRow);
-       }
+      for (let i = cfFilterDays - 1; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const dateKey = d.toISOString().split('T')[0];
+        const defaultRow = { date: dateKey, Income: 0 };
+        activeExpenseCategories.forEach(cat => { defaultRow[cat] = 0; });
+        mapByDate.set(dateKey, defaultRow);
+      }
     }
     for (const t of cashflowTx) {
       const key = t._isoDate;
       if (!mapByDate.has(key)) {
-         const defaultRow = { date: key, Income: 0 };
-         activeExpenseCategories.forEach(cat => { defaultRow[cat] = 0; });
-         mapByDate.set(key, defaultRow);
+        const defaultRow = { date: key, Income: 0 };
+        activeExpenseCategories.forEach(cat => { defaultRow[cat] = 0; });
+        mapByDate.set(key, defaultRow);
       }
       const row = mapByDate.get(key);
       const amt = Math.abs(Number(t.amount || 0));
@@ -405,10 +475,10 @@ const AnalyticsPage = () => {
   if (loading || !computed) {
     return (
       <div className="analytics-page skeleton-loading">
-         <div className="skeleton-block" style={{ height: '40px', width: '200px', marginBottom: '30px' }} />
-         <div className="kpi-grid">
-            {[1,2,3,4].map(i => <div key={i} className="skeleton-block" style={{ height: '100px' }} />)}
-         </div>
+        <div className="skeleton-block" style={{ height: '40px', width: '200px', marginBottom: '30px' }} />
+        <div className="kpi-grid">
+          {[1, 2, 3, 4].map(i => <div key={i} className="skeleton-block" style={{ height: '100px' }} />)}
+        </div>
       </div>
     );
   }
@@ -479,15 +549,15 @@ const AnalyticsPage = () => {
           </div>
           {transactions.length === 0 ? (
             <div className="modern-empty-state">
-               <div className="modern-empty-banner banner-blue">
-                 <FiBarChart2 className="modern-empty-banner-icon icon-blue" />
-               </div>
-               <div className="modern-empty-icon-wrapper circle-blue">
-                 <FiBarChart2 />
-               </div>
-               <h4 className="modern-empty-title">{t('analytics.categorySpending')}</h4>
-               <p className="modern-empty-desc">{t('analytics.noExpenseData')}</p>
-               <button className="modern-empty-btn" onClick={() => navigate('/income-expense')}>{t('analytics.addTransaction')}</button>
+              <div className="modern-empty-banner banner-blue">
+                <FiBarChart2 className="modern-empty-banner-icon icon-blue" />
+              </div>
+              <div className="modern-empty-icon-wrapper circle-blue">
+                <FiBarChart2 />
+              </div>
+              <h4 className="modern-empty-title">{t('analytics.categorySpending')}</h4>
+              <p className="modern-empty-desc">{t('analytics.noExpenseData')}</p>
+              <button className="modern-empty-btn" onClick={() => navigate('/income-expense')}>{t('analytics.addTransaction')}</button>
             </div>
           ) : computed.categoryTrendsData.length === 0 ? (
             <div className="empty-state">{t('analytics.noPeriodData')}</div>
@@ -506,15 +576,15 @@ const AnalyticsPage = () => {
           </div>
           {transactions.length === 0 ? (
             <div className="modern-empty-state">
-               <div className="modern-empty-banner banner-orange">
-                 <FiTrendingUp className="modern-empty-banner-icon icon-orange" />
-               </div>
-               <div className="modern-empty-icon-wrapper circle-orange">
-                 <FiTrendingUp />
-               </div>
-               <h4 className="modern-empty-title">{t('analytics.cashflowTrend')}</h4>
-               <p className="modern-empty-desc">{t('analytics.noCashflowData')}</p>
-               <button className="modern-empty-btn" onClick={() => navigate('/income-expense')}>{t('analytics.addTransaction')}</button>
+              <div className="modern-empty-banner banner-orange">
+                <FiTrendingUp className="modern-empty-banner-icon icon-orange" />
+              </div>
+              <div className="modern-empty-icon-wrapper circle-orange">
+                <FiTrendingUp />
+              </div>
+              <h4 className="modern-empty-title">{t('analytics.cashflowTrend')}</h4>
+              <p className="modern-empty-desc">{t('analytics.noCashflowData')}</p>
+              <button className="modern-empty-btn" onClick={() => navigate('/income-expense')}>{t('analytics.addTransaction')}</button>
             </div>
           ) : computed.cashflowSeries.length === 0 ? (
             <div className="empty-state">{t('analytics.noPeriodCashflow')}</div>
@@ -533,24 +603,24 @@ const AnalyticsPage = () => {
           </div>
           {transactions.length === 0 ? (
             <div className="modern-empty-state">
-               <div className="modern-empty-banner banner-purple">
-                 <FiPieChart className="modern-empty-banner-icon icon-purple" />
-               </div>
-               <div className="modern-empty-icon-wrapper circle-purple">
-                 <FiPieChart />
-               </div>
-               <h4 className="modern-empty-title">{t('analytics.expenseDistribution')}</h4>
-               <p className="modern-empty-desc">{t('analytics.noDistData')}</p>
-               <button className="modern-empty-btn" onClick={() => navigate('/income-expense')}>{t('analytics.addTransaction')}</button>
+              <div className="modern-empty-banner banner-purple">
+                <FiPieChart className="modern-empty-banner-icon icon-purple" />
+              </div>
+              <div className="modern-empty-icon-wrapper circle-purple">
+                <FiPieChart />
+              </div>
+              <h4 className="modern-empty-title">{t('analytics.expenseDistribution')}</h4>
+              <p className="modern-empty-desc">{t('analytics.noDistData')}</p>
+              <button className="modern-empty-btn" onClick={() => navigate('/income-expense')}>{t('analytics.addTransaction')}</button>
             </div>
           ) : computed.spendingByCategory.length === 0 ? (
-             <div className="empty-state">{t('analytics.noPeriodData')}</div>
+            <div className="empty-state">{t('analytics.noPeriodData')}</div>
           ) : (
             <ExpenseDistributionChart data={computed.spendingByCategory} total={computed.totalExpenses} />
           )}
         </div>
 
-        {/* Chart 4: Portfolio Performance */}
+        {/* Chart 4: Portfolio Asset Cards (half-width, beside Expense Distribution) */}
         <div className="analytics-panel glass-panel">
           <div className="panel-header">
             <div className="panel-title-group">
@@ -560,21 +630,32 @@ const AnalyticsPage = () => {
           </div>
           {portfolioTx.length === 0 ? (
             <div className="modern-empty-state">
-               <div className="modern-empty-banner banner-green">
-                 <FiActivity className="modern-empty-banner-icon icon-green" />
-               </div>
-               <div className="modern-empty-icon-wrapper circle-green">
-                 <FiActivity />
-               </div>
-               <h4 className="modern-empty-title">{t('analytics.portfolioPerformance')}</h4>
-               <p className="modern-empty-desc">{t('analytics.noPortfolioData')}</p>
-               <button className="modern-empty-btn" onClick={() => navigate('/portfolio')}>{t('analytics.goToPortfolio')}</button>
+              <div className="modern-empty-banner banner-green">
+                <FiActivity className="modern-empty-banner-icon icon-green" />
+              </div>
+              <div className="modern-empty-icon-wrapper circle-green">
+                <FiActivity />
+              </div>
+              <h4 className="modern-empty-title">{t('analytics.portfolioPerformance')}</h4>
+              <p className="modern-empty-desc">{t('analytics.noPortfolioData')}</p>
+              <button className="modern-empty-btn" onClick={() => navigate('/portfolio')}>{t('analytics.goToPortfolio')}</button>
             </div>
           ) : computed.portfolioAssetsPnl.length === 0 ? (
-             <div className="empty-state">{t('analytics.noPeriodPortfolio')}</div>
+            <div className="empty-state">{t('analytics.noPeriodPortfolio')}</div>
           ) : (
             <PortfolioChart data={computed.portfolioAssetsPnl} />
           )}
+        </div>
+
+        {/* Chart 5: Portfolio PnL Timeline (full-width, bottom) */}
+        <div className="analytics-panel glass-panel panel-wide">
+          <div className="panel-header">
+            <div className="panel-title-group">
+              <h3>{t('analytics.ppcTitle', 'Portföy K/Z Zaman Çizelgesi')}</h3>
+              <span className="panel-subtitle">{t('analytics.ppcSub', 'Kümülatif kâr/zararınızın zaman içindeki seyri')}</span>
+            </div>
+          </div>
+          <PortfolioPerformanceChart portfolioTransactions={portfolioTx} marketRates={marketRates} />
         </div>
       </div>
     </div>

@@ -45,7 +45,9 @@
     "recurringBills": "Tekrarlayan Faturalar",
     "settings": "Ayarlar",
     "minimizeMenu": "Menüyü Küçült",
-    "expandMenu": "Menüyü Genişlet"
+    "expandMenu": "Menüyü Genişlet",
+    "groupSpending": "HARCAMA & TAKİP",
+    "groupAssets": "VARLIKLAR"
   },
   "auth": {
     "login": {
@@ -369,7 +371,17 @@
       "1W": "Haftalık",
       "1M": "Aylık",
       "1Y": "Yıllık"
-    }
+    },
+    "pfCost": "Maliyet",
+    "pfValue": "Değer",
+    "pfHolding": "Miktar",
+    "pfRate": "Kur",
+    "pfPnl": "K/Z",
+    "ppcTitle": "Portföy K/Z Zaman Çizelgesi",
+    "ppcSub": "Kümülatif kâr/zararınızın zaman içindeki seyri",
+    "ppcCumPnl": "Kümülatif K/Z",
+    "ppcEmptyTitle": "Henüz portföy verisi yok",
+    "ppcEmptyMsg": "Performans grafiğinizi görmek için yatırım yapmaya başlayın."
   },
   "portfolio": {
     "title": "Piyasalar",
@@ -378,9 +390,11 @@
     "dataRefreshed": "Veri yenilendi",
     "exchangeRates": "Döviz Kurları",
     "goldPrices": "Altın Fiyatları",
-    "volume": "Hacim",
-    "high": "Yüksek",
-    "low": "Düşük",
+    "buying": "Alış",
+    "selling": "Satış",
+    "spread": "Spread",
+    "marketClosed": "Piyasalar Kapalı",
+    "marketClosedMsg": "Hafta sonu olduğu için döviz piyasaları kapalıdır. Gösterilen veriler son işlem gününe aittir.",
     "today": "bugün",
     "myHoldings": "💼 Varlıklarım",
     "asset": "varlık",
@@ -567,5 +581,14 @@
     "switch": "Dil",
     "en": "EN",
     "tr": "TR"
+  },
+  "logout": {
+    "button": "Çıkış",
+    "tooltip": "Hesabından çıkış yap",
+    "loggingOut": "Çıkış yapılıyor...",
+    "confirmTitle": "Çıkış yapılsın mı?",
+    "confirmMessage": "Çıkış yapmak istediğinden emin misin? Hesabına tekrar erişmek için yeniden giriş yapman gerekecek.",
+    "confirmYes": "Evet, çıkış yap",
+    "confirmNo": "İptal"
   }
 }

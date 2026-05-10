@@ -33,12 +33,12 @@ const CustomDropdown = ({ options, selectedValue, onChange, labelPrefix, display
   };
 
   const getDisplayLabel = (value) => {
-    if (displayTransformer) {
-      return `${labelPrefix}: ${displayTransformer(value)}`;
-    }
-    return value === 'All' ? `${labelPrefix}: All` : value;
+    const text = displayTransformer ? displayTransformer(value) : value;
+    // labelPrefix opsiyonel: form alanlarında ayrı bir <label> kullanılıyorsa
+    // boş geçilir ve sadece seçili değer gösterilir.
+    return labelPrefix ? `${labelPrefix}: ${text}` : text;
   };
-  
+
   const getOptionLabel = (value) => {
     if (displayTransformer) {
         return displayTransformer(value);

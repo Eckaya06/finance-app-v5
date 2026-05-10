@@ -44,7 +44,7 @@ export const signup = async (req, res) => {
   console.log('✅ User DB\'ye kaydedildi:', { email: user.email, token: user.verificationToken });
 
   // 3. E-posta içeriğini ve linkini hazırla
-  const verifyUrl = `http://localhost:5173/verify/${verificationToken}`;
+  const verifyUrl = `${process.env.CLIENT_URL}/verify/${verificationToken}`;
   console.log('📧 Email linki oluşturuldu:', verifyUrl);
   const message = `
     <h1>FinanceApp'e Hoş Geldin!</h1>

@@ -206,22 +206,42 @@ body.theme-dark .bills-page .btn-add-bill {
   pointer-events: none;
 }
 
-.bills-sort-wrapper {
+/* Toolbar'ın sağ yarısı: Sort + Add New Bill yanyana */
+.bills-toolbar-right {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--muted);
+  gap: 12px;
+  flex-wrap: wrap;
 }
-.bills-sort-wrapper select {
-  padding: 8px 12px;
-  border-radius: 8px;
+
+/* Sort dropdown'ı artık ortak CustomDropdown component'i ile render
+   ediliyor; bills-toolbar-right içinde Add butonu ile yan yana sığması
+   için genişliği bills.toolbar boyutlarıyla orantılı tutuyoruz. */
+.bills-toolbar-right .dropdown-container {
+  width: 200px;
+}
+
+/* BillForm içindeki dropdown'lar (Due Day + Category) form'un diğer
+   input/select'leriyle aynı geometriyi izlemeli — tam genişlik, aynı
+   yükseklik, aynı border-radius. CustomDropdown'ın varsayılan stilini
+   sadece bu form scope'unda override ediyoruz. */
+.add-bill-form .dropdown-container {
+  width: 100%;
+}
+
+.add-bill-form .dropdown-selected {
+  padding: 10px 14px;
+  border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--card);
   color: var(--text);
-  font-size: 13px;
-  cursor: pointer;
-  outline: none;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.add-bill-form .dropdown-selected:focus,
+.add-bill-form .dropdown-selected:hover {
+  border-color: var(--primary);
 }
 
 /* Table Header */

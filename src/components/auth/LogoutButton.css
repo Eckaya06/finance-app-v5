@@ -1,0 +1,127 @@
+/* LanguageSwitcher'ın solunda konumlanır. Switcher genişliği ~95px,
+   16px üst boşluk, 20px sağ kenarda — yani logout butonu sağdan
+   ~135px civarında başlar (switcher + 20px gap). */
+.logout-fab {
+  position: fixed;
+  top: 16px;
+  right: 135px;
+  z-index: 9999;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.85);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  color: #6b7280;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  font-family: inherit;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.12s ease;
+}
+
+.logout-fab:hover:not(:disabled) {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: rgba(185, 28, 28, 0.18);
+}
+
+.logout-fab:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.logout-fab:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.logout-fab:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.logout-fab-label {
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .logout-fab {
+    top: 10px;
+    right: 95px;
+    padding: 5px 10px;
+    font-size: 0.72rem;
+  }
+}
+
+/* ── Logout onay modalı içeriği ── */
+.logout-confirm {
+  text-align: left;
+  padding: 6px 4px 0;
+}
+
+.logout-confirm-title {
+  margin: 0 0 12px;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.logout-confirm-message {
+  margin: 0 0 28px;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.logout-confirm-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.logout-confirm-btn {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.1s ease;
+}
+
+.logout-confirm-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.logout-confirm-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.logout-confirm-btn-danger {
+  background: #c95e5b;
+  color: #fff;
+  border: none;
+}
+
+.logout-confirm-btn-danger:hover:not(:disabled) {
+  background: #b8514e;
+}
+
+.logout-confirm-btn-cancel {
+  background: var(--card);
+  color: #4b5563;
+  border: 1px solid #d1d5db;
+}
+
+.logout-confirm-btn-cancel:hover:not(:disabled) {
+  background: #f3f4f6;
+  color: #374151;
+}
