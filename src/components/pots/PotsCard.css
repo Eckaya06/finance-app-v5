@@ -5,6 +5,15 @@
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   border: 1px solid #e2e8f0;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.pots-card {
+  align-self: stretch;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .card-header {
@@ -29,26 +38,30 @@
 .pots-content {
   display: flex;
   gap: 2rem;
+  align-items: flex-start;
 }
 
 .total-saved-section {
-  background-color: #f8fafc;
-  padding: 1.5rem;
-  border-radius: 10px;
-  text-align: center;
-  flex-shrink: 0; /* Küçülmesini engelle */
-}
-
-.total-saved-icon {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background-color: #e0e7ff;
-  color: #4f46e5;
+  background-color: #f8f4f0;
+  padding: 1.25rem 1.5rem;
+  border-radius: 12px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin: 0 auto 1rem auto;
+  gap: 1rem;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.total-saved-jar-icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+}
+
+.total-saved-text {
+  flex: 1;
+  text-align: center;
+  min-width: 0;
 }
 
 .total-saved-label {
@@ -60,7 +73,8 @@
 .total-saved-amount {
   margin: 0.25rem 0 0 0;
   font-size: 1.75rem;
-  font-weight: 600;
+  font-weight: 700;
+  color: #1e293b;
 }
 
 .pots-list {
@@ -105,4 +119,28 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+}
+
+.pots-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #94a3b8;
+  font-size: 0.95rem;
+  gap: 1rem;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.pots-empty-state-img {
+  width: 260px;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  mix-blend-mode: multiply;
 }

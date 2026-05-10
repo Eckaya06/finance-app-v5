@@ -5,15 +5,22 @@ import User from '../models/User.js';
 import { sendEmail } from '../utils/sendEmail.js'; // utils klasörüne eklediğimiz yardımcı fonksiyon
 
 const createToken = (user) => {
-  return jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, {
-    expiresIn: '7d',
-  });
+  return jwt.sign(
+    { id: user._id, email: user.email, displayName: user.displayName },
+    process.env.JWT_SECRET,
+    { expiresIn: '7d' }
+  );
 };
 
 export const signup = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, displayName } = req.body;
   if (!email || !password || password.length < 6) {
     return res.status(400).json({ message: 'Email and password are required. Password must be at least 6 characters.' });
+  }
+
+  const trimmedDisplayName = typeof displayName === 'string' ? displayName.trim() : '';
+  if (!trimmedDisplayName) {
+    return res.status(400).json({ message: 'Display name is required.' });
   }
 
   const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
@@ -22,16 +29,17 @@ export const signup = async (req, res) => {
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
-  
+
   // 1. Doğrulama için benzersiz token oluştur
   const verificationToken = crypto.randomBytes(20).toString('hex');
   console.log('✅ Verification token oluşturuldu:', verificationToken);
 
   // 2. Kullanıcıyı oluştur (isVerified varsayılan olarak false kaydedilmeli)
-  const user = await User.create({ 
-    email: email.toLowerCase().trim(), 
+  const user = await User.create({
+    email: email.toLowerCase().trim(),
+    displayName: trimmedDisplayName,
     passwordHash,
-    verificationToken 
+    verificationToken
   });
   console.log('✅ User DB\'ye kaydedildi:', { email: user.email, token: user.verificationToken });
 
@@ -60,9 +68,9 @@ export const signup = async (req, res) => {
     // Production'da kullanıcıyı silmeliyiz ama şimdi test yapıyoruz
   }
 
-  res.status(201).json({ 
+  res.status(201).json({
     message: 'Kayıt başarılı. E-posta adresiniz doğrulandı. Giriş yapabilirsiniz.',
-    user: { uid: user._id.toString(), email: user.email },
+    user: { uid: user._id.toString(), email: user.email, displayName: user.displayName },
     token: createToken(user)
   });
 };
@@ -89,7 +97,10 @@ export const login = async (req, res) => {
   }
 
   const token = createToken(user);
-  res.json({ user: { uid: user._id.toString(), email: user.email }, token });
+  res.json({
+    user: { uid: user._id.toString(), email: user.email, displayName: user.displayName },
+    token,
+  });
 };
 
 // YENİ: E-posta Doğrulama İşlemi
@@ -136,7 +147,15 @@ export const me = async (req, res) => {
   if (!req.user) {
     return res.status(401).json({ message: 'Unauthorized' });
   }
-  res.json({ user: { uid: req.user.uid, email: req.user.email } });
+
+  // displayName eski tokenlarda olmayabilir; bu durumda DB'den çekiyoruz.
+  let displayName = req.user.displayName;
+  if (!displayName) {
+    const dbUser = await User.findById(req.user.uid).select('displayName');
+    displayName = dbUser?.displayName || '';
+  }
+
+  res.json({ user: { uid: req.user.uid, email: req.user.email, displayName } });
 };
 
 export const logout = async (req, res) => {
@@ -167,7 +186,10 @@ export const changeEmail = async (req, res) => {
   user.email = newEmail.toLowerCase().trim();
   await user.save();
 
-  res.json({ message: 'Email updated successfully.', user: { uid: user._id.toString(), email: user.email } });
+  res.json({
+    message: 'Email updated successfully.',
+    user: { uid: user._id.toString(), email: user.email, displayName: user.displayName },
+  });
 };
 
 export const changePassword = async (req, res) => {

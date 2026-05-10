@@ -48,8 +48,8 @@
 
 /* Aktif sayfa butonu için özel stil */
 .page-number.active {
-  background-color: #1e293b; /* Koyu renk */
+  background-color: #201F24; /* Koyu renk */
   color: white;
-  border-color: #1e293b;
+  border-color: #201F24;
   font-weight: 600;
 }

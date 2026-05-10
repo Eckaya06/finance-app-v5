@@ -1,36 +1,38 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import logoImg from '../../assets/Logo.webp';
 
 const Login = () => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(''); 
-  const [loading, setLoading] = useState(false); 
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-  const { login } = useAuth(); 
+  const { login } = useAuth();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setError(''); 
+    setError('');
 
     if (!email || !password) {
-      setError("Please fill in the blanks");
+      setError(t('auth.login.errors.fillBlanks'));
       return;
     }
 
     try {
       setLoading(true);
       await login(email, password);
-      navigate('/home'); 
+      navigate('/home');
     } catch (error) {
       console.error("Login error:", error);
       if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-        setError('Invalid email or password. Please try again.');
+        setError(t('auth.login.errors.invalidCredentials'));
       } else {
-        setError('Failed to log in. Please check your connection.');
+        setError(t('auth.login.errors.failedLogin'));
       }
     } finally {
       setLoading(false);
@@ -45,50 +47,47 @@ const Login = () => {
           <div className='background-hero'></div>
           <div className='text-content'>
             <h1>
-              <span>Keep track of your money</span>
-              <span>and save for your future</span>
+              <span>{t('auth.login.heroTitle1')}</span>
+              <span>{t('auth.login.heroTitle2')}</span>
             </h1>
-            <p>
-              Personal finance app that helps you track transactions, set budgets,
-              and grow your savings.
-            </p>
+            <p>{t('auth.login.heroDescription')}</p>
           </div>
         </div>
-      
+
         <form onSubmit={handleSubmit} className="auth-card">
-          <h2>Login</h2>
+          <h2>{t('auth.login.title')}</h2>
 
           {error && <div style={{ color: '#e74c3c', marginBottom: '15px', fontSize: '14px', textAlign: 'center' }}>{error}</div>}
 
           <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input 
+            <label htmlFor="email">{t('auth.login.email')}</label>
+            <input
               type="email"
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
-              autoComplete="email" // ✅ EKLENDİ
+              autoComplete="email"
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input 
+            <label htmlFor="password">{t('auth.login.password')}</label>
+            <input
               type="password"
-              id="password" 
+              id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
-              autoComplete="current-password" // ✅ EKLENDİ
+              autoComplete="current-password"
             />
           </div>
 
           <button type="submit" className="primary" disabled={loading}>
-            {loading ? "Logging in..." : "Login"}
+            {loading ? t('auth.login.loggingIn') : t('auth.login.title')}
           </button>
-          
-          <p className="small">Don't you have an account? <Link to="/signup">Sign up</Link></p>
+
+          <p className="small">{t('auth.login.noAccount')} <Link to="/signup">{t('auth.login.signupLink')}</Link></p>
         </form>
       </div>
     </div>

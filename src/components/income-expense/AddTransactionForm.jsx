@@ -1,15 +1,17 @@
-// src/components/income-expense/AddTransactionForm.jsx
 import { useState, useRef, useEffect } from 'react';
 import { FiChevronDown } from 'react-icons/fi';
+import { useTranslation } from 'react-i18next';
 
 const AddTransactionForm = ({ onAdd, onClose }) => {
+  const { t } = useTranslation();
   const [type, setType] = useState('expense');
   const [formData, setFormData] = useState({
     name: '',
-    category: '', // Başlangıçta boş (Placeholder görünür)
+    category: '',
     amount: '',
     date: new Date().toISOString().split('T')[0]
   });
+  const [error, setError] = useState('');
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -38,20 +40,20 @@ const AddTransactionForm = ({ onAdd, onClose }) => {
   }, []);
 
   const handleCategorySelect = (category) => {
-    // Eğer "Select Category" seçilirse değeri boşalt (Reset)
-    if (category === 'Select Category') {
+    if (category === '__reset__') {
       setFormData({ ...formData, category: '' });
     } else {
       setFormData({ ...formData, category });
     }
     setIsDropdownOpen(false);
+    setError('');
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.category && type === 'expense') {
-        alert("Please select a category");
-        return;
+      setError(t('addTxForm.errorCategory'));
+      return;
     }
 
     onAdd({
@@ -63,61 +65,65 @@ const AddTransactionForm = ({ onAdd, onClose }) => {
     onClose();
   };
 
+  const translateCategory = (cat) => t(`categories.${cat}`, { defaultValue: cat });
+
   return (
     <div className="add-transaction-form">
-      <h2>Add New Transaction</h2>
-      <p>Fill in the details to log your {type === 'expense' ? 'spending' : 'earnings'}.</p>
-      
+      <h2>{t('addTxForm.title')}</h2>
+      <p>{type === 'expense' ? t('addTxForm.subtitleExpense') : t('addTxForm.subtitleIncome')}</p>
+
       <div className="ie-type-selector">
-        <button 
-          className={type === 'expense' ? 'active expense' : ''} 
+        <button
+          className={type === 'expense' ? 'active expense' : ''}
           type="button"
-          onClick={() => { setType('expense'); setFormData({...formData, category: ''}); }}
-        >Expense</button>
-        <button 
-          className={type === 'income' ? 'active income' : ''} 
+          onClick={() => { setType('expense'); setFormData({ ...formData, category: '' }); }}
+        >{t('addTxForm.expense')}</button>
+        <button
+          className={type === 'income' ? 'active income' : ''}
           type="button"
-          onClick={() => { setType('income'); setFormData({...formData, category: 'Income'}); }}
-        >Income</button>
+          onClick={() => { setType('income'); setFormData({ ...formData, category: 'Income' }); setError(''); }}
+        >{t('addTxForm.income')}</button>
       </div>
+
+      {error && (
+        <div style={{ padding: '12px 16px', background: 'rgba(220, 38, 38, 0.1)', color: '#dc2626', borderRadius: '8px', fontSize: '13px', fontWeight: '500', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span>⚠️</span> {error}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label>Category</label>
-          
+          <label>{t('addTxForm.category')}</label>
+
           {type === 'income' ? (
-            <div className="read-only-input">Salary / Income</div>
+            <div className="read-only-input">{t('addTxForm.salaryIncome')}</div>
           ) : (
             <div className="custom-dropdown-container" ref={dropdownRef}>
-              <button 
-                type="button" 
-                // Kategori boşsa 'placeholder', doluysa normal stil uygulayacağız (CSS'te tanımlayacağız)
+              <button
+                type="button"
                 className={`dropdown-trigger ${isDropdownOpen ? 'open' : ''} ${!formData.category ? 'placeholder-mode' : ''}`}
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               >
-                {/* Kategori varsa onu yaz, yoksa 'Select Category' yaz */}
-                <span>{formData.category || 'Select Category'}</span>
+                <span>{formData.category ? translateCategory(formData.category) : t('addTxForm.selectCategory')}</span>
                 <FiChevronDown className="dropdown-arrow" />
               </button>
 
               {isDropdownOpen && (
                 <ul className="dropdown-menu">
-                  {/* 1. EN BAŞA 'Select Category' SEÇENEĞİNİ EKLİYORUZ */}
-                  <li 
+                  <li
                     className={`dropdown-item ${formData.category === '' ? 'selected' : ''}`}
-                    onClick={() => handleCategorySelect('Select Category')}
+                    onClick={() => handleCategorySelect('__reset__')}
                   >
-                    Select Category
+                    {t('addTxForm.selectCategory')}
                   </li>
 
-                  {/* Diğer kategoriler */}
                   {expenseCategories.map((cat) => (
-                    <li 
-                      key={cat} 
+                    <li
+                      key={cat}
                       className={`dropdown-item ${formData.category === cat ? 'selected' : ''}`}
                       onClick={() => handleCategorySelect(cat)}
                     >
-                      {cat}
+                      {translateCategory(cat)}
                     </li>
                   ))}
                 </ul>
@@ -127,40 +133,40 @@ const AddTransactionForm = ({ onAdd, onClose }) => {
         </div>
 
         <div className="form-group">
-          <label>{type === 'expense' ? 'Paid to' : 'Received from'}</label>
-          <input 
-            type="text" 
-            placeholder={type === 'expense' ? "e.g. Burger King" : "e.g. Company Name"}
-            value={formData.name} 
-            onChange={(e) => setFormData({...formData, name: e.target.value})}
+          <label>{type === 'expense' ? t('addTxForm.paidTo') : t('addTxForm.receivedFrom')}</label>
+          <input
+            type="text"
+            placeholder={type === 'expense' ? t('addTxForm.paidToPh') : t('addTxForm.receivedFromPh')}
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
           />
         </div>
 
         <div className="form-group">
-          <label>Amount</label>
-          <input 
-            type="number" 
+          <label>{t('addTxForm.amount')}</label>
+          <input
+            type="number"
             step="0.01"
-            placeholder="$ 0.00"
-            value={formData.amount} 
-            onChange={(e) => setFormData({...formData, amount: e.target.value})}
+            placeholder="₺ 0.00"
+            value={formData.amount}
+            onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
             required
           />
         </div>
 
         <div className="form-group">
-          <label>Date</label>
-          <input 
+          <label>{t('addTxForm.date')}</label>
+          <input
             type="date"
-            value={formData.date} 
-            onChange={(e) => setFormData({...formData, date: e.target.value})}
+            value={formData.date}
+            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
             required
           />
         </div>
 
         <button type="submit" className={`btn-primary full-width ${type}`}>
-          Add {type === 'expense' ? 'Expense' : 'Income'}
+          {type === 'expense' ? t('addTxForm.addExpense') : t('addTxForm.addIncome')}
         </button>
       </form>
     </div>

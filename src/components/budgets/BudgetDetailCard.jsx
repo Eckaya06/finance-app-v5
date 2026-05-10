@@ -1,24 +1,26 @@
 import { FiMoreHorizontal } from 'react-icons/fi';
 import './BudgetDetailCard.css';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import BudgetOptionsMenu from './BudgetOptionsMenu.jsx';
 
-// ✅ YENİ: isMenuOpen ve onOptionsToggle prop'ları eklendi. useState(isMenuOpen) kaldırıldı.
 const BudgetDetailCard = ({ budget, onEditRequest, onDeleteRequest, isMenuOpen, onOptionsToggle }) => {
-  const spent = Number(budget.spent || 0); 
+  const { t, i18n } = useTranslation();
+  const spent = Number(budget.spent || 0);
   const limitNum = Number(budget.limit || budget.maxSpend || 0);
   const remaining = limitNum - spent;
-  
+
   const latestTransactions = budget.latestSpending || [];
-  
+
   const spentPercentage = limitNum > 0 ? (spent / limitNum) * 100 : 0;
   const remainingPercentage = limitNum > 0 ? Math.max(0, (remaining / limitNum) * 100) : 0;
 
   const theme = themeOptions.find(t => t.value === budget.theme) || themeOptions[0];
 
-  const creationDate = budget.createdAt 
-    ? new Date(budget.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
-    : 'Unknown';
+  const dateLocale = i18n.resolvedLanguage?.toLowerCase().startsWith('tr') ? 'tr-TR' : 'en-GB';
+  const creationDate = budget.createdAt
+    ? new Date(budget.createdAt).toLocaleDateString(dateLocale, { day: 'numeric', month: 'long', year: 'numeric' })
+    : t('common.unknown');
 
   return (
     <div className="budget-detail-card" style={{ position: 'relative' }}>
@@ -26,8 +28,8 @@ const BudgetDetailCard = ({ budget, onEditRequest, onDeleteRequest, isMenuOpen, 
         <div className="theme-option-display" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span className="theme-color-swatch" style={{ backgroundColor: theme.color, width: '12px', height: '12px', borderRadius: '50%' }}></span>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <h3 style={{ margin: 0, fontSize: '1.05rem' }}>{budget.category}</h3>
-            <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>Created: {creationDate}</span>
+            <h3 style={{ margin: 0, fontSize: '1.05rem' }}>{t(`categories.${budget.category}`, { defaultValue: budget.category })}</h3>
+            <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>{t('common.createdAt')}: {creationDate}</span>
           </div>
         </div>
         
@@ -44,7 +46,7 @@ const BudgetDetailCard = ({ budget, onEditRequest, onDeleteRequest, isMenuOpen, 
         />
       )}
 
-      <p className="budget-limit-text">Maximum of ${limitNum.toFixed(2)}</p>
+      <p className="budget-limit-text">{t('budgetDetailCard.maxSpend', { limit: limitNum.toFixed(2) })}</p>
       
       <div className="progress-bar-container" style={{ background: '#f8fafc', padding: '3px', height: '12px', marginTop: '5px' }}>
         <div 
@@ -58,37 +60,37 @@ const BudgetDetailCard = ({ budget, onEditRequest, onDeleteRequest, isMenuOpen, 
       </div>
       
       <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px', textAlign: 'right', fontWeight: '700' }}>
-        {spentPercentage.toFixed(1)}% spent
+        {t('budgetDetailCard.spentPercent', { percent: spentPercentage.toFixed(1) })}
       </div>
 
       <div className="budget-spend-summary">
         <div className="summary-item">
-          <span className="summary-label">Spent</span>
-          <span className="summary-value">${spent.toFixed(2)}</span>
+          <span className="summary-label">{t('budgetDetailCard.spent')}</span>
+          <span className="summary-value">₺{spent.toFixed(2)}</span>
         </div>
         <div className="summary-item">
-          <span className="summary-label">Remaining</span>
+          <span className="summary-label">{t('budgetDetailCard.remaining')}</span>
           <span className={`summary-value ${remaining < 0 ? 'negative' : ''}`}>
-            ${remaining.toFixed(2)}
+            ₺{remaining.toFixed(2)}
           </span>
         </div>
       </div>
 
       <div className="latest-spending">
         <div className="latest-spending-header">
-          <h4>Latest Spending</h4>
-          <Link 
-            to={`/transactions?category=${encodeURIComponent(budget.category)}&since=${budget.createdAt || 0}`} 
+          <h4>{t('budgetDetailCard.latestSpending')}</h4>
+          <Link
+            to={`/transactions?category=${encodeURIComponent(budget.category)}&since=${budget.createdAt || 0}`}
             className="see-all-link"
           >
-            See All ▸
+            {t('common.seeAll')}
           </Link>
         </div>
-        
+
         <div className="latest-spending-list">
           {latestTransactions.length === 0 ? (
             <div className="latest-empty" style={{ fontStyle: 'italic', fontSize: '0.8rem', color: '#94a3b8' }}>
-              No spending yet since creation.
+              {t('budgetDetailCard.noSpending')}
             </div>
           ) : (
             latestTransactions.map((tx) => (
@@ -97,7 +99,7 @@ const BudgetDetailCard = ({ budget, onEditRequest, onDeleteRequest, isMenuOpen, 
                   <span className="latest-name">{tx.title || tx.name}</span>
                   <span className="latest-date">{tx.date}</span>
                 </div>
-                <span className="latest-amount">-${Math.abs(Number(tx.amount)).toFixed(2)}</span>
+                <span className="latest-amount">-₺{Math.abs(Number(tx.amount)).toFixed(2)}</span>
               </div>
             ))
           )}

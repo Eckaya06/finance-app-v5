@@ -1,0 +1,275 @@
+/* src/components/chatbot/AIChartModal.css
+   AGENTIC UI: AI tarafından tetiklenen dinamik grafik modalı.
+   Vanilla CSS — Tailwind / Bootstrap KULLANILMADI.
+   z-index: FAB (99999) altında, sayfa içeriği (~1-1000) üstünde tutuluyor.
+*/
+
+.ai-chart-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  z-index: 50000; /* FAB(99999) altında, sayfa üstünde */
+  animation: ai-chart-modal-fade 0.18s ease-out;
+}
+
+.ai-chart-modal {
+  width: 100%;
+  max-width: 720px;
+  max-height: calc(100vh - 3rem);
+  background-color: #ffffff;
+  border-radius: 20px;
+  box-shadow:
+    0 25px 50px -12px rgba(15, 23, 42, 0.35),
+    0 10px 25px -10px rgba(15, 23, 42, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  animation: ai-chart-modal-pop 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+/* Header */
+.ai-chart-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 20px 24px 12px 24px;
+  border-bottom: 1px solid #f1f3f6;
+}
+
+.ai-chart-modal-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #201F24;
+  letter-spacing: -0.01em;
+}
+
+.ai-chart-modal-subtitle {
+  margin: 4px 0 0 0;
+  font-size: 0.85rem;
+  color: #696e79;
+}
+
+.ai-chart-modal-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background-color: #f4f6f9;
+  color: #201F24;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.ai-chart-modal-close:hover {
+  background-color: #e7eaf0;
+  transform: rotate(90deg);
+}
+
+.ai-chart-modal-close:focus-visible {
+  outline: 2px solid #277C78;
+  outline-offset: 2px;
+}
+
+/* Body */
+.ai-chart-modal-body {
+  padding: 16px 24px 8px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.ai-chart-modal-summary {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #f7f9fb 0%, #eef3f7 100%);
+  border-radius: 14px;
+  margin-bottom: 16px;
+}
+
+.ai-chart-modal-summary-label {
+  font-size: 0.8rem;
+  color: #696e79;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+
+.ai-chart-modal-summary-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #201F24;
+}
+
+.ai-chart-modal-chart {
+  width: 100%;
+  height: 280px;
+}
+
+.ai-chart-modal-legend {
+  list-style: none;
+  margin: 16px 0 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px 16px;
+}
+
+.ai-chart-modal-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background-color: #fafbfc;
+  border: 1px solid #f1f3f6;
+  font-size: 0.85rem;
+}
+
+.ai-chart-modal-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ai-chart-modal-legend-name {
+  color: #201F24;
+  font-weight: 500;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ai-chart-modal-legend-value {
+  color: #696e79;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Empty state */
+.ai-chart-modal-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 48px 16px;
+  color: #696e79;
+}
+
+.ai-chart-modal-empty-icon {
+  font-size: 2.25rem;
+  margin-bottom: 12px;
+}
+
+.ai-chart-modal-empty p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #201F24;
+  font-weight: 500;
+}
+
+.ai-chart-modal-empty-hint {
+  margin-top: 6px;
+  font-size: 0.825rem;
+  color: #8a8f99;
+}
+
+/* Footer */
+.ai-chart-modal-footer {
+  padding: 12px 24px 20px 24px;
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid #f1f3f6;
+}
+
+.ai-chart-modal-action {
+  background-color: #201F24;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.ai-chart-modal-action:hover {
+  background-color: #334155;
+}
+
+.ai-chart-modal-action:active {
+  transform: translateY(1px);
+}
+
+.ai-chart-modal-action:focus-visible {
+  outline: 2px solid #277C78;
+  outline-offset: 2px;
+}
+
+/* Animations */
+@keyframes ai-chart-modal-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes ai-chart-modal-pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Mobil uyum */
+@media (max-width: 640px) {
+  .ai-chart-modal-overlay {
+    padding: 0.75rem;
+  }
+
+  .ai-chart-modal {
+    max-height: calc(100vh - 1.5rem);
+    border-radius: 16px;
+  }
+
+  .ai-chart-modal-header {
+    padding: 16px 16px 10px 16px;
+  }
+
+  .ai-chart-modal-body {
+    padding: 12px 16px 4px 16px;
+  }
+
+  .ai-chart-modal-footer {
+    padding: 10px 16px 16px 16px;
+  }
+
+  .ai-chart-modal-chart {
+    height: 220px;
+  }
+
+  .ai-chart-modal-legend {
+    grid-template-columns: 1fr;
+  }
+}

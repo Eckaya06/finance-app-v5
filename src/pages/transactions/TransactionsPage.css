@@ -8,8 +8,8 @@
 .page-title { 
   font-size: 2.25rem; 
   font-weight: 700; 
-  color: #1e293b; 
-  margin: 0 0 1.5rem 0; 
+  color: #201F24;
+  margin: 0 0 1.5rem 0;
 }
 
 /* --- Filtreleme Alanı --- */
@@ -80,8 +80,8 @@
   display: flex; 
   align-items: center; 
   gap: 1rem; 
-  color: #1e293b; 
-  font-weight: 600; 
+  color: #201F24;
+  font-weight: 600;
 }
 
 /* Avatar Yuvarlağı */
@@ -109,6 +109,37 @@
 
 .transaction-amount.income { color: #16a34a; }
 .transaction-amount.expense { color: #334155; }
+
+/* Category pill + color dot */
+.category-cell {
+  display: flex;
+  align-items: center;
+}
+
+.category-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #334155;
+  font-weight: 600;
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.category-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: 0 0 10px;
+}
+
+.category-text {
+  white-space: nowrap;
+}
 
 /* --- Pagination (Sayfalama) --- */
 .transaction-table .pagination-container {

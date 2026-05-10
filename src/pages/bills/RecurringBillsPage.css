@@ -1,0 +1,641 @@
+/* ===== RECURRING BILLS PAGE ===== */
+
+.bills-page {
+  padding: 0 0 40px;
+}
+
+.bills-page .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.bills-page .page-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.bills-page .btn-add-bill {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  background: var(--primary);
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+body.theme-dark .bills-page .btn-add-bill {
+  color: #0f1115;
+}
+.bills-page .btn-add-bill:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,.15);
+}
+
+/* ===== TOP GRID: Summary + List ===== */
+.bills-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .bills-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== LEFT SIDEBAR: Total + Summary ===== */
+.bills-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: sticky;
+  top: 24px;
+}
+
+/* Total Bills Card */
+.bills-total-card {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  border-radius: 14px;
+  padding: 28px 24px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  box-shadow: 0 8px 28px rgba(15, 52, 96, .35);
+}
+
+.bills-total-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.bills-total-icon svg {
+  width: 24px;
+  height: 24px;
+  stroke: #fff;
+}
+
+.bills-total-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.bills-total-label {
+  font-size: 13px;
+  opacity: .7;
+  font-weight: 500;
+}
+.bills-total-amount {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -.5px;
+}
+
+/* Summary Card */
+.bills-summary-card {
+  background: var(--card);
+  border-radius: 14px;
+  padding: 24px;
+  border: 1px solid var(--border);
+}
+
+.bills-summary-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 16px;
+  color: var(--text);
+}
+
+.bills-summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.bills-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.bills-summary-row:last-child {
+  border-bottom: none;
+}
+
+.summary-label {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.summary-value {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.summary-value.paid {
+  color: #22c55e;
+}
+.summary-value.upcoming {
+  color: #eab308;
+}
+.summary-value.overdue {
+  color: #ef4444;
+}
+
+/* ===== RIGHT: Bills List ===== */
+/* overflow must stay visible so the row-action dropdown isn't clipped on the
+   last visible row (where it would extend beyond the section's rounded edge). */
+.bills-list-section {
+  background: var(--card);
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  overflow: visible;
+}
+
+/* Toolbar */
+.bills-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.bills-search {
+  position: relative;
+  flex: 1;
+  max-width: 280px;
+}
+.bills-search input {
+  width: 100%;
+  padding: 9px 14px 9px 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+  transition: border-color .2s;
+}
+.bills-search input:focus {
+  border-color: var(--primary);
+}
+.bills-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.bills-sort-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.bills-sort-wrapper select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+}
+
+/* Table Header */
+.bills-table-header {
+  display: grid;
+  grid-template-columns: 1fr 140px 120px 100px;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--muted);
+}
+
+@media (max-width: 700px) {
+  .bills-table-header {
+    display: none;
+  }
+}
+
+/* Bill Row */
+.bill-row {
+  display: grid;
+  grid-template-columns: 1fr 140px 120px 100px;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  transition: background .15s ease;
+}
+.bill-row:last-child {
+  border-bottom: none;
+}
+.bill-row:hover {
+  background: rgba(0,0,0,.02);
+}
+body.theme-dark .bill-row:hover {
+  background: rgba(255,255,255,.03);
+}
+
+@media (max-width: 700px) {
+  .bill-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 16px 20px;
+  }
+}
+
+/* Bill Info */
+.bill-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.bill-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+  color: #fff;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+.bill-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text);
+}
+
+/* Due info */
+.bill-due {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.bill-due-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.bill-due-badge.paid {
+  background: rgba(34, 197, 94, .1);
+  color: #16a34a;
+}
+.bill-due-badge.upcoming {
+  background: rgba(234, 179, 8, .12);
+  color: #ca8a04;
+}
+.bill-due-badge.overdue {
+  background: rgba(239, 68, 68, .1);
+  color: #dc2626;
+}
+.bill-due-badge.due-soon {
+  background: rgba(249, 115, 22, .1);
+  color: #ea580c;
+}
+
+/* Amount */
+.bill-amount {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text);
+}
+.bill-amount.overdue {
+  color: #dc2626;
+}
+
+/* Actions */
+.bill-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-pay {
+  padding: 7px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+
+.btn-pay.pay {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #fff;
+}
+.btn-pay.pay:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(34, 197, 94, .3);
+}
+
+.btn-pay.paid {
+  background: rgba(34, 197, 94, .1);
+  color: #16a34a;
+  cursor: default;
+}
+
+.btn-pay.undo {
+  padding: 6px 10px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 6px;
+  font-size: 11px;
+  cursor: pointer;
+}
+.btn-pay.undo:hover {
+  border-color: var(--muted);
+  color: var(--text);
+}
+
+.bill-options-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s;
+}
+.bill-options-btn:hover {
+  background: rgba(0,0,0,.05);
+}
+body.theme-dark .bill-options-btn:hover {
+  background: rgba(255,255,255,.08);
+}
+
+/* Options Dropdown */
+.bill-options-dropdown {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  padding: 6px;
+  z-index: 50;
+  min-width: 140px;
+}
+
+.bill-options-dropdown button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background .1s;
+}
+.bill-options-dropdown button:hover {
+  background: rgba(0,0,0,.04);
+}
+body.theme-dark .bill-options-dropdown button:hover {
+  background: rgba(255,255,255,.06);
+}
+.bill-options-dropdown button.delete-btn {
+  color: #ef4444;
+}
+
+/* ===== ADD BILL FORM ===== */
+.add-bill-form {
+  padding: 8px 0;
+}
+
+.add-bill-form h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 6px;
+  color: var(--text);
+}
+
+.add-bill-form .form-subtitle {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0 0 24px;
+}
+
+.add-bill-form .form-group {
+  margin-bottom: 16px;
+}
+
+.add-bill-form label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.add-bill-form input,
+.add-bill-form select {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+}
+.add-bill-form input:focus,
+.add-bill-form select:focus {
+  border-color: var(--primary);
+}
+
+.add-bill-form .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.add-bill-form .color-picker-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.color-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all .15s;
+}
+.color-dot:hover {
+  transform: scale(1.15);
+}
+.color-dot.active {
+  border-color: var(--text);
+  box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--text);
+}
+
+.add-bill-form .btn-submit {
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  border: none;
+  border-radius: 10px;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all .2s;
+}
+body.theme-dark .add-bill-form .btn-submit {
+  color: #0f1115;
+}
+.add-bill-form .btn-submit:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,.15);
+}
+
+/* ===== EMPTY STATE ===== */
+.bills-empty {
+  text-align: center;
+  padding: 60px 24px;
+}
+
+.bills-empty-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(99,106,232,.1), rgba(99,106,232,.05));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+.bills-empty-icon svg {
+  width: 32px;
+  height: 32px;
+  color: #636ae8;
+}
+
+.bills-empty h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 8px;
+  color: var(--text);
+}
+
+.bills-empty p {
+  font-size: 14px;
+  color: var(--muted);
+  max-width: 340px;
+  margin: 0 auto 20px;
+  line-height: 1.5;
+}
+
+.bills-empty .btn-empty-add {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 10px;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all .2s;
+}
+body.theme-dark .bills-empty .btn-empty-add {
+  color: #0f1115;
+}
+
+/* Days left countdown */
+.days-left {
+  font-size: 12px;
+  font-weight: 600;
+}
+.days-left.green { color: #16a34a; }
+.days-left.yellow { color: #ca8a04; }
+.days-left.orange { color: #ea580c; }
+.days-left.red { color: #dc2626; }
+
+/* Paid row style */
+.bill-row.is-paid {
+  opacity: .65;
+}
+.bill-row.is-paid .bill-name {
+  text-decoration: line-through;
+  text-decoration-color: rgba(0,0,0,.2);
+}
+body.theme-dark .bill-row.is-paid .bill-name {
+  text-decoration-color: rgba(255,255,255,.2);
+}
+
+/* Loading skeleton */
+.bills-skeleton {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.skeleton-row {
+  height: 56px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, var(--border) 25%, transparent 50%, var(--border) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Relative wrapper for dropdown */
+.bill-actions-wrapper {
+  position: relative;
+}

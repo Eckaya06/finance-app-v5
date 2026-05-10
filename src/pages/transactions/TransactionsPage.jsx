@@ -1,32 +1,25 @@
 import { useState, useMemo, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom'; 
+import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useTransactions } from '../../context/TransactionContext.jsx';
 import CustomDropdown from '../../components/dropdown/CustomDropdown.jsx';
 import SearchInput from '../../components/search/SearchInput.jsx';
 import Pagination from '../../components/pagination/Pagination.jsx';
 import { getCategoryTheme } from '../../utils/categoryIcons.jsx';
+import { getCategoryColor } from '../../utils/categoryColors.js';
 import './TransactionsPage.css';
 
 const categoryOptions = [
-  "All", "Entertainment", "Bills", "Groceries", "Dining Out", "Transportation", 
+  "All", "Entertainment", "Bills", "Groceries", "Dining Out", "Transportation",
   "Personal Care", "Education", "Lifestyle", "Shopping", "General", "Income"
 ];
 
-const sortOptions = [
-  { value: 'latest', label: 'Latest' },
-  { value: 'oldest', label: 'Oldest' },
-  { value: 'highest', label: 'Highest' },
-  { value: 'lowest', label: 'Lowest' },
-  { value: 'a-z', label: 'A to Z' },
-  { value: 'z-a', label: 'Z to A' },
-];
-
 const TransactionsPage = () => {
-  const { transactions, budgets } = useTransactions(); 
-  const [searchParams] = useSearchParams(); 
+  const { t } = useTranslation();
+  const { transactions, budgets } = useTransactions();
+  const [searchParams] = useSearchParams();
   const urlCategory = searchParams.get('category');
-  // ✅ URL'den 'since' (şu tarihten itibaren) parametresini de yakalıyoruz
-  const urlSince = searchParams.get('since'); 
+  const urlSince = searchParams.get('since');
 
   const [sortType, setSortType] = useState('latest');
   const [filterCategory, setFilterCategory] = useState(urlCategory || 'All');
@@ -34,6 +27,15 @@ const TransactionsPage = () => {
   const [itemsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
   const [openDropdown, setOpenDropdown] = useState(null);
+
+  const sortOptions = [
+    { value: 'latest', label: t('transactions.sortOptions.latest') },
+    { value: 'oldest', label: t('transactions.sortOptions.oldest') },
+    { value: 'highest', label: t('transactions.sortOptions.highest') },
+    { value: 'lowest', label: t('transactions.sortOptions.lowest') },
+    { value: 'a-z', label: t('transactions.sortOptions.az') },
+    { value: 'z-a', label: t('transactions.sortOptions.za') },
+  ];
 
   useEffect(() => {
     if (urlCategory && categoryOptions.includes(urlCategory)) {
@@ -51,55 +53,50 @@ const TransactionsPage = () => {
     if (searchTerm) {
       result = result.filter(tx => tx.name.toLowerCase().includes(searchTerm.toLowerCase()));
     }
-    
+
     if (filterCategory !== 'All') {
-      // ✅ KRİTİK DÜZELTME: Firebase ID'si metin olduğu için Number(tx.id) kullanılamaz.
-      // Onun yerine harcamanın 'createdAt' zamanını kullanıyoruz.
       result = result.filter(tx => {
         const isCategoryMatch = tx.category === filterCategory;
-        
+
         let isAfterBudgetCreation = true;
 
-        // 1. Durum: Linkten 'since' parametresi geldiyse (See All tıklandıysa)
         if (urlSince) {
           isAfterBudgetCreation = (tx.createdAt || 0) >= Number(urlSince);
-        } 
-        // 2. Durum: Sayfada normal filtreleme yapılıyorsa ve bütçe varsa
-        else {
+        } else {
           const activeBudget = budgets.find(b => b.category === filterCategory);
           if (activeBudget) {
-             isAfterBudgetCreation = (tx.createdAt || 0) >= (activeBudget.createdAt || 0);
+            isAfterBudgetCreation = (tx.createdAt || 0) >= (activeBudget.createdAt || 0);
           }
         }
-        
+
         return isCategoryMatch && isAfterBudgetCreation;
       });
     }
 
     switch (sortType) {
-      case 'latest': 
-        result.sort((a, b) => (new Date(b.date) - new Date(a.date)) || b.id - a.id); 
+      case 'latest':
+        result.sort((a, b) => ((b.rawDate || 0) - (a.rawDate || 0)) || ((b.createdAt || 0) - (a.createdAt || 0)));
         break;
-      case 'oldest': 
-        result.sort((a, b) => (new Date(a.date) - new Date(b.date)) || a.id - b.id); 
+      case 'oldest':
+        result.sort((a, b) => ((a.rawDate || 0) - (b.rawDate || 0)) || ((a.createdAt || 0) - (b.createdAt || 0)));
         break;
-      case 'highest': 
-        result.sort((a, b) => parseFloat(b.amount) - parseFloat(a.amount)); 
+      case 'highest':
+        result.sort((a, b) => parseFloat(b.amount) - parseFloat(a.amount));
         break;
-      case 'lowest': 
-        result.sort((a, b) => parseFloat(a.amount) - parseFloat(b.amount)); 
+      case 'lowest':
+        result.sort((a, b) => parseFloat(a.amount) - parseFloat(b.amount));
         break;
-      case 'a-z': 
-        result.sort((a, b) => a.name.localeCompare(b.name)); 
+      case 'a-z':
+        result.sort((a, b) => a.name.localeCompare(b.name));
         break;
-      case 'z-a': 
-        result.sort((a, b) => b.name.localeCompare(a.name)); 
+      case 'z-a':
+        result.sort((a, b) => b.name.localeCompare(a.name));
         break;
       default: break;
     }
     return result;
   }, [transactions, budgets, sortType, filterCategory, searchTerm, urlSince]);
-  
+
   useEffect(() => {
     setCurrentPage(1);
   }, [filterCategory, sortType, searchTerm]);
@@ -108,29 +105,39 @@ const TransactionsPage = () => {
   const handlePageChange = (p) => p > 0 && p <= totalPages && setCurrentPage(p);
   const currentItems = filteredAndSortedTransactions.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
+  const translateCategory = (cat) => t(`categories.${cat}`, { defaultValue: cat });
+
   return (
     <div className="page-container">
-      <h1 className="page-title">Transactions</h1>
+      <h1 className="page-title">{t('transactions.title')}</h1>
       <div className="filters-bar">
-        <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder="Search by Recipient / Sender..." />
+        <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder={t('transactions.searchPlaceholder')} />
         <div className="dropdowns">
-          <CustomDropdown 
+          <CustomDropdown
             options={sortOptions.map(opt => opt.value)} selectedValue={sortType} onChange={setSortType}
-            labelPrefix="Sort by" displayTransformer={(v) => sortOptions.find(opt => opt.value === v)?.label || v}
+            labelPrefix={t('transactions.sortBy')} displayTransformer={(v) => sortOptions.find(opt => opt.value === v)?.label || v}
             isOpen={openDropdown === 'sort'} onToggle={() => handleDropdownToggle('sort')}
           />
-          <CustomDropdown 
+          <CustomDropdown
             options={categoryOptions} selectedValue={filterCategory} onChange={setFilterCategory}
-            labelPrefix="Category" isOpen={openDropdown === 'category'} onToggle={() => handleDropdownToggle('category')}
+            labelPrefix={t('transactions.category')}
+            displayTransformer={translateCategory}
+            isOpen={openDropdown === 'category'} onToggle={() => handleDropdownToggle('category')}
           />
         </div>
       </div>
       <div className="transaction-table">
-        <div className="table-header"><p>Recipient / Sender</p><p>Category</p><p>Transaction Date</p><p>Amount</p></div>
+        <div className="table-header">
+          <p>{t('transactions.headers.recipient')}</p>
+          <p>{t('transactions.headers.category')}</p>
+          <p>{t('transactions.headers.date')}</p>
+          <p>{t('transactions.headers.amount')}</p>
+        </div>
         <div className="table-body">
-          {currentItems.length === 0 ? (<div className="no-data-message">No transactions found.</div>) : (
+          {currentItems.length === 0 ? (<div className="no-data-message">{t('transactions.noResults')}</div>) : (
             currentItems.map((tx) => {
               const theme = getCategoryTheme(tx.category);
+              const catColor = getCategoryColor(tx.category);
               return (
                 <div key={tx.id} className="table-row">
                   <div className="recipient-cell">
@@ -139,10 +146,15 @@ const TransactionsPage = () => {
                     </div>
                     <span className="tx-name">{tx.name}</span>
                   </div>
-                  <p className="category-cell">{tx.category}</p>
+                  <p className="category-cell">
+                    <span className="category-pill">
+                      <span className="category-dot" style={{ backgroundColor: catColor }} />
+                      <span className="category-text">{translateCategory(tx.category)}</span>
+                    </span>
+                  </p>
                   <p className="date-cell">{tx.date}</p>
                   <p className={`transaction-amount ${tx.type}`}>
-                    {tx.type === 'income' ? '+' : '-'}${parseFloat(tx.amount).toFixed(2)}
+                    {tx.type === 'income' ? '+' : '-'}₺{parseFloat(tx.amount).toFixed(2)}
                   </p>
                 </div>
               );

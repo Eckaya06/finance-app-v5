@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import './PotsPage.css';
 import PotCard from '../../components/pots/PotCard.jsx';
 import Modal from '../../components/modal/Modal.jsx';
@@ -9,10 +10,13 @@ import WithdrawMoneyForm from '../../components/pots/WithdrawMoneyForm.jsx';
 import EmptyState from '../../components/emptystate/EmptyState.jsx';
 import emptyPotsImage from '../../assets/empty-pots.webp';
 import DeleteConfirmationModal from '../../components/modal/DeleteConfirmationModal.jsx'
-import { useTransactions } from '../../context/TransactionContext.jsx'; 
+import { useTransactions } from '../../context/TransactionContext.jsx';
+import { useToast } from '../../context/ToastContext.jsx';
 
 const PotsPage = () => {
+  const { t } = useTranslation();
   const { pots, addPot, deletePot, updatePotBalance, updatePot } = useTransactions();
+  const { showToast } = useToast();
   
   const [potActionError, setPotActionError] = useState({ potId: null, message: '' });
   const [openOptionsMenuId, setOpenOptionsMenuId] = useState(null);
@@ -35,8 +39,13 @@ const PotsPage = () => {
 
   const handleCreatePot = async (newPotData) => {
     const newPot = { name: newPotData.name, saved: 0, target: newPotData.target, theme: newPotData.theme };
-    await addPot(newPot); 
-    setIsAddPotModalOpen(false);
+    try {
+      await addPot(newPot);
+      setIsAddPotModalOpen(false);
+      showToast(t('potsPage.potCreated', { name: newPot.name }), 'success');
+    } catch (err) {
+      showToast(err?.response?.data?.message || t('potsPage.potCreateFail'), 'error');
+    }
   };
 
   const handleOptionsToggle = (potId) => {
@@ -58,11 +67,19 @@ const PotsPage = () => {
 
   const handleConfirmAddition = async (potId, amountToAdd) => {
     const potToUpdate = pots.find(p => p.id === potId);
-    if (potToUpdate) {
+    if (!potToUpdate) {
+      closeAddMoneyModal();
+      return;
+    }
+    try {
       const newBalance = potToUpdate.saved + amountToAdd;
       await updatePotBalance(potId, newBalance);
+      showToast(t('potsPage.addedAmount', { amount: amountToAdd, name: potToUpdate.name }), 'success');
+    } catch (err) {
+      showToast(err?.response?.data?.message || t('potsPage.addFail'), 'error');
+    } finally {
+      closeAddMoneyModal();
     }
-    closeAddMoneyModal();
   };
 
   const closeAddMoneyModal = () => {
@@ -75,7 +92,7 @@ const PotsPage = () => {
     const potToEdit = pots.find(p => p.id === potId);
     if (potToEdit) {
       if (potToEdit.saved <= 0) {
-        setPotActionError({ potId: potId, message: "Please add money first." });
+        setPotActionError({ potId: potId, message: t('potsPage.addMoneyFirst') });
         setTimeout(() => setPotActionError({ potId: null, message: '' }), 2000);
       } else {
         setSelectedPot(potToEdit);
@@ -86,11 +103,19 @@ const PotsPage = () => {
 
   const handleConfirmWithdrawal = async (potId, amountToWithdraw) => {
     const potToUpdate = pots.find(p => p.id === potId);
-    if (potToUpdate) {
+    if (!potToUpdate) {
+      closeWithdrawModal();
+      return;
+    }
+    try {
       const newBalance = Math.max(0, potToUpdate.saved - amountToWithdraw);
       await updatePotBalance(potId, newBalance);
+      showToast(t('potsPage.withdrew', { amount: amountToWithdraw, name: potToUpdate.name }), 'success');
+    } catch (err) {
+      showToast(err?.response?.data?.message || t('potsPage.withdrawFail'), 'error');
+    } finally {
+      closeWithdrawModal();
     }
-    closeWithdrawModal();
   };
 
   const closeWithdrawModal = () => {
@@ -99,9 +124,14 @@ const PotsPage = () => {
   };
 
   const handleUpdatePot = async (potId, updatedData) => {
-    await updatePot(potId, updatedData);
-    setIsEditPotModalOpen(false);
-    setSelectedPot(null);
+    try {
+      await updatePot(potId, updatedData);
+      setIsEditPotModalOpen(false);
+      setSelectedPot(null);
+      showToast(t('potsPage.potUpdated', { name: updatedData.name }), 'success');
+    } catch (err) {
+      showToast(err?.response?.data?.message || t('potsPage.updateFail'), 'error');
+    }
   };
 
   const openEditModal = (potId) => {
@@ -150,8 +180,14 @@ const PotsPage = () => {
   };
 
   const handleDeletePot = async (potId) => {
-    await deletePot(potId);
-    closeDeleteModal();
+    const potToDelete = pots.find(p => p.id === potId);
+    try {
+      await deletePot(potId);
+      closeDeleteModal();
+      showToast(t('potsPage.potDeleted', { name: potToDelete?.name || '' }), 'success');
+    } catch (err) {
+      showToast(err?.response?.data?.message || t('potsPage.deleteFail'), 'error');
+    }
   };
   
   const closeDeleteModal = () => {
@@ -162,21 +198,17 @@ const PotsPage = () => {
   return (
     <div className="page-container">
       <div className="page-header">
-        <h1 className="page-title">Pots</h1>
-        {/* 🕵️ DEDEKTİF LOGU: Add Pot butonu tıklandığında log atar */}
-        <button className="btn-primary" onClick={() => {
-          console.log("➕ Add New Pot Butonuna Tıklandı!");
-          setIsAddPotModalOpen(true);
-        }}>
-          + Add New Pot
+        <h1 className="page-title">{t('potsPage.title')}</h1>
+        <button className="btn-primary" onClick={() => setIsAddPotModalOpen(true)}>
+          {t('potsPage.addNew')}
         </button>
       </div>
 
       {pots.length === 0 ? (
         <EmptyState
-          title="Create Your First Pot"
-          message="'Pots' help you save for specific goals. Click the button below to create your first savings pot and start tracking your progress!"
-          buttonText="+ Create First Pot"
+          title={t('potsPage.emptyTitle')}
+          message={t('potsPage.emptyMessage')}
+          buttonText={t('potsPage.createFirst')}
           onAction={() => setIsAddPotModalOpen(true)}
           backgroundImage={emptyPotsImage}
         />

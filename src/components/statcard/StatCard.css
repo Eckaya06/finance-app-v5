@@ -9,7 +9,7 @@
 
 /* Ana (koyu renkli) kart için stil */
 .stat-card.primary {
-  background-color: #1e293b; /* Sidebar ile aynı koyu renk */
+  background-color: #201F24; /* Sidebar ile aynı koyu renk */
   color: white;
   border: none;
 }

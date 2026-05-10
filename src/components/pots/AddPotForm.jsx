@@ -1,110 +1,122 @@
-// src/components/pots/AddPotForm.jsx
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
-const themeOptions = [
-  { value: 'blue',   label: 'Blue',   color: '#3b82f6' },
-  { value: 'cyan',   label: 'Cyan',   color: '#06b6d4' },
-  { value: 'green',  label: 'Green',  color: '#22c55e' },
-  { value: 'orange', label: 'Orange', color: '#f97316' },
-  { value: 'indigo', label: 'Indigo', color: '#6366f1' },
-  { value: 'red',    label: 'Red',    color: '#ef4444' },
-  { value: 'purple', label: 'Purple', color: '#8b5cf6' },
+const themeOptionsMeta = [
+  { value: 'blue',   tKey: 'themes.blue',   color: '#3b82f6' },
+  { value: 'cyan',   tKey: 'themes.cyan',   color: '#06b6d4' },
+  { value: 'green',  tKey: 'themes.green',  color: '#22c55e' },
+  { value: 'orange', tKey: 'themes.orange', color: '#f97316' },
+  { value: 'indigo', tKey: 'themes.indigo', color: '#6366f1' },
+  { value: 'red',    tKey: 'themes.red',    color: '#ef4444' },
+  { value: 'purple', tKey: 'themes.purple', color: '#8b5cf6' },
 ];
 
 const AddPotForm = ({ onAddPot, onClose }) => {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [target, setTarget] = useState('');
   const [theme, setTheme] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    if (!theme) {
-      alert("Please choose a theme.");
+    if (!name) {
+      setError(t('addPotForm.errors.enterName'));
       return;
     }
-    if (!name || !target || parseFloat(target) <= 0) {
-      alert("Please fill in all fields with valid values.");
+    if (!target || parseFloat(target) <= 0) {
+      setError(t('addPotForm.errors.validTarget'));
+      return;
+    }
+    if (!theme) {
+      setError(t('addPotForm.errors.chooseTheme'));
       return;
     }
     onAddPot({ name, target: parseFloat(target), theme });
     onClose();
   };
-  
+
   const handleThemeSelect = (selectedTheme) => {
     setTheme(selectedTheme);
     setIsDropdownOpen(false);
+    setError('');
   };
 
-  const selectedThemeObject = themeOptions.find(opt => opt.value === theme);
+  const selectedThemeObject = themeOptionsMeta.find(opt => opt.value === theme);
 
   return (
     <form onSubmit={handleSubmit} className="add-pot-form">
-      <h2>Add New Pot</h2>
-      <p>Create a pot to help you track savings for special purchases.</p>
-      
+      <h2>{t('addPotForm.title')}</h2>
+      <p>{t('addPotForm.subtitle')}</p>
+
+      {error && (
+        <div style={{ padding: '12px 16px', background: 'rgba(220, 38, 38, 0.1)', color: '#dc2626', borderRadius: '8px', fontSize: '13px', fontWeight: '500', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span>⚠️</span> {error}
+        </div>
+      )}
+
       <div className="form-group">
-        <label htmlFor="pot-name">Pot Name</label>
-        <input 
-          id="pot-name" type="text" value={name} 
-          onChange={(e) => setName(e.target.value)}
-          placeholder="e.g., Rainy Day" 
-        />
-      </div>
-      
-      <div className="form-group">
-        <label htmlFor="pot-target">Target</label>
-        <input 
-          id="pot-target" type="number" value={target}
-          onChange={(e) => setTarget(e.target.value)}
-          placeholder="e.g., 2000"
+        <label htmlFor="pot-name">{t('addPotForm.name')}</label>
+        <input
+          id="pot-name" type="text" value={name}
+          onChange={(e) => { setName(e.target.value); setError(''); }}
+          placeholder={t('addPotForm.namePlaceholder')}
         />
       </div>
 
       <div className="form-group">
-        <label>Theme</label>
+        <label htmlFor="pot-target">{t('addPotForm.target')}</label>
+        <input
+          id="pot-target" type="number" value={target}
+          onChange={(e) => { setTarget(e.target.value); setError(''); }}
+          placeholder={t('addPotForm.targetPlaceholder')}
+        />
+      </div>
+
+      <div className="form-group">
+        <label>{t('addPotForm.theme')}</label>
         <div className="custom-select-container">
-          <button 
-            type="button" 
-            className="select-selected-value" 
+          <button
+            type="button"
+            className="select-selected-value"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           >
             {selectedThemeObject ? (
               <div className="theme-option-display">
-                <span 
-                  className="theme-color-swatch" 
+                <span
+                  className="theme-color-swatch"
                   style={{ backgroundColor: selectedThemeObject.color }}
                 ></span>
-                <span className="selected-label-text">{selectedThemeObject.label}</span>
+                <span className="selected-label-text">{t(selectedThemeObject.tKey)}</span>
               </div>
             ) : (
-              <span className="select-placeholder">Choose a theme</span>
+              <span className="select-placeholder">{t('addPotForm.chooseTheme')}</span>
             )}
             <span className={`select-arrow ${isDropdownOpen ? 'open' : ''}`}>▼</span>
           </button>
 
           {isDropdownOpen && (
             <ul className="select-options">
-              <li 
-                className="select-option" // 'disabled' class'ını kaldırdık
-                // DEĞİŞİKLİK: Tıklandığında temayı 'null' olarak ayarla
+              <li
+                className="select-option"
                 onClick={() => handleThemeSelect(null)}
               >
-                Choose a theme
+                {t('addPotForm.chooseTheme')}
               </li>
-              
-              {themeOptions.map(option => (
-                <li 
-                  key={option.value} 
+
+              {themeOptionsMeta.map(option => (
+                <li
+                  key={option.value}
                   className="select-option"
                   onClick={() => handleThemeSelect(option.value)}
                 >
                   <div className="theme-option-display">
-                    <span 
-                      className="theme-color-swatch" 
+                    <span
+                      className="theme-color-swatch"
                       style={{ backgroundColor: option.color }}
                     ></span>
-                    {option.label}
+                    {t(option.tKey)}
                   </div>
                 </li>
               ))}
@@ -112,8 +124,8 @@ const AddPotForm = ({ onAddPot, onClose }) => {
           )}
         </div>
       </div>
-      
-      <button type="submit" className="btn-primary form-submit-btn">Add Pot</button>
+
+      <button type="submit" className="btn-primary form-submit-btn">{t('addPotForm.submit')}</button>
     </form>
   );
 };

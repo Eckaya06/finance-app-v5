@@ -1,22 +1,18 @@
 /* src/layouts/DashboardLayout.css */
 
 .dashboard-layout {
-  display: grid;
-  /* Başlangıç: Sidebar 260px, geri kalanı ana içerik */
-  grid-template-columns: 260px 1fr; 
+  display: flex;
   height: 100vh;
   background-color: #f8f4f0;
-  /* Sütun genişliği değiştiğinde yumuşak geçiş */
-  transition: grid-template-columns 0.3s ease-in-out; 
-}
-
-/* Sidebar kapalıyken (bu class eklendiğinde) */
-.dashboard-layout.sidebar-collapsed {
-  /* Sidebar'ı 80px yap (ikonlar + padding için) */
-  grid-template-columns: 50px 1fr; 
+  overflow: hidden;
 }
 
 .main-content {
+  flex: 1;
+  min-width: 0;
   padding: 2.5rem;
   overflow-y: auto;
+  /* GPU compositing — prevents layout reflow during sidebar animation */
+  will-change: transform;
+  transform: translateZ(0);
 }

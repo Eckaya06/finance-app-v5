@@ -1,35 +1,42 @@
-// src/pages/home/Home.jsx
-
-// src/pages/home/Home.jsx
-
+import { useTranslation } from 'react-i18next';
+import { useTransactions } from '../../context/TransactionContext';
 import StatCard from '../../components/statcard/StatCard.jsx';
 import TransactionsList from '../../components/transactions/TransactionsList.jsx';
 import PotsCard from '../../components/pots/PotsCard.jsx';
 import BudgetsCard from '../../components/budgets/BudgetsCard.jsx';
-import RecurringBillsCard from '../../components/bills/RecurringBillsCard.jsx'; // 1. Yeni kartı import et
+import RecurringBillsCard from '../../components/bills/RecurringBillsCard.jsx';
 import './Home.css';
 
 const Home = () => {
+  const { t } = useTranslation();
+  const { transactions, loading } = useTransactions();
+
+  const income = transactions
+    .filter(t => t.type === 'income')
+    .reduce((sum, t) => sum + Number(t.amount || 0), 0);
+
+  const expenses = transactions
+    .filter(t => t.type === 'expense')
+    .reduce((sum, t) => sum + Number(t.amount || 0), 0);
+
+  const balance = income - expenses;
+
+  const fmt = (amount) => `₺${amount.toFixed(2)}`;
+
   return (
     <div>
-      <h1 className="page-title">Overview</h1>
+      <h1 className="page-title">{t('home.title')}</h1>
       <div className="stat-cards-grid">
-        <StatCard title="Current Balance" amount="$4,836.00" variant="primary" />
-        <StatCard title="Income" amount="$3,814.25" />
-        <StatCard title="Expenses" amount="$1,700.50" />
+        <StatCard title={t('home.currentBalance')} amount={loading ? '—' : fmt(balance)} variant="primary" />
+        <StatCard title={t('home.income')} amount={loading ? '—' : fmt(income)} />
+        <StatCard title={t('home.expenses')} amount={loading ? '—' : fmt(expenses)} />
       </div>
 
       <div className="dashboard-main-grid">
-        <div className="main-left-column">
-          <PotsCard />
-          <TransactionsList limit={5} showViewAll={true} />
-        </div>
-        
-        <div className="main-right-column">
-          <BudgetsCard />
-          {/* 2. RecurringBillsCard'ı buraya yerleştir */}
-          <RecurringBillsCard />
-        </div>
+        <PotsCard />
+        <BudgetsCard />
+        <TransactionsList limit={3} showViewAll={true} />
+        <RecurringBillsCard />
       </div>
     </div>
   );

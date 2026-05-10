@@ -1,16 +1,20 @@
 /* src/components/sidebar/Sidebar.css */
 
 .sidebar {
-  background-color: #1e293b; /* Tasarımdaki koyu renk */
-  color: #e2e8f0; /* Açık renk metin */
-  height: 100vh; /* Ekranın tüm yüksekliğini kapla */
+  background-color: #201F24;
+  color: #e2e8f0;
+  height: 100vh;
+  width: 260px;
+  min-width: 260px;
   display: flex;
-  flex-direction: column; /* İçerikleri alt alta sırala */
+  flex-direction: column;
   padding: 1.5rem;
-  box-sizing: border-box; /* Padding'i yüksekliğe dahil et */
-  border-bottom-right-radius: 12px; /* Köşe yuvarlatma ekleyebiliriz */
-  border-top-right-radius: 16px; /* Köşe yuvarlatma ekleyebiliriz */
-  transition: padding 0.3s ease-in-out; /* Daralma animasyonu için */
+  box-sizing: border-box;
+  border-bottom-right-radius: 12px;
+  border-top-right-radius: 16px;
+  transition: width 0.3s ease-in-out, min-width 0.3s ease-in-out, padding 0.3s ease-in-out;
+  will-change: width, min-width;
+  overflow: hidden;
 }
 
 .sidebar-logo {
@@ -62,7 +66,7 @@
 
 .nav-item a.active {
   background-color: white; /* Tasarımdaki gibi beyaz arka plan */
-  color: #1e293b; /* Koyu metin rengi */
+  color: #201F24; /* Koyu metin rengi */
   font-weight: 600;
 }
 
@@ -123,8 +127,9 @@
 /* --- Collapsed State Styles --- */
 
 .sidebar.collapsed {
-  padding: 1.5rem 0.75rem; /* Yan padding'leri azalt */
-  /* align-items: center; <-- BU SATIRI KALDIRDIK */
+  width: 50px;
+  min-width: 50px;
+  padding: 1.5rem 0.75rem;
 }
 
 /* Logoyu tamamen gizle */

@@ -36,7 +36,7 @@
   margin: 0;
   font-size: 1.1rem;
   font-weight: 700;
-  color: #1e293b;
+  color: #201F24;
 }
 
 .budget-limit-text {
@@ -86,7 +86,7 @@
 .summary-value {
   font-size: 1rem;
   font-weight: 600;
-  color: #1e293b;
+  color: #201F24;
 }
 
 .summary-value.negative {
@@ -113,7 +113,7 @@
   margin: 0;
   font-size: 0.95rem;
   font-weight: 600;
-  color: #1e293b;
+  color: #201F24;
 }
 
 .latest-spending-header .see-all-link {

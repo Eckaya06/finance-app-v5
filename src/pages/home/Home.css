@@ -3,7 +3,7 @@
 .page-title {
   font-size: 2.25rem;
   font-weight: 700;
-  color: #1e293b;
+  color: #201F24;
   margin: 0 0 1.5rem 0;
 }
 
@@ -22,19 +22,5 @@
   grid-template-columns: 2fr 1fr; /* Sol sütun (2 birim), Sağ sütun (1 birim) */
   gap: 1.5rem;
   margin-top: 1.5rem;
-  align-items: start; /* Sütunların içeriklerini yukarıdan başlat */
-}
-
-/* Sol sütundaki bileşenleri alt alta dizmek için */
-.main-left-column {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem; /* Pots ve Transactions kartları arası boşluk */
-}
-
-/* Sağ sütundaki bileşenleri alt alta dizmek için */
-.main-right-column {
-  display: flex;
-  flex-direction: column;
-  gap: 2.3rem; /* Budgets ve Recurring Bills kartları arası boşluk */
+  align-items: start; /* Her satırdaki kartların üstten hizalanması */
 }

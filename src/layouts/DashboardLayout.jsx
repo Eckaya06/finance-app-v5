@@ -18,7 +18,7 @@ const DashboardLayout = () => {
     }
   }, [pathname]);
 
-  const layoutClassName = `dashboard-layout ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`;
+  const layoutClassName = `dashboard-layout`;
 
   return (
     <div className={layoutClassName}>

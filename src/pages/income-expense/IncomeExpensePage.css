@@ -82,12 +82,12 @@
 }
 
 .ie-item-meta { display: flex; flex-direction: column; }
-.ie-item-name { font-weight: 600; color: #1e293b; font-size: 1rem; }
+.ie-item-name { font-weight: 600; color: #201F24; font-size: 1rem; }
 .ie-item-sub { font-size: 0.85rem; color: #94a3b8; }
 
 .ie-item-amount { font-weight: 700; font-size: 1.1rem; }
 .ie-item-amount.income { color: #22c55e; }
-.ie-item-amount.expense { color: #1e293b; }
+.ie-item-amount.expense { color: #201F24; }
 
 /* --- Silme Butonu ve Hover Efektleri --- */
 .btn-delete-transaction {
@@ -152,7 +152,7 @@
   align-items: center;
   cursor: pointer;
   font-size: 0.95rem;
-  color: #1e293b;
+  color: #201F24;
   transition: all 0.2s;
   text-align: left;
 }
@@ -166,7 +166,7 @@
 
 .dropdown-trigger:hover,
 .dropdown-trigger.open {
-  border-color: #1e293b;
+  border-color: #201F24;
 }
 
 .dropdown-arrow {
@@ -203,7 +203,7 @@
 
 .dropdown-item:hover {
   background-color: #f1f5f9;
-  color: #1e293b;
+  color: #201F24;
 }
 
 .dropdown-item.selected {
@@ -232,7 +232,7 @@
 
 .delete-header h2 {
   font-size: 1.5rem;
-  color: #1e293b;
+  color: #201F24;
   margin-bottom: 1rem;
   font-weight: 700;
 }

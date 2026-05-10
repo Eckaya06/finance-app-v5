@@ -1,17 +1,18 @@
-// src/components/modal/DeleteConfirmationModal.jsx
-import './Modal.css'; // Genel modal stillerini kullanabiliriz
+import { useTranslation } from 'react-i18next';
+import './Modal.css';
 
 const DeleteConfirmationModal = ({ potName, onConfirm, onCancel }) => {
+  const { t } = useTranslation();
   return (
     <div className="delete-confirmation">
-      <h2>Delete '{potName}'?</h2>
-      <p>Are you sure you want to delete this pot? This action cannot be reversed, and all the data inside it will be removed forever.</p>
+      <h2>{t('deletePot.title', { name: potName })}</h2>
+      <p>{t('deletePot.message')}</p>
       <div className="confirmation-buttons">
         <button className="btn-danger" onClick={onConfirm}>
-          Yes, Confirm Deletion
+          {t('common.yesConfirm')}
         </button>
         <button className="btn-secondary-outline" onClick={onCancel}>
-          No, Go Back
+          {t('common.noGoBack')}
         </button>
       </div>
     </div>

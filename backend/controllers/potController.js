@@ -1,4 +1,10 @@
 import Pot from '../models/Pot.js';
+import { checkPotMilestone } from '../services/notificationService.js';
+
+// Fire-and-forget: the HTTP response should not wait for email delivery.
+const fireAndForget = (promise) => {
+  Promise.resolve(promise).catch((err) => console.error('[pot notify]', err));
+};
 
 export const getPots = async (req, res) => {
   const pots = await Pot.find({ userId: req.user.uid }).sort({ createdAt: -1 }).lean();
@@ -21,6 +27,8 @@ export const createPot = async (req, res) => {
     createdAt: Date.now(),
   });
 
+  fireAndForget(checkPotMilestone(pot));
+
   res.status(201).json({ ...pot.toObject(), id: pot._id.toString() });
 };
 
@@ -38,11 +46,14 @@ export const updatePot = async (req, res) => {
     { _id: req.params.id, userId: req.user.uid },
     update,
     { new: true }
-  ).lean();
+  );
 
   if (!pot) {
     return res.status(404).json({ message: 'Pot not found.' });
   }
 
-  res.json({ ...pot, id: pot._id.toString() });
+  fireAndForget(checkPotMilestone(pot));
+
+  const obj = pot.toObject();
+  res.json({ ...obj, id: pot._id.toString() });
 };

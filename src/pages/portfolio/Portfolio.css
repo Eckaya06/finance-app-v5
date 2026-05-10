@@ -1,0 +1,142 @@
+/* ── Page Container ── */
+.portfolio-container { display:flex; flex-direction:column; gap:28px; animation:portfolioFadeIn .5s ease-out; }
+@keyframes portfolioFadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── Header ── */
+.portfolio-header { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+.portfolio-header-actions { display:flex; gap:10px; align-items:center; }
+.portfolio-last-updated { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px; }
+.portfolio-last-updated .pulse-dot { width:8px; height:8px; border-radius:50%; background:#22c55e; animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.4)} }
+
+/* ── Refresh Button ── */
+.refresh-btn { background:var(--card); border:1px solid var(--border); color:var(--text); padding:8px 16px; border-radius:10px; font-size:13px; font-weight:500; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all .2s ease; }
+.refresh-btn:hover { background:var(--primary); color:white; border-color:var(--primary); }
+body.theme-dark .refresh-btn:hover { color:#0f1115; }
+
+/* ── Rates Banner ── */
+.rates-banner { display:flex; flex-direction:column; gap:28px; }
+.rates-section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.rates-section-title { font-size:16px; font-weight:600; color:var(--text); margin:0; }
+.rates-section-title.gold-title { color:#d97706; }
+
+/* ── Rate Cards V2 ── */
+.rates-grid-2col { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+.rate-card-v2 { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; border-left:3px solid var(--accent, #6366f1); transition:all .25s ease; cursor:default; position:relative; }
+.rate-card-v2:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.08); }
+.rate-card-v2-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.rate-card-v2-label { display:flex; align-items:center; gap:8px; }
+.rate-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.rate-pair-code { font-size:15px; font-weight:700; color:var(--text); }
+.rate-pair-slash { font-size:12px; color:var(--muted); font-weight:500; }
+.rate-badge { font-size:11px; font-weight:600; padding:3px 8px; border-radius:6px; }
+.rate-badge.positive { color:#16a34a; background:rgba(22,163,74,.1); }
+.rate-badge.negative { color:#dc2626; background:rgba(220,38,38,.1); }
+.rate-card-v2-price { font-size:24px; font-weight:700; color:var(--text); margin-bottom:2px; }
+.rate-card-v2-change { font-size:12px; font-weight:500; margin-bottom:14px; }
+.rate-card-v2-change.positive { color:#16a34a; }
+.rate-card-v2-change.negative { color:#dc2626; }
+.rate-card-v2-stats { display:flex; gap:0; border-top:1px solid var(--border); padding-top:12px; }
+.rate-stat { flex:1; display:flex; flex-direction:column; gap:2px; }
+.rate-stat-label { font-size:11px; color:var(--muted); }
+.rate-stat-value { font-size:12px; font-weight:600; color:var(--text); }
+
+/* ── Gold Cards V2 ── */
+.rates-grid-gold { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+.gold-card-v2 { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; border-left:3px solid var(--accent); transition:all .25s ease; }
+.gold-card-v2:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.08); }
+.gold-card-v2-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; }
+.gold-card-v2-name { display:flex; align-items:center; gap:8px; }
+.gold-dot { width:8px; height:8px; border-radius:50%; }
+.gold-label { font-size:14px; font-weight:600; color:var(--text); }
+.gold-card-v2-sub { font-size:11px; color:var(--muted); margin-bottom:10px; margin-left:16px; }
+.gold-card-v2-price { font-size:22px; font-weight:700; color:var(--text); margin-bottom:4px; }
+.gold-card-v2-daily { font-size:12px; font-weight:500; }
+.gold-card-v2-daily.positive { color:#16a34a; }
+.gold-card-v2-daily.negative { color:#dc2626; }
+
+/* ── My Holdings ── */
+.my-holdings-section { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; }
+.my-holdings-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+.my-holdings-header h2 { font-size:18px; font-weight:600; margin:0; color:var(--text); }
+.my-holdings-actions { display:flex; align-items:center; gap:10px; }
+.holdings-count { font-size:12px; color:var(--muted); background:var(--bg); padding:4px 12px; border-radius:20px; }
+.holdings-cards-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
+/* ── Holding Card ── */
+.holding-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:18px; transition:all .3s ease; }
+.holding-card:hover { border-color:rgba(99,102,241,.4); box-shadow:0 4px 16px rgba(0,0,0,.06); }
+.holding-card-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.holding-card-asset { display:flex; align-items:center; gap:10px; }
+.holding-badge { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; background:rgba(99,102,241,.1); color:#6366f1; }
+.holding-badge.gold { background:rgba(245,158,11,.12); color:#d97706; }
+.holding-card-name { display:flex; flex-direction:column; }
+.holding-asset-code { font-size:14px; font-weight:700; color:var(--text); }
+.holding-asset-label { font-size:11px; color:var(--muted); }
+.holding-pnl-badge { font-size:11px; font-weight:600; padding:3px 8px; border-radius:6px; }
+.holding-pnl-badge.positive { color:#16a34a; background:rgba(22,163,74,.1); }
+.holding-pnl-badge.negative { color:#dc2626; background:rgba(220,38,38,.1); }
+.holding-card-body { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+.holding-stat { display:flex; flex-direction:column; gap:2px; }
+.holding-stat-label { font-size:11px; color:var(--muted); }
+.holding-stat-value { font-size:13px; font-weight:600; color:var(--text); }
+.holding-card-pnl { display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-radius:8px; margin-bottom:12px; }
+.holding-card-pnl.profit { background:rgba(22,163,74,.06); }
+.holding-card-pnl.loss { background:rgba(220,38,38,.06); }
+.holding-pnl-label { font-size:11px; color:var(--muted); }
+.holding-pnl-value { font-size:13px; font-weight:700; }
+.holding-card-pnl.profit .holding-pnl-value { color:#16a34a; }
+.holding-card-pnl.loss .holding-pnl-value { color:#dc2626; }
+
+/* ── Add / Withdraw Buttons ── */
+.holding-card-actions { display:flex; gap:8px; }
+.holding-action-btn { flex:1; padding:8px 0; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; transition:all .2s ease; text-align:center; }
+.holding-action-btn.add { background:rgba(22,163,74,.08); border:1px solid rgba(22,163,74,.2); color:#16a34a; }
+.holding-action-btn.add:hover { background:rgba(22,163,74,.15); }
+.holding-action-btn.withdraw { background:rgba(220,38,38,.08); border:1px solid rgba(220,38,38,.2); color:#dc2626; }
+.holding-action-btn.withdraw:hover { background:rgba(220,38,38,.15); }
+
+/* ── Inline Edit Row ── */
+.holding-edit-row { display:flex; gap:6px; align-items:center; animation:slideDown .2s ease; }
+.holding-edit-input { flex:1; padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--card); color:var(--text); font-size:13px; outline:none; font-family:inherit; }
+.holding-edit-input:focus { border-color:#6366f1; }
+.holding-edit-confirm { padding:8px 14px; border-radius:8px; border:none; font-size:12px; font-weight:600; cursor:pointer; color:white; transition:all .2s; }
+.holding-edit-confirm.add { background:#16a34a; }
+.holding-edit-confirm.withdraw { background:#dc2626; }
+.holding-edit-confirm:disabled { opacity:.4; cursor:not-allowed; }
+.holding-edit-cancel { padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--card); color:var(--muted); font-size:12px; cursor:pointer; transition:all .2s; }
+.holding-edit-cancel:hover { background:var(--bg); }
+
+
+/* ── Recent Transactions ── */
+.recent-tx-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; }
+.recent-tx-card h3 { margin:0 0 16px; font-size:16px; font-weight:600; color:var(--text); }
+.recent-tx-list { display:flex; flex-direction:column; }
+.recent-tx-item { display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--border); }
+.recent-tx-item:last-child { border-bottom:none; }
+.recent-tx-left { display:flex; align-items:center; gap:10px; }
+.recent-tx-type { width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; }
+.recent-tx-type.buy { background:rgba(22,163,74,.1); color:#16a34a; }
+.recent-tx-type.sell { background:rgba(220,38,38,.1); color:#dc2626; }
+.recent-tx-info { display:flex; flex-direction:column; }
+.recent-tx-info span:first-child { font-size:13px; font-weight:600; color:var(--text); }
+.recent-tx-info span:last-child { font-size:11px; color:var(--muted); }
+.recent-tx-amount { font-size:13px; font-weight:600; color:var(--text); }
+
+/* ── Empty / Skeleton ── */
+.portfolio-empty { text-align:center; padding:48px 24px; color:var(--muted); }
+.portfolio-empty .empty-icon { font-size:48px; margin-bottom:16px; opacity:.5; }
+.portfolio-empty h3 { margin:0 0 8px; font-size:18px; color:var(--text); }
+.portfolio-empty p { font-size:14px; max-width:320px; margin:0 auto; }
+.skeleton-row { display:flex; gap:14px; margin-bottom:14px; }
+.skeleton-block { background:linear-gradient(90deg,var(--border) 25%,var(--bg) 50%,var(--border) 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:10px; height:80px; flex:1; }
+@keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+.pnl-positive { color:#16a34a!important; font-weight:600; }
+.pnl-negative { color:#dc2626!important; font-weight:600; }
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  .portfolio-header{flex-direction:column;align-items:flex-start;}
+  .rates-grid-2col{grid-template-columns:1fr;}
+  .rates-grid-gold{grid-template-columns:1fr;}
+  .holdings-cards-grid{grid-template-columns:1fr;}
+}

@@ -29,8 +29,8 @@ export const AuthProvider = ({ children }) => {
     initSession();
   }, []);
 
-  const signup = async (email, password) => {
-    const { data } = await api.post('/auth/signup', { email, password });
+  const signup = async (email, password, displayName) => {
+    const { data } = await api.post('/auth/signup', { email, password, displayName });
     // Token döndürülmüyorsa (email doğrulaması gerekli), token kaydedme
     if (data.token) {
       localStorage.setItem('financeapp_token', data.token);

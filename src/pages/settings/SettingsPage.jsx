@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import "./SettingsPage.css";
 import { transactions as mockTransactions } from "../../data/mockTransactions.js";
 
 const SettingsPage = () => {
+  const { t, i18n } = useTranslation();
   const [profile, setProfile] = useState({ displayName: "", email: "" });
 
   const [prefs, setPrefs] = useState({
-    theme: "light",      // light | dark
-    language: "en",      // en | tr
-    currency: "USD",     // USD | EUR | TRY
+    theme: "light",
+    language: (i18n.resolvedLanguage || i18n.language || "en").toLowerCase().startsWith("tr") ? "tr" : "en",
+    currency: "TRY",
     dateFormat: "DD/MM/YYYY",
   });
 
@@ -17,7 +19,6 @@ const SettingsPage = () => {
     budgetWarning: false,
   });
 
-  // Load settings
   useEffect(() => {
     const saved = localStorage.getItem("settings");
     if (!saved) return;
@@ -32,12 +33,10 @@ const SettingsPage = () => {
     }
   }, []);
 
-  // Save settings
   useEffect(() => {
     localStorage.setItem("settings", JSON.stringify({ profile, prefs, notifications }));
   }, [profile, prefs, notifications]);
 
-  // Apply dark mode (only body class)
   useEffect(() => {
     if (prefs.theme === "dark") document.body.classList.add("theme-dark");
     else document.body.classList.remove("theme-dark");
@@ -51,6 +50,9 @@ const SettingsPage = () => {
   const handlePrefChange = (e) => {
     const { name, value } = e.target;
     setPrefs((p) => ({ ...p, [name]: value }));
+    if (name === "language") {
+      i18n.changeLanguage(value);
+    }
   };
 
   const toggleNotification = (name) => {
@@ -61,7 +63,6 @@ const SettingsPage = () => {
     setPrefs((p) => ({ ...p, theme: p.theme === "dark" ? "light" : "dark" }));
   };
 
-  // Export transactions as JSON
   const exportTransactions = () => {
     const fromLS = localStorage.getItem("transactions");
     let data = [];
@@ -87,78 +88,77 @@ const SettingsPage = () => {
     URL.revokeObjectURL(url);
   };
 
-  // (Phase 2 later) Import could go here. For now disabled.
   const clearLocalData = () => {
-    const ok = window.confirm("Are you sure you want to clear all local data? This cannot be undone.");
+    const ok = window.confirm(t("settings.clearConfirm"));
     if (!ok) return;
     localStorage.clear();
-    window.alert("Local data cleared. Refresh the page.");
+    window.alert(t("settings.clearedAlert"));
   };
 
   return (
     <div className="settings-page">
       <div className="settings-header">
-        <h1>Settings</h1>
+        <h1>{t("settings.title")}</h1>
       </div>
 
       {/* 1) Profile */}
       <section className="settings-section">
-        <h2>1) Profile & Account</h2>
+        <h2>{t("settings.section1")}</h2>
 
         <div className="field-row">
-          <label>Display name</label>
+          <label>{t("settings.displayName")}</label>
           <div className="row-right">
             <input
               className="input"
               name="displayName"
               value={profile.displayName}
               onChange={handleProfileChange}
-              placeholder="Your name"
+              placeholder={t("settings.displayNamePh")}
             />
           </div>
         </div>
 
         <div className="field-row">
-          <label>Email</label>
+          <label>{t("settings.email")}</label>
           <div className="row-right">
             <input
               className="input"
               name="email"
               value={profile.email}
               onChange={handleProfileChange}
-              placeholder="(Phase 2 - Firebase auth)"
+              placeholder={t("settings.emailPh")}
             />
-            <span className="badge">Phase 2</span>
+            <span className="badge">{t("settings.phase2")}</span>
           </div>
         </div>
 
         <div className="field-row">
-          <label>Password</label>
+          <label>{t("settings.password")}</label>
           <div className="row-right">
             <button className="btn btn-ghost" disabled>
-              Change password
+              {t("settings.changePassword")}
             </button>
-            <span className="badge">Phase 2</span>
+            <span className="badge">{t("settings.phase2")}</span>
           </div>
         </div>
 
         <div className="field-row">
-          <label>Delete account</label>
+          <label>{t("settings.deleteAccount")}</label>
           <div className="row-right">
             <button className="btn btn-danger" disabled>
-              Delete account
+              {t("settings.deleteAccount")}
             </button>
-            <span className="badge">Phase 2</span>
+            <span className="badge">{t("settings.phase2")}</span>
           </div>
         </div>
       </section>
 
       {/* 2) Preferences */}
       <section className="settings-section">
-        <h2>2) Preferences</h2>
+        <h2>{t("settings.section2")}</h2>
 
         <div className="field-row">
-          <label>Dark mode</label>
+          <label>{t("settings.darkMode")}</label>
           <div className="row-right">
             <button
               type="button"
@@ -169,34 +169,33 @@ const SettingsPage = () => {
             >
               <span className="toggle-knob" />
             </button>
-            <span className="muted">{prefs.theme === "dark" ? "On" : "Off"}</span>
+            <span className="muted">{prefs.theme === "dark" ? t("settings.on") : t("settings.off")}</span>
           </div>
         </div>
 
         <div className="field-row">
-          <label>Language</label>
+          <label>{t("settings.language")}</label>
           <div className="row-right">
             <select className="select" name="language" value={prefs.language} onChange={handlePrefChange}>
               <option value="en">EN</option>
               <option value="tr">TR</option>
             </select>
-            <span className="badge">UI only</span>
           </div>
         </div>
 
         <div className="field-row">
-          <label>Currency</label>
+          <label>{t("settings.currency")}</label>
           <div className="row-right">
             <select className="select" name="currency" value={prefs.currency} onChange={handlePrefChange}>
+              <option value="TRY">TRY</option>
               <option value="USD">USD</option>
               <option value="EUR">EUR</option>
-              <option value="TRY">TRY</option>
             </select>
           </div>
         </div>
 
         <div className="field-row">
-          <label>Date format</label>
+          <label>{t("settings.dateFormat")}</label>
           <div className="row-right">
             <select className="select" name="dateFormat" value={prefs.dateFormat} onChange={handlePrefChange}>
               <option value="DD/MM/YYYY">DD/MM/YYYY</option>
@@ -209,93 +208,91 @@ const SettingsPage = () => {
 
       {/* 3) Data */}
       <section className="settings-section">
-        <h2>3) Data & Privacy</h2>
+        <h2>{t("settings.section3")}</h2>
 
         <div className="field-row">
-          <label>Export data (transactions)</label>
+          <label>{t("settings.exportData")}</label>
           <div className="row-right">
             <button className="btn btn-primary" onClick={exportTransactions}>
-              Export JSON
+              {t("settings.exportJson")}
             </button>
           </div>
         </div>
 
         <div className="field-row">
-          <label>Import data</label>
+          <label>{t("settings.importData")}</label>
           <div className="row-right">
             <button className="btn btn-ghost" disabled>
-              Import (Phase 2)
+              {t("settings.importBtn")}
             </button>
-            <span className="badge">Phase 2</span>
+            <span className="badge">{t("settings.phase2")}</span>
           </div>
         </div>
 
         <div className="field-row">
-          <label>Clear local data</label>
+          <label>{t("settings.clearData")}</label>
           <div className="row-right">
             <button className="btn btn-danger" onClick={clearLocalData}>
-              Clear localStorage
+              {t("settings.clearBtn")}
             </button>
           </div>
         </div>
 
-        <p className="muted-note">
-          Phase 1 stores data locally in your browser. Phase 2 will support cloud sync (Firebase).
-        </p>
+        <p className="muted-note">{t("settings.dataNote")}</p>
       </section>
 
       {/* 4) Notifications */}
       <section className="settings-section">
-        <h2>4) Notifications</h2>
+        <h2>{t("settings.section4")}</h2>
 
         <div className="field-row">
-          <label>Weekly summary</label>
+          <label>{t("settings.weeklySummary")}</label>
           <div className="row-right">
             <input
               type="checkbox"
               checked={notifications.weeklySummary}
               onChange={() => toggleNotification("weeklySummary")}
             />
-            <span className="muted">(UI only)</span>
+            <span className="muted">{t("settings.uiOnlyNote")}</span>
           </div>
         </div>
 
         <div className="field-row">
-          <label>Budget warning</label>
+          <label>{t("settings.budgetWarning")}</label>
           <div className="row-right">
             <input
               type="checkbox"
               checked={notifications.budgetWarning}
               onChange={() => toggleNotification("budgetWarning")}
             />
-            <span className="muted">(UI only)</span>
+            <span className="muted">{t("settings.uiOnlyNote")}</span>
           </div>
         </div>
       </section>
 
       {/* 5) App info */}
       <section className="settings-section">
-        <h2>5) App Info</h2>
+        <h2>{t("settings.section5")}</h2>
 
         <div className="field-row">
-          <label>Version</label>
+          <label>{t("settings.version")}</label>
           <div className="row-right">
             <span>v1.0</span>
           </div>
         </div>
 
         <div className="field-row">
-          <label>Tech stack</label>
+          <label>{t("settings.techStack")}</label>
           <div className="row-right">
             <span>React (Vite)</span>
           </div>
         </div>
 
         <div className="field-row">
-          <label>Support</label>
+          <label>{t("settings.support")}</label>
           <div className="row-right">
             <a href="mailto:support@example.com">support@example.com</a>
-            <span className="badge">Replace</span>
+            <span className="badge">{t("settings.replace")}</span>
           </div>
         </div>
       </section>

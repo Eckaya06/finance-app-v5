@@ -1,19 +1,19 @@
-import React from 'react';
+import { useTranslation } from 'react-i18next';
 import './BudgetOptionsMenu.css';
 
 const BudgetOptionsMenu = ({ onEdit, onDelete }) => {
+  const { t } = useTranslation();
   return (
     <div className="budget-options-menu">
       <button onClick={onEdit} className="options-menu-item">
-        Edit Budget
+        {t('budgetOptions.edit')}
       </button>
       <div className="options-menu-divider" />
       <button onClick={onDelete} className="options-menu-item delete">
-        Delete Budget
+        {t('budgetOptions.delete')}
       </button>
     </div>
   );
 };
 
 export default BudgetOptionsMenu;
-

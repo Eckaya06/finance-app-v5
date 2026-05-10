@@ -1,30 +1,32 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import './IncomeExpensePage.css';
 import Modal from '../../components/modal/Modal.jsx';
 import AddTransactionForm from '../../components/income-expense/AddTransactionForm.jsx';
 import EmptyState from '../../components/emptystate/EmptyState.jsx';
 import { FiPlus, FiArrowUpRight, FiArrowDownLeft, FiActivity, FiTrash2 } from 'react-icons/fi';
-import emptyTransactionsImage from '../../assets/empty-transactions.webp'; 
+import emptyTransactionsImage from '../../assets/empty-transactions.webp';
 import { useTransactions } from '../../context/TransactionContext.jsx';
 import { getCategoryTheme } from '../../utils/categoryIcons.jsx';
 
 const IncomeExpensePage = () => {
+  const { t, i18n } = useTranslation();
   const { transactions, addTransaction, deleteTransaction } = useTransactions();
-  
-  const [isModalOpen, setIsModalOpen] = useState(false); 
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); 
-  const [transactionToDelete, setTransactionToDelete] = useState(null); 
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] = useState(null);
 
   const openDeleteModal = (id) => {
-    setTransactionToDelete(id); 
-    setIsDeleteModalOpen(true); 
+    setTransactionToDelete(id);
+    setIsDeleteModalOpen(true);
   };
 
   const confirmDelete = async () => {
     if (transactionToDelete) {
-      await deleteTransaction(transactionToDelete); 
-      setIsDeleteModalOpen(false); 
-      setTransactionToDelete(null); 
+      await deleteTransaction(transactionToDelete);
+      setIsDeleteModalOpen(false);
+      setTransactionToDelete(null);
     }
   };
 
@@ -33,6 +35,7 @@ const IncomeExpensePage = () => {
     setIsModalOpen(false);
   };
 
+  const numberLocale = i18n.resolvedLanguage?.toLowerCase().startsWith('tr') ? 'tr-TR' : 'en-GB';
   const today = new Date().toLocaleDateString('tr-TR', {
     day: '2-digit',
     month: '2-digit',
@@ -40,30 +43,32 @@ const IncomeExpensePage = () => {
   });
 
   const dailyIncome = transactions
-    .filter(t => t.type === 'income' && t.date === today)
+    .filter(tr => tr.type === 'income' && tr.date === today)
     .reduce((acc, curr) => acc + parseFloat(curr.amount || 0), 0);
 
   const dailyExpense = transactions
-    .filter(t => t.type === 'expense' && t.date === today)
+    .filter(tr => tr.type === 'expense' && tr.date === today)
     .reduce((acc, curr) => acc + parseFloat(curr.amount || 0), 0);
 
-  const itemToBeDeleted = transactions.find(t => t.id === transactionToDelete);
+  const itemToBeDeleted = transactions.find(tr => tr.id === transactionToDelete);
+
+  const translateCategory = (cat) => t(`categories.${cat}`, { defaultValue: cat });
 
   return (
     <div className="page-container">
       <div className="page-header">
-        <h1 className="page-title">Income & Expense</h1>
+        <h1 className="page-title">{t('incomeExpense.title')}</h1>
         <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
-          <FiPlus /> Add Transaction
+          <FiPlus /> {t('incomeExpense.addTransaction')}
         </button>
       </div>
 
       {transactions.length === 0 ? (
-        <EmptyState 
+        <EmptyState
           icon={<FiActivity />}
-          title="Track Your Income & Expenses"
-          message="Keep track of your financial activities. Add your income sources and daily expenses to see a clear summary of your budget."
-          buttonText="+ Add First Transaction"
+          title={t('incomeExpense.emptyTitle')}
+          message={t('incomeExpense.emptyMessage')}
+          buttonText={t('incomeExpense.addFirst')}
           onAction={() => setIsModalOpen(true)}
           backgroundImage={emptyTransactionsImage}
         />
@@ -73,57 +78,57 @@ const IncomeExpensePage = () => {
             <div className="ie-summary-card income">
               <div className="ie-card-icon"><FiArrowDownLeft /></div>
               <div className="ie-card-info">
-                <span>Daily Income</span>
-                <h3>{dailyIncome.toLocaleString('en-US', { minimumFractionDigits: 2 })} $</h3>
+                <span>{t('incomeExpense.dailyIncome')}</span>
+                <h3>{dailyIncome.toLocaleString(numberLocale, { minimumFractionDigits: 2 })} ₺</h3>
               </div>
             </div>
             <div className="ie-summary-card expense">
               <div className="ie-card-icon"><FiArrowUpRight /></div>
               <div className="ie-card-info">
-                <span>Daily Expense</span>
-                <h3>{dailyExpense.toLocaleString('en-US', { minimumFractionDigits: 2 })} $</h3>
+                <span>{t('incomeExpense.dailyExpense')}</span>
+                <h3>{dailyExpense.toLocaleString(numberLocale, { minimumFractionDigits: 2 })} ₺</h3>
               </div>
             </div>
           </div>
 
           <div className="ie-transactions-container">
             <div className="ie-list-header">
-              <h2>Recent Transactions</h2>
+              <h2>{t('incomeExpense.recentTransactions')}</h2>
             </div>
-            
+
             <div className="ie-list">
               {transactions.map((item) => {
                 const theme = getCategoryTheme(item.category);
                 return (
                   <div key={item.id} className="ie-list-item">
                     <div className="ie-item-left">
-                      <div 
-                        className="ie-item-avatar" 
+                      <div
+                        className="ie-item-avatar"
                         style={{ backgroundColor: theme.bg }}
                       >
-                        <img 
-                          src={theme.image} 
-                          alt={item.category} 
-                          className="category-img-icon" 
+                        <img
+                          src={theme.image}
+                          alt={item.category}
+                          className="category-img-icon"
                         />
                       </div>
-                      
+
                       <div className="ie-item-meta">
                         <span className="ie-item-name">{item.name}</span>
-                        <span className="ie-item-sub">{item.date} • {item.category}</span>
+                        <span className="ie-item-sub">{item.date} • {translateCategory(item.category)}</span>
                       </div>
                     </div>
-                    
+
                     <div className="ie-item-right">
                       <div className={`ie-item-amount ${item.type}`}>
                         {item.type === 'income' ? '+' : '-'}
-                        {parseFloat(item.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })} $
+                        {parseFloat(item.amount).toLocaleString(numberLocale, { minimumFractionDigits: 2 })} ₺
                       </div>
-                      
-                      <button 
+
+                      <button
                         className="btn-delete-transaction"
                         onClick={() => openDeleteModal(item.id)}
-                        title="Delete Transaction"
+                        title={t('incomeExpense.deleteTooltip')}
                       >
                         <FiTrash2 />
                       </button>
@@ -137,26 +142,26 @@ const IncomeExpensePage = () => {
       )}
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <AddTransactionForm 
-          onAdd={handleAddTransaction} 
-          onClose={() => setIsModalOpen(false)} 
+        <AddTransactionForm
+          onAdd={handleAddTransaction}
+          onClose={() => setIsModalOpen(false)}
         />
       </Modal>
 
       <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)}>
         <div className="delete-modal-content">
           <div className="delete-header">
-            <h2>Delete '{itemToBeDeleted?.name}'?</h2>
+            <h2>{t('incomeExpense.deleteTitle', { name: itemToBeDeleted?.name || '' })}</h2>
           </div>
           <p className="delete-message">
-            Are you sure you want to delete this transaction? This action cannot be reversed.
+            {t('incomeExpense.deleteMessage')}
           </p>
           <div className="delete-actions">
             <button className="btn-delete-confirm" onClick={confirmDelete}>
-              Yes, Confirm Deletion
+              {t('common.yesConfirm')}
             </button>
             <button className="btn-delete-cancel" onClick={() => setIsDeleteModalOpen(false)}>
-              No, Go Back
+              {t('common.noGoBack')}
             </button>
           </div>
         </div>

@@ -1,14 +1,13 @@
-// src/components/pots/AddMoneyForm.jsx
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
-// Bu bileşen, hangi pot'a para ekleneceğini (pot),
-// ekleme işlemini onaylama (onConfirm) ve modalı kapatma (onClose) fonksiyonlarını dışarıdan alır.
 const AddMoneyForm = ({ pot, onConfirm, onClose }) => {
+  const { t } = useTranslation();
   const [amountToAdd, setAmountToAdd] = useState('');
   const [newAmount, setNewAmount] = useState(pot.saved);
   const [newProgress, setNewProgress] = useState(0);
+  const [error, setError] = useState('');
 
-  // Eklenecek miktar değiştikçe yeni toplamı ve ilerlemeyi hesapla
   useEffect(() => {
     const addedValue = parseFloat(amountToAdd) || 0;
     const potentialNewAmount = pot.saved + addedValue;
@@ -16,53 +15,55 @@ const AddMoneyForm = ({ pot, onConfirm, onClose }) => {
     setNewProgress(pot.target > 0 ? (potentialNewAmount / pot.target) * 100 : 0);
   }, [amountToAdd, pot.saved, pot.target]);
 
-
   const handleSubmit = (event) => {
     event.preventDefault();
     const addedValue = parseFloat(amountToAdd);
     if (isNaN(addedValue) || addedValue <= 0) {
-      alert("Please enter a valid amount to add.");
+      setError(t('addMoneyForm.errorInvalid'));
       return;
     }
-    // Ana bileşendeki güncelleme fonksiyonunu çağır
     onConfirm(pot.id, addedValue);
-    onClose(); // Modalı kapat
+    onClose();
   };
 
   return (
     <form onSubmit={handleSubmit} className="add-money-form">
-      {/* Dinamik başlık */}
-      <h2>Add to '{pot.name}'</h2>
-      <p>Add money to your pot to keep it separate from your main balance.</p>
+      <h2>{t('addMoneyForm.title', { name: pot.name })}</h2>
+      <p>{t('addMoneyForm.subtitle')}</p>
 
-      {/* Resimdeki gibi yeni durumu gösteren önizleme */}
+      {error && (
+        <div style={{ padding: '12px 16px', background: 'rgba(220, 38, 38, 0.1)', color: '#dc2626', borderRadius: '8px', fontSize: '13px', fontWeight: '500', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span>⚠️</span> {error}
+        </div>
+      )}
+
       <div className="preview-section">
-        <p className="preview-label">New Amount</p>
-        <p className="preview-amount">${newAmount.toFixed(2)}</p>
+        <p className="preview-label">{t('addMoneyForm.newAmount')}</p>
+        <p className="preview-amount">₺{newAmount.toFixed(2)}</p>
         <div className="progress-bar preview-progress">
-          <div 
-            className={`progress-bar-fill theme-${pot.theme}`} 
-            style={{ width: `${Math.min(newProgress, 100)}%` }} // %100'ü geçmesin
+          <div
+            className={`progress-bar-fill theme-${pot.theme}`}
+            style={{ width: `${Math.min(newProgress, 100)}%` }}
           ></div>
         </div>
         <div className="preview-target">
           <span>{Math.min(newProgress, 100).toFixed(0)}%</span>
-          <span>Target of ${pot.target.toFixed(0)}</span>
+          <span>{t('potCard.target', { target: pot.target.toFixed(0) })}</span>
         </div>
       </div>
 
       <div className="form-group">
-        <label htmlFor="amount-to-add">Amount to Add</label>
-        <input 
+        <label htmlFor="amount-to-add">{t('addMoneyForm.amountToAdd')}</label>
+        <input
           id="amount-to-add"
           type="number"
           value={amountToAdd}
-          onChange={(e) => setAmountToAdd(e.target.value)}
-          placeholder="$ 400"
-          step="0.01" // Kuruş girişi için
+          onChange={(e) => { setAmountToAdd(e.target.value); setError(''); }}
+          placeholder="₺ 400"
+          step="0.01"
         />
       </div>
-      <button type="submit" className="btn-primary form-submit-btn">Confirm Addition</button>
+      <button type="submit" className="btn-primary form-submit-btn">{t('addMoneyForm.submit')}</button>
     </form>
   );
 };

@@ -1,21 +1,27 @@
 import Transaction from '../models/Transaction.js';
+import { checkBudgetForCategory } from '../services/notificationService.js';
 
 const formatTransaction = (tx) => {
   const date = tx.date ? new Date(tx.date) : new Date();
-  const formattedDate = date.toLocaleDateString('tr-TR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
   return {
     ...tx,
     id: tx._id.toString(),
-    date: formattedDate,
+    date: date.toISOString(),
   };
 };
 
+// Recompute notifications for a category off the response path.
+const fireBudgetCheck = (userId, ...categories) => {
+  const unique = [...new Set(categories.filter(Boolean))];
+  for (const cat of unique) {
+    checkBudgetForCategory(userId, cat).catch((err) =>
+      console.error('[budget notify]', err)
+    );
+  }
+};
+
 export const getTransactions = async (req, res) => {
-  const transactions = await Transaction.find({ userId: req.user.uid }).sort({ date: -1 }).lean();
+  const transactions = await Transaction.find({ userId: req.user.uid }).sort({ createdAt: -1 }).lean();
   res.json(transactions.map(formatTransaction));
 };
 
@@ -35,15 +41,37 @@ export const createTransaction = async (req, res) => {
     createdAt: Date.now(),
   });
 
+  if (type === 'expense' && category) {
+    fireBudgetCheck(req.user.uid, category);
+  }
+
   res.status(201).json(formatTransaction(transaction.toObject()));
 };
 
 export const deleteTransaction = async (req, res) => {
-  await Transaction.findOneAndDelete({ _id: req.params.id, userId: req.user.uid });
+  const deleted = await Transaction.findOneAndDelete({
+    _id: req.params.id,
+    userId: req.user.uid,
+  }).lean();
+
+  // Recompute the budget tier so it can drop back down (and re-fire on a future climb).
+  if (deleted?.type === 'expense' && deleted.category) {
+    fireBudgetCheck(req.user.uid, deleted.category);
+  }
+
   res.json({ message: 'Transaction deleted' });
 };
 
 export const updateTransaction = async (req, res) => {
+  // Read the previous category before updating so we can recompute both buckets
+  // when a transaction's category changes (e.g., Dining Out → Groceries).
+  const previous = await Transaction.findOne({
+    _id: req.params.id,
+    userId: req.user.uid,
+  })
+    .select('category type')
+    .lean();
+
   const update = { ...req.body };
   if (update.amount !== undefined) update.amount = Number(update.amount);
   if (update.date) update.date = new Date(update.date);
@@ -56,6 +84,10 @@ export const updateTransaction = async (req, res) => {
 
   if (!transaction) {
     return res.status(404).json({ message: 'Transaction not found.' });
+  }
+
+  if (transaction.type === 'expense' || previous?.type === 'expense') {
+    fireBudgetCheck(req.user.uid, previous?.category, transaction.category);
   }
 
   res.json(formatTransaction(transaction));

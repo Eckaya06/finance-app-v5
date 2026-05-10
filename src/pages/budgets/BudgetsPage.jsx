@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useTransactions } from '../../context/TransactionContext.jsx';
 import Modal from '../../components/modal/Modal.jsx';
 import AddBudgetForm from '../../components/budgets/AddBudgetForm.jsx';
@@ -11,7 +12,8 @@ import DeleteBudgetModal from '../../components/budgets/DeleteBudgetModal.jsx';
 import emptyBudgetImg from '../../assets/empty-budget.webp';
 
 const BudgetsPage = () => {
-  const { budgets, addBudget, deleteBudget, updateBudget } = useTransactions(); 
+  const { t } = useTranslation();
+  const { budgets, addBudget, deleteBudget, updateBudget } = useTransactions();
   
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [openOptionsMenuId, setOpenOptionsMenuId] = useState(null);
@@ -29,8 +31,8 @@ const BudgetsPage = () => {
     );
 
     if (categoryExists) {
-      alert(`You already have a budget for ${newBudgetData.category}. Please choose a different category or edit the existing one.`);
-      return; // Varsa işlemi burada durdur, Firebase'e kaydetme!
+      alert(t('budgetsPage.duplicateAlert', { category: newBudgetData.category }));
+      return;
     }
 
     const now = Date.now(); 
@@ -57,8 +59,8 @@ const BudgetsPage = () => {
     );
 
     if (categoryExists) {
-      alert(`You already have a budget for ${updatedData.category}. Please choose a different category.`);
-      return; // Varsa işlemi burada durdur!
+      alert(t('budgetsPage.duplicateAlertEdit', { category: updatedData.category }));
+      return;
     }
 
     await updateBudget(budgetId, updatedData);
@@ -89,18 +91,18 @@ const BudgetsPage = () => {
   return (
     <div className="page-container">
       <div className="page-header">
-        <h1 className="page-title">Budgets</h1>
+        <h1 className="page-title">{t('budgetsPage.title')}</h1>
         <button className="btn-primary" onClick={() => setIsAddModalOpen(true)}>
-          + Add New Budget
+          {t('budgetsPage.addNew')}
         </button>
       </div>
 
       {budgets.length === 0 ? (
         <EmptyState
           icon={<FiPieChart />}
-          title="Create Your First Budget"
-          message="Set spending limits for different categories to help you monitor and control your spending."
-          buttonText="+ Create First Budget"
+          title={t('budgetsPage.emptyTitle')}
+          message={t('budgetsPage.emptyMessage')}
+          buttonText={t('budgetsPage.createFirst')}
           onAction={() => setIsAddModalOpen(true)}
           backgroundImage={emptyBudgetImg}
         />

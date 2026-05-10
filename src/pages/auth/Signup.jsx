@@ -1,22 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import logoImg from '../../assets/Logo.webp';
-
-const validateEmail = (email) => {
-  const trimmed = email.trim().toLowerCase();
-
-  if (!trimmed) {
-    return 'Please enter your email address.';
-  }
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(trimmed)) {
-    return 'Please enter a valid email address.';
-  }
-
-  return '';
-};
 
 const getPasswordChecks = (password) => {
   return {
@@ -27,35 +13,13 @@ const getPasswordChecks = (password) => {
   };
 };
 
-const getPasswordError = (password) => {
-  if (!password) {
-    return 'Please enter your password.';
-  }
-
-  if (password.length < 8) {
-    return 'Your password must contain at least 8 characters.';
-  }
-
-  if (!/[A-Z]/.test(password)) {
-    return 'Your password must contain at least one uppercase letter.';
-  }
-
-  if (!/[a-z]/.test(password)) {
-    return 'Your password must contain at least one lowercase letter.';
-  }
-
-  if (!/\d/.test(password)) {
-    return 'Your password must contain at least one number.';
-  }
-
-  return '';
-};
-
 const Signup = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { signup } = useAuth();
 
   const [formData, setFormData] = useState({
+    displayName: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -96,19 +60,38 @@ const Signup = () => {
     if (success) setSuccess('');
   };
 
+  const validateEmail = (email) => {
+    const trimmed = email.trim().toLowerCase();
+    if (!trimmed) return t('auth.signup.errors.enterEmail');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmed)) return t('auth.signup.errors.validEmail');
+    return '';
+  };
+
+  const getPasswordError = (password) => {
+    if (!password) return t('auth.signup.errors.enterPassword');
+    if (password.length < 8) return t('auth.signup.errors.passwordMin');
+    if (!/[A-Z]/.test(password)) return t('auth.signup.errors.passwordUpper');
+    if (!/[a-z]/.test(password)) return t('auth.signup.errors.passwordLower');
+    if (!/\d/.test(password)) return t('auth.signup.errors.passwordNumber');
+    return '';
+  };
+
   const validateForm = () => {
+    const trimmedDisplayName = formData.displayName.trim();
+    if (!trimmedDisplayName) return t('auth.signup.errors.enterName');
+    if (trimmedDisplayName.length < 2) return t('auth.signup.errors.nameMin');
+
     const emailError = validateEmail(formData.email);
     if (emailError) return emailError;
 
     const passwordError = getPasswordError(formData.password);
     if (passwordError) return passwordError;
 
-    if (!formData.confirmPassword) {
-      return 'Please confirm your password.';
-    }
+    if (!formData.confirmPassword) return t('auth.signup.errors.confirmPwd');
 
     if (formData.password !== formData.confirmPassword) {
-      return 'Passwords do not match.';
+      return t('auth.signup.errors.passwordsMatch');
     }
 
     return '';
@@ -130,13 +113,13 @@ const Signup = () => {
       setLoading(true);
 
       const normalizedEmail = formData.email.trim().toLowerCase();
-      await signup(normalizedEmail, formData.password);
+      const trimmedDisplayName = formData.displayName.trim();
+      await signup(normalizedEmail, formData.password, trimmedDisplayName);
 
-      setSuccess(
-        `We have sent a verification email to ${normalizedEmail}. Please check your inbox and verify your account before logging in.`
-      );
+      setSuccess(t('auth.signup.successMessage', { email: normalizedEmail }));
 
       setFormData({
+        displayName: '',
         email: '',
         password: '',
         confirmPassword: '',
@@ -148,16 +131,13 @@ const Signup = () => {
       const serverMessage = error.response?.data?.message;
 
       if (status === 409) {
-        setError('This email address is already in use.');
+        setError(t('auth.signup.errors.emailInUse'));
       } else if (status === 400) {
-        setError(serverMessage || 'Please check your input and try again.');
+        setError(serverMessage || t('auth.signup.errors.checkInput'));
       } else if (status === 500) {
-        setError(
-          serverMessage ||
-            'We could not complete your registration at the moment. Please try again.'
-        );
+        setError(serverMessage || t('auth.signup.errors.registrationFail'));
       } else {
-        setError(serverMessage || 'An unexpected error occurred during registration.');
+        setError(serverMessage || t('auth.signup.errors.unexpected'));
       }
     } finally {
       setLoading(false);
@@ -171,13 +151,13 @@ const Signup = () => {
           <img src={logoImg} className="auth-hero-logo" alt="FinanceApp logo" />
           <div className="background-hero"></div>
           <div className="text-content">
-            <h1>Manage your money smarter</h1>
-            <p>Create an account to start tracking income, expenses, and budgets.</p>
+            <h1>{t('auth.signup.heroTitle')}</h1>
+            <p>{t('auth.signup.heroDescription')}</p>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-card" noValidate>
-          <h2>Sign up</h2>
+          <h2>{t('auth.signup.title')}</h2>
 
           {error && (
             <div
@@ -206,7 +186,21 @@ const Signup = () => {
           )}
 
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="displayName">{t('auth.signup.name')}</label>
+            <input
+              type="text"
+              id="displayName"
+              name="displayName"
+              value={formData.displayName}
+              onChange={handleChange}
+              disabled={loading}
+              autoComplete="name"
+              placeholder={t('auth.signup.namePlaceholder')}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="email">{t('auth.signup.email')}</label>
             <input
               type="email"
               id="email"
@@ -215,12 +209,12 @@ const Signup = () => {
               onChange={handleChange}
               disabled={loading}
               autoComplete="email"
-              placeholder="Enter your email address"
+              placeholder={t('auth.signup.emailPlaceholder')}
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">{t('auth.signup.password')}</label>
             <input
               type="password"
               id="password"
@@ -229,29 +223,29 @@ const Signup = () => {
               onChange={handleChange}
               disabled={loading}
               autoComplete="new-password"
-              placeholder="Create a strong password"
+              placeholder={t('auth.signup.passwordPlaceholder')}
             />
 
             {formData.password && (
               <div style={{ marginTop: '10px', fontSize: '13px', lineHeight: '1.7' }}>
                 <div style={{ color: passwordChecks.minLength ? '#27ae60' : '#666' }}>
-                  {passwordChecks.minLength ? '✓' : '•'} At least 8 characters
+                  {passwordChecks.minLength ? '✓' : '•'} {t('auth.signup.passwordChecks.minLength')}
                 </div>
                 <div style={{ color: passwordChecks.hasUppercase ? '#27ae60' : '#666' }}>
-                  {passwordChecks.hasUppercase ? '✓' : '•'} At least one uppercase letter
+                  {passwordChecks.hasUppercase ? '✓' : '•'} {t('auth.signup.passwordChecks.hasUppercase')}
                 </div>
                 <div style={{ color: passwordChecks.hasLowercase ? '#27ae60' : '#666' }}>
-                  {passwordChecks.hasLowercase ? '✓' : '•'} At least one lowercase letter
+                  {passwordChecks.hasLowercase ? '✓' : '•'} {t('auth.signup.passwordChecks.hasLowercase')}
                 </div>
                 <div style={{ color: passwordChecks.hasNumber ? '#27ae60' : '#666' }}>
-                  {passwordChecks.hasNumber ? '✓' : '•'} At least one number
+                  {passwordChecks.hasNumber ? '✓' : '•'} {t('auth.signup.passwordChecks.hasNumber')}
                 </div>
               </div>
             )}
           </div>
 
           <div className="form-group">
-            <label htmlFor="confirmPassword">Confirm password</label>
+            <label htmlFor="confirmPassword">{t('auth.signup.confirmPassword')}</label>
             <input
               type="password"
               id="confirmPassword"
@@ -260,16 +254,16 @@ const Signup = () => {
               onChange={handleChange}
               disabled={loading}
               autoComplete="new-password"
-              placeholder="Re-enter your password"
+              placeholder={t('auth.signup.confirmPasswordPlaceholder')}
             />
           </div>
 
           <button type="submit" className="primary" disabled={loading}>
-            {loading ? 'Creating account...' : 'Sign up'}
+            {loading ? t('auth.signup.creatingAccount') : t('auth.signup.title')}
           </button>
 
           <p className="small">
-            Do you already have an account? <Link to="/login">Sign in</Link>
+            {t('auth.signup.haveAccount')} <Link to="/login">{t('auth.signup.loginLink')}</Link>
           </p>
         </form>
       </div>

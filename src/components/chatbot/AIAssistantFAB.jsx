@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { motion as Motion, AnimatePresence } from 'framer-motion'; 
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useChat } from '../../context/ChatContext';
 import './AIAssistantFAB.css';
 
 export const AIAssistantFAB = () => {
+  const { t } = useTranslation();
   const [isHovered, setIsHovered] = useState(false);
   const { toggleChat, unreadCount, isOpen } = useChat();
 
@@ -25,7 +27,7 @@ export const AIAssistantFAB = () => {
             <div className="fab-tooltip-content">
               <div className="fab-tooltip-dot" />
               <p className="fab-tooltip-text">
-                AI Budget Alert: <span>{unreadCount} new insight{unreadCount > 1 ? 's' : ''}</span>
+                {t('chat.newInsight')} <span>{t('chat.newInsightCount', { count: unreadCount })}</span>
               </p>
             </div>
             <div className="fab-tooltip-arrow" />

@@ -1,25 +1,27 @@
-// src/components/transactions/TransactionItem.jsx
 import './Transactions.css';
+import { getCategoryTheme } from '../../utils/categoryIcons.jsx';
 
 const TransactionItem = ({ transaction }) => {
-  const { name, date, amount, type, avatar } = transaction;
+  const { name, date, amount, type, category } = transaction;
 
-  // Miktarı formatlayalım: income ise başına '+', değilse zaten '-' var.
-  const formattedAmount = type === 'income' ? `+$${amount.toFixed(2)}` : `-$${Math.abs(amount).toFixed(2)}`;
+  const theme = getCategoryTheme(category || (type === 'income' ? 'income' : 'general'));
 
-  // Miktarın class'ını tipine göre belirleyelim (yeşil veya varsayılan)
-  const amountClassName = `transaction-amount ${type}`; // "transaction-amount income" veya "transaction-amount expense"
+  const formattedAmount = type === 'income'
+    ? `+₺${Number(amount).toFixed(2)}`
+    : `-₺${Math.abs(Number(amount)).toFixed(2)}`;
 
   return (
     <li className="transaction-item">
       <div className="transaction-details">
-        <img src={avatar} alt={name} className="transaction-avatar" />
+        <div className="transaction-avatar-wrap" style={{ backgroundColor: theme.bg }}>
+          <img src={theme.image} alt={category} className="transaction-avatar-icon" />
+        </div>
         <div>
           <p className="transaction-name">{name}</p>
           <p className="transaction-date">{date}</p>
         </div>
       </div>
-      <p className={amountClassName}>{formattedAmount}</p>
+      <p className={`transaction-amount ${type}`}>{formattedAmount}</p>
     </li>
   );
 };
