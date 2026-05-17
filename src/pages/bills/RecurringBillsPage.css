@@ -562,56 +562,8 @@ body.theme-dark .add-bill-form .btn-submit {
   box-shadow: 0 4px 12px rgba(0,0,0,.15);
 }
 
-/* ===== EMPTY STATE ===== */
-.bills-empty {
-  text-align: center;
-  padding: 60px 24px;
-}
-
-.bills-empty-icon {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, rgba(99,106,232,.1), rgba(99,106,232,.05));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 20px;
-}
-.bills-empty-icon svg {
-  width: 32px;
-  height: 32px;
-  color: #636ae8;
-}
-
-.bills-empty h3 {
-  font-size: 18px;
-  font-weight: 700;
-  margin: 0 0 8px;
-  color: var(--text);
-}
-
-.bills-empty p {
-  font-size: 14px;
-  color: var(--muted);
-  max-width: 340px;
-  margin: 0 auto 20px;
-  line-height: 1.5;
-}
-
-.bills-empty .btn-empty-add {
-  padding: 10px 24px;
-  border: none;
-  border-radius: 10px;
-  background: var(--primary);
-  color: #fff;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all .2s;
-}
-body.theme-dark .bills-empty .btn-empty-add {
-  color: #0f1115;
+.bills-page-empty {
+  margin: 2.5rem auto;
 }
 
 /* Days left countdown */

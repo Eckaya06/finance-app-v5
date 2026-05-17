@@ -270,6 +270,61 @@ export const deleteAsset = async (req, res) => {
   }
 };
 
+// ─── DELETE /api/portfolio/transaction/:txId ───
+// Tek bir portföy işlemini siler — kullanıcı yanlış BUY/SELL girdiğinde
+// "Son İşlemler" listesinden satırı silmek için. Holdings özeti otomatik
+// olarak getPortfolioSummary'de yeniden hesaplandığı için ayrıca bir geri
+// alma adımı gerekmiyor; satır silindiğinde toplamlar zaten yeniden tükenir.
+export const deletePortfolioTransaction = async (req, res) => {
+  try {
+    const { txId } = req.params;
+    if (!txId || !mongoose.Types.ObjectId.isValid(txId)) {
+      return res.status(400).json({ message: 'Valid transaction id is required' });
+    }
+
+    const tx = await Portfolio.findOne({ _id: txId, userId: req.user.uid });
+    if (!tx) {
+      return res.status(404).json({ message: 'Transaction not found' });
+    }
+
+    // SELL silinirse otomatik holding artar — bu beklenen davranış (yanlış
+    // satışı geri al). BUY silinirse holding azalır; eğer bu silme sonucunda
+    // toplam adet negatife düşerse veriyi bozmaktan kaçınalım: reddet.
+    if (tx.transactionType === 'BUY') {
+      const holdings = await Portfolio.aggregate([
+        { $match: { userId: new mongoose.Types.ObjectId(req.user.uid), assetType: tx.assetType } },
+        {
+          $group: {
+            _id: null,
+            totalBought: {
+              $sum: { $cond: [{ $eq: ['$transactionType', 'BUY'] }, '$amount', 0] },
+            },
+            totalSold: {
+              $sum: { $cond: [{ $eq: ['$transactionType', 'SELL'] }, '$amount', 0] },
+            },
+          },
+        },
+      ]);
+      const totalBought = holdings[0]?.totalBought || 0;
+      const totalSold = holdings[0]?.totalSold || 0;
+      const remainingAfterDelete = (totalBought - tx.amount) - totalSold;
+      if (remainingAfterDelete < 0) {
+        return res.status(400).json({
+          message:
+            'Cannot delete this BUY — doing so would put your holdings below the amount already sold. ' +
+            'Delete the matching SELL transaction(s) first.',
+        });
+      }
+    }
+
+    await Portfolio.deleteOne({ _id: txId });
+    res.json({ message: 'Transaction deleted', txId });
+  } catch (error) {
+    console.error('Delete portfolio tx error:', error);
+    res.status(500).json({ message: 'Failed to delete transaction' });
+  }
+};
+
 // ─── PUT /api/portfolio/asset/:assetType ───
 export const updateAsset = async (req, res) => {
   try {

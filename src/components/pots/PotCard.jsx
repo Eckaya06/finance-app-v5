@@ -1,5 +1,5 @@
 import './PotCard.css';
-import { FiMoreHorizontal } from 'react-icons/fi';
+import { FiMoreHorizontal, FiCheck } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
 
 const PotCard = ({ pot, onAddMoneyClick, onWithdrawClick, potActionError, onOptionsToggle, isOptionsMenuOpen, onDeleteClick, onEditClick }) => {
@@ -8,6 +8,7 @@ const PotCard = ({ pot, onAddMoneyClick, onWithdrawClick, potActionError, onOpti
   if (!pot) { return null; }
 
   const progressPercentage = pot.target > 0 ? (pot.saved / pot.target) * 100 : 0;
+  const isCompleted = pot.target > 0 && pot.saved >= pot.target;
 
   const handleEdit = () => {
     onEditClick(pot.id);
@@ -16,7 +17,17 @@ const PotCard = ({ pot, onAddMoneyClick, onWithdrawClick, potActionError, onOpti
   const showError = potActionError && potActionError.potId === pot.id;
 
   return (
-    <div className={`pot-card theme-${pot.theme}`} data-pot-id={pot.id}>
+    <div className={`pot-card theme-${pot.theme} ${isCompleted ? 'is-completed' : ''}`} data-pot-id={pot.id}>
+      {isCompleted && (
+        /* Sağ üst köşede 45° diyagonal "TAMAMLANDI" ribbon'u. Kartın geri
+           kalanı tamamen okunabilir kalır; ribbon kalıcı görsel işaret. */
+        <div className="pot-completed-ribbon" aria-label={t('potCard.completedOverlayTitle')}>
+          <span>
+            <FiCheck aria-hidden="true" />
+            {t('potCard.completedBadge')}
+          </span>
+        </div>
+      )}
       <div className="pot-card-header">
         <div className="pot-icon"></div>
         <h3>{pot.name}</h3>

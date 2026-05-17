@@ -2,9 +2,12 @@ import './BudgetsCard.css';
 import { useTransactions } from '../../context/TransactionContext';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell } from 'recharts';
+import ResponsiveChart from '../charts/ResponsiveChart.jsx';
 import { getCategoryColor } from '../../utils/categoryColors';
-import emptyBudgetImage from '../../assets/empty-budget.webp';
+import { FiPieChart } from 'react-icons/fi';
+import EmptyState from '../emptystate/EmptyState.jsx';
+import DonutCenterLabel from '../charts/DonutCenterLabel.jsx';
 
 const BudgetsCard = () => {
   const { t } = useTranslation();
@@ -27,21 +30,31 @@ const BudgetsCard = () => {
       </div>
 
       {budgets.length === 0 ? (
-        <div className="budgets-empty-state">
-          <img src={emptyBudgetImage} alt="" className="budgets-empty-state-img" />
-          <p>{t('budgetsCard.empty')}</p>
-        </div>
+        <EmptyState
+          compact
+          variant="purple"
+          icon={<FiPieChart />}
+          message={t('budgetsCard.empty')}
+        />
       ) : (
         <div className="budget-content">
-          <div className="chart-container">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="chart-container budget-donut-chart">
+            <DonutCenterLabel
+              variant="budget"
+              value={`₺${totalSpent.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}`}
+              caption={t('budgetsCard.ofLimit', { limit: totalLimit.toLocaleString('tr-TR', { maximumFractionDigits: 0 }) })}
+              holeRatio={0.48}
+              valueClassName="spent-amount"
+              captionClassName="limit-text"
+            />
+            <ResponsiveChart fill>
               <PieChart>
                 <Pie
                   data={chartData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
+                  innerRadius="52%"
+                  outerRadius="76%"
                   paddingAngle={5}
                   dataKey="value"
                 >
@@ -50,11 +63,7 @@ const BudgetsCard = () => {
                   ))}
                 </Pie>
               </PieChart>
-            </ResponsiveContainer>
-            <div className="chart-center-text">
-              <p className="spent-amount">₺{totalSpent.toFixed(0)}</p>
-              <p className="limit-text">{t('budgetsCard.ofLimit', { limit: totalLimit.toFixed(0) })}</p>
-            </div>
+            </ResponsiveChart>
           </div>
           <div className="budget-legend">
             {budgets.map((item) => (

@@ -1,0 +1,611 @@
+/* ============================================================================
+   GLOBAL RESPONSIVE OVERRIDES
+   ----------------------------------------------------------------------------
+   Bu dosya tüm uygulamadaki sayfa/bileşenleri responsive hale getirir.
+   Mevcut light/dark dosyalarına dokunulmaz — sadece daraltma kuralları ekler.
+   ============================================================================ */
+
+/* ============================ TAŞMAYI ÖNLE — TÜM BOYUTLAR ================ */
+/* main-content ve sayfa kabları flex/grid içinde squish edilebilmeli */
+.main-content {
+  min-width: 0;
+}
+.bills-layout,
+.bp-content-grid,
+.pp-content-grid,
+.sv-grid,
+.dashboard-main-grid,
+.stat-cards-grid,
+.kpi-grid,
+.card-container,
+.ap-page-card,
+.ap-analytics-grid {
+  min-width: 0;
+}
+.bills-list-section,
+.transaction-table,
+.transactions-container,
+.ie-transactions-container {
+  min-width: 0;
+  overflow-x: auto;
+}
+
+/* ============================ GENİŞ TABLET (≤ 1200px) ===================== */
+/* Bills sayfası: 280px sidebar + 1fr içerik 1024-1200px arası sıkışıyor.
+   Transactions: filtreleme barı 3 element aynı satırda sıkışıyor. */
+@media (max-width: 1200px) {
+  .bills-layout {
+    grid-template-columns: 1fr !important;
+  }
+  .bills-sidebar {
+    position: static !important;
+  }
+
+  /* Bills tablo: aksiyon sütunu auto, diğerleri esnek */
+  .bills-table-header,
+  .bill-row {
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(80px, auto) auto !important;
+    gap: 10px !important;
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+  }
+  .bills-table-header > *,
+  .bill-row > * {
+    min-width: 0;
+  }
+  .bill-info {
+    min-width: 0;
+  }
+  .bill-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Bills toolbar — wrap'le */
+  .bills-toolbar {
+    gap: 10px !important;
+  }
+  .bills-search {
+    flex: 1 1 220px !important;
+    max-width: none !important;
+  }
+  .bills-toolbar-right .dropdown-container {
+    width: 180px !important;
+  }
+
+  /* Transactions filtreleme barı — dropdownlar daha esnek */
+  .filters-bar {
+    flex-wrap: wrap !important;
+    gap: 0.75rem !important;
+  }
+  .filters-bar .search-input-container {
+    flex: 1 1 240px;
+    width: auto !important;
+  }
+  .filters-bar .search-input {
+    width: 100% !important;
+  }
+  .filters-bar .dropdowns {
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+  }
+  .filters-bar .dropdown-container {
+    flex: 1 1 180px;
+    width: auto !important;
+    min-width: 160px;
+  }
+}
+
+/* ============================ TABLET (≤ 1024px) =========================== */
+@media (max-width: 1024px) {
+  /* Sayfa konteynerleri biraz dar */
+  .page-container,
+  .analytics-page,
+  .budgets-page-v2 .page-container,
+  .settings-v2 {
+    padding: 1.75rem !important;
+  }
+
+  /* Outer page-card padding'ini biraz dar */
+  .bp-page-card,
+  .pp-page-card,
+  .sv-page-card,
+  .page-card {
+    padding: 1.25rem !important;
+  }
+
+  /* Settings grid */
+  .sv-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .sv-span-2 {
+    grid-column: span 1 !important;
+  }
+
+  /* Home dashboard: tek sütun (Home.css ile uyumlu) */
+  .dashboard-main-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .pots-card,
+  .dashboard-main-grid .card-container {
+    align-self: start !important;
+  }
+
+  /* IncomeExpense: 2 → 1 kolon */
+  .ie-summary-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Bills layout: 280px sidebar + 1fr → tek sütun (ekran taşmasın) */
+  .bills-layout {
+    grid-template-columns: 1fr !important;
+  }
+  .bills-sidebar {
+    position: static !important;
+  }
+
+  /* Bills tablosu: 4 sütundan 2 sütuna düş (kategori/aksiyon sıkıştır) */
+  .bills-table-header,
+  .bill-row {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto auto !important;
+    gap: 10px !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  .bills-table-header > *,
+  .bill-row > * {
+    min-width: 0;
+  }
+
+  /* Filtreleme barı (TransactionsPage) — dikey ve full-width */
+  .filters-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.6rem !important;
+  }
+  .filters-bar .search-input-container,
+  .filters-bar .search-input {
+    width: 100% !important;
+    flex: none !important;
+  }
+  .filters-bar .dropdowns {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+    flex: none !important;
+  }
+  .filters-bar .dropdown-container {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* Bills toolbar dropdown / search esnek olsun */
+  .bills-toolbar {
+    gap: 10px !important;
+  }
+  .bills-search {
+    flex: 1 1 200px !important;
+    max-width: none !important;
+  }
+  .bills-toolbar-right {
+    flex: 1 1 auto !important;
+    justify-content: flex-end;
+  }
+  .bills-toolbar-right .dropdown-container {
+    width: 180px !important;
+  }
+
+  /* Tablo container'lara overflow koruması */
+  .bills-list-section,
+  .transaction-table {
+    overflow-x: auto;
+  }
+
+  /* main-content min-width fix — flex children taşmasın */
+  .main-content {
+    min-width: 0;
+  }
+}
+
+/* ============================ MOBİL ORTA (≤ 768px) ======================== */
+@media (max-width: 768px) {
+  /* Sayfa konteynerleri */
+  .page-container,
+  .analytics-page,
+  .budgets-page-v2 .page-container,
+  .settings-v2,
+  .overview-page,
+  .bills-page,
+  .portfolio-page,
+  .pots-page,
+  .transactions-page {
+    padding: 1rem !important;
+  }
+
+  .bp-page-card,
+  .pp-page-card,
+  .sv-page-card,
+  .page-card {
+    padding: 1rem !important;
+    border-radius: 14px !important;
+  }
+
+  /* Sayfa başlıkları küçülür */
+  .page-title,
+  .sv-title,
+  .bp-title {
+    font-size: 1.6rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  /* Stat / KPI gridleri zorla tek sütun */
+  .stat-cards-grid,
+  .kpi-grid,
+  .ie-summary-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+
+  /* Bütçe / Pots ana grid'leri */
+  .bp-stats-grid,
+  .pp-stats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+
+  /* Analytics charts row */
+  .charts-grid,
+  .analytics-charts-row {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  /* Portfolio rates */
+  .rates-grid-2col,
+  .rates-grid-gold {
+    grid-template-columns: 1fr !important;
+  }
+  .holdings-cards-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .holding-card-body {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Bütçe sayfası iç düzen */
+  .bp-content-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Pots içerik */
+  .pots-list {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+  .pots-content {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 1rem !important;
+  }
+  .total-saved-section {
+    width: 100%;
+  }
+
+  /* Budgets card chart layout */
+  .budget-content {
+    gap: 1rem !important;
+  }
+  .budget-donut-chart {
+    max-width: min(100%, 220px);
+    min-height: clamp(140px, 50vw, 220px);
+  }
+
+  /* Analytics donut — panel içinde taşmayı önle */
+  .ap-distribution-body,
+  .ap-panel--distribution {
+    min-width: 0;
+  }
+  .ap-donut-chart-wrap {
+    max-width: 100%;
+  }
+
+  /* Filtreleme barı */
+  .filters-bar {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 0.75rem;
+  }
+  .dropdowns {
+    flex-direction: column;
+    gap: 0.5rem !important;
+  }
+  .search-input-container {
+    width: 100% !important;
+  }
+  .search-input {
+    width: 100% !important;
+  }
+
+  /* TransactionsPage tablosunu kart formatına çevir */
+  .transaction-table {
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .table-header {
+    display: none !important;
+  }
+  .table-row {
+    grid-template-columns: 1fr auto !important;
+    grid-template-areas:
+      'recipient amount'
+      'category date' !important;
+    gap: 0.35rem 0.75rem !important;
+    padding: 0.85rem 1rem !important;
+    align-items: center;
+  }
+  .table-row > *:nth-child(1) { grid-area: recipient; }
+  .table-row > *:nth-child(2) { grid-area: category; }
+  .table-row > *:nth-child(3) { grid-area: date; justify-self: start !important; text-align: left !important; }
+  .table-row > *:nth-child(4) { grid-area: amount; justify-self: end !important; text-align: right !important; }
+  .table-row .category-icon-badge {
+    width: 36px;
+    height: 36px;
+  }
+  .table-row .recipient-cell {
+    font-size: 0.95rem;
+  }
+  .table-row .category-pill {
+    padding: 4px 8px;
+    font-size: 0.78rem;
+  }
+
+  /* Bills tablosu: mobilde her satır kart formatı (header gizli, dikey) */
+  .bills-table-header {
+    display: none !important;
+  }
+  .bill-row {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    padding: 14px 16px !important;
+  }
+  .bill-row > * {
+    width: 100%;
+  }
+  .bill-info {
+    align-items: center;
+  }
+  .bill-actions {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+  .bills-toolbar {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+  .bills-toolbar-right {
+    flex-direction: column;
+    align-items: stretch !important;
+    width: 100%;
+  }
+  .bills-toolbar-right .dropdown-container,
+  .bills-search {
+    width: 100% !important;
+    max-width: none !important;
+  }
+  .bills-page .btn-add-bill {
+    width: 100%;
+  }
+
+  /* Pagination'ı saralım */
+  .pagination-container {
+    flex-direction: column;
+    gap: 0.5rem !important;
+  }
+  .pagination-controls {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* Modal'lar daha sıkı padding */
+  .modal-content,
+  .sv-modal {
+    padding: 1.25rem !important;
+    border-radius: 14px !important;
+  }
+
+  /* Bütçe/Pot detay kartları başlık satırı */
+  .bp-budget-card .bp-budget-card-head,
+  .pot-card .pot-card-header {
+    flex-wrap: wrap;
+  }
+
+  /* CustomDropdown genişliği esnek */
+  .dropdown-container {
+    width: 100% !important;
+  }
+
+  /* Settings: profil bloğu dikey */
+  .sv-profile {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+  .sv-inline {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+  .sv-inline .sv-btn {
+    width: 100%;
+  }
+  .sv-danger-body {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+  .sv-danger-body .sv-btn {
+    width: 100%;
+  }
+
+  /* Settings theme grid */
+  .sv-theme-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Analytics timeframe tabs */
+  .analytics-header {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+  }
+  .timeframe-tabs {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  /* Budgets / Pots header */
+  .bp-header,
+  .pp-header,
+  .bills-page .page-header {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 0.85rem !important;
+  }
+  .bp-add-btn,
+  .pp-add-btn,
+  .btn-add-bill {
+    width: 100%;
+  }
+
+  /* IE özet kart içeriği */
+  .ie-summary-card {
+    padding: 1rem !important;
+    gap: 0.85rem !important;
+  }
+  .ie-card-icon {
+    width: 44px !important;
+    height: 44px !important;
+    font-size: 1.15rem !important;
+  }
+  .ie-card-info h3 {
+    font-size: 1.35rem !important;
+  }
+
+  /* Stat card amount */
+  .stat-card-amount {
+    font-size: 1.65rem !important;
+  }
+}
+
+/* ============================ MOBİL DAR (≤ 480px) ========================= */
+@media (max-width: 480px) {
+  .page-container,
+  .analytics-page,
+  .budgets-page-v2 .page-container,
+  .settings-v2,
+  .overview-page,
+  .bills-page,
+  .portfolio-page,
+  .pots-page,
+  .transactions-page {
+    padding: 0.75rem !important;
+  }
+
+  .bp-page-card,
+  .pp-page-card,
+  .sv-page-card,
+  .page-card {
+    padding: 0.85rem !important;
+  }
+
+  .page-title,
+  .sv-title,
+  .bp-title {
+    font-size: 1.4rem !important;
+  }
+
+  /* Bütçe / Pots kart başlıklarındaki büyük tutarlar */
+  .bp-stat-value,
+  .pp-stat-value {
+    font-size: 1.35rem !important;
+  }
+
+  /* Settings theme grid mobilde tek sıra */
+  .sv-theme-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem !important;
+  }
+  .sv-theme-preview {
+    height: 44px !important;
+  }
+
+  /* Inline action buttons full-width */
+  .pot-actions {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* IE özet kart dikey */
+  .ie-summary-card {
+    flex-direction: column;
+    text-align: center;
+    align-items: center !important;
+  }
+  .ie-card-info {
+    text-align: center;
+  }
+}
+
+/* ============================ FLOATING ELEMENTS (mobile) ================== */
+@media (max-width: 768px) {
+  /* Chat FAB daha küçük ve daha yakın köşe */
+  .fab-container {
+    bottom: 1rem !important;
+    right: 1rem !important;
+  }
+  body[data-sidebar-side="right"] .fab-container {
+    right: auto !important;
+    left: 1rem !important;
+  }
+  .fab-button {
+    width: 3.25rem !important;
+    height: 3.25rem !important;
+  }
+  .fab-tooltip {
+    display: none !important;
+  }
+
+  /* Logout/lang sağ üst hamburger ile çakışmasın diye:
+     Sidebar SAĞDA olduğunda lang+logout SOL'a kayar; o zaman sol üst
+     köşede hamburger var → lang+logout SAĞA dön (override). */
+  .dashboard-layout.is-mobile .lang-switcher,
+  .dashboard-layout.is-mobile .logout-fab {
+    top: 10px;
+  }
+
+  /* Lang-switcher boşluk değişkeni mobilde başlıkları sıkıştırmasın */
+  :root {
+    --lang-switcher-space: 0px;
+  }
+
+  /* Portfolio header rezerveli padding'i kaldır */
+  .portfolio-header {
+    padding-right: 0 !important;
+    padding-left: 0 !important;
+  }
+  body[data-sidebar-side="right"] .overview-page > .page-title,
+  body[data-sidebar-side="right"] .bills-page .page-header,
+  body[data-sidebar-side="right"] .portfolio-header {
+    padding-left: 0 !important;
+  }
+}
+
+/* ============================ TÜM SAYFA: yatay scroll'u önle ============= */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Görseller hep responsive */
+img {
+  max-width: 100%;
+}

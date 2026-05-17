@@ -80,3 +80,32 @@
     font-size: 0.72rem;
   }
 }
+
+/* Sidebar sağa geçtiğinde dil seçici sola yapışsın */
+body[data-sidebar-side="right"] .lang-switcher {
+  right: auto;
+  left: 20px;
+}
+
+@media (max-width: 600px) {
+  body[data-sidebar-side="right"] .lang-switcher {
+    right: auto;
+    left: 10px;
+  }
+}
+
+/* Sidebar SAĞA geçtiğinde TR/EN + Çıkış butonları sol-üste taşınır.
+   Üç sayfanın (Overview / Portfolio / Bills) başlığı sol-üstte
+   olduğundan butonlarla çakışıyor. Bu üç sayfaya özel sol boşluk
+   rezerve ediyoruz. Portfolio için ek olarak sağdaki rezervi
+   sıfırlıyoruz çünkü artık aksiyon butonları (Yenile vb.) sağda
+   serbest kaldı. */
+body[data-sidebar-side="right"] .overview-page > .page-title,
+body[data-sidebar-side="right"] .bills-page .page-header,
+body[data-sidebar-side="right"] .portfolio-header {
+  padding-left: var(--lang-switcher-space);
+}
+
+body[data-sidebar-side="right"] .portfolio-header {
+  padding-right: 0;
+}

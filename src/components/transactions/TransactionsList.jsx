@@ -3,7 +3,8 @@ import { useTransactions } from '../../context/TransactionContext';
 import TransactionItem from './TransactionItem.jsx';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import emptyTransactionsImage from '../../assets/empty-transactions.webp';
+import { FiActivity } from 'react-icons/fi';
+import EmptyState from '../emptystate/EmptyState.jsx';
 
 const TransactionsList = ({ limit, showViewAll = false }) => {
   const { t } = useTranslation();
@@ -20,10 +21,12 @@ const TransactionsList = ({ limit, showViewAll = false }) => {
       </div>
 
       {transactions.length === 0 ? (
-        <div className="transactions-empty-state">
-          <img src={emptyTransactionsImage} alt="" className="transactions-empty-state-img" />
-          <p>{t('transactionsCard.empty')}</p>
-        </div>
+        <EmptyState
+          compact
+          variant="blue"
+          icon={<FiActivity />}
+          message={t('transactionsCard.empty')}
+        />
       ) : (
         <ul className="transactions-list">
           {transactionsToDisplay.map((tx) => (

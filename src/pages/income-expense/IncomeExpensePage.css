@@ -1,5 +1,9 @@
 /* src/pages/income-expense/IncomeExpensePage.css */
 
+.ie-page-card {
+  min-height: calc(100vh - 8rem);
+}
+
 /* --- Üst Kısım: Özet Kartları --- */
 .ie-summary-grid {
   display: grid;
@@ -67,19 +71,6 @@
 
 .ie-item-left { display: flex; align-items: center; gap: 1rem; }
 .ie-item-right { display: flex; align-items: center; gap: 1.5rem; }
-
-/* Avatar */
-.ie-item-avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.25rem;
-  flex-shrink: 0;
-  overflow: hidden;
-}
 
 .ie-item-meta { display: flex; flex-direction: column; }
 .ie-item-name { font-weight: 600; color: #201F24; font-size: 1rem; }
@@ -294,10 +285,3 @@
   transform: translateY(-1px);         /* Hafif bir kalkma efekti */
 }
 
-/* --- Ortak Resim İkon Stili --- */
-.category-img-icon {
-  width: 80px;   
-  height: 80px;
-  object-fit: contain; 
-  display: block;
-}

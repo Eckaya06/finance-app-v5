@@ -1,10 +1,15 @@
 /* src/pages/home/Home.css */
 
+.overview-page .page-card {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
 .page-title {
   font-size: 2.25rem;
   font-weight: 700;
   color: #201F24;
-  margin: 0 0 1.5rem 0;
+  margin: 0 0 2.25rem 0;
 }
 
 .stat-cards-grid {
@@ -12,6 +17,7 @@
   /* Mümkünse 3 sütun, sığmazsa 2 veya 1 sütun yap */
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem; /* Kartlar arası boşluk */
+  margin-top: 1.5rem;
 }
 
 /* --- EKSİK OLAN VE ŞİMDİ EKLEDİĞİMİZ KISIM --- */
@@ -19,8 +25,37 @@
 /* Stat kartlarının altındaki ana bölüm için grid yapısı */
 .dashboard-main-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr; /* Sol sütun (2 birim), Sağ sütun (1 birim) */
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
   gap: 1.5rem;
   margin-top: 1.5rem;
-  align-items: start; /* Her satırdaki kartların üstten hizalanması */
+  align-items: stretch;
+  min-width: 0;
+}
+
+/* Pots + Budgets yan yana: Pots kartı komşu yüksekliğe uzar */
+@media (min-width: 1281px) {
+  .dashboard-main-grid > .pots-card {
+    height: 100%;
+    min-height: 100%;
+  }
+}
+
+.dashboard-main-grid > * {
+  min-width: 0;
+}
+
+@media (max-width: 1280px) {
+  .overview-page .page-card {
+    padding-top: 3.25rem;
+  }
+
+  .dashboard-main-grid {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .dashboard-main-grid > .pots-card {
+    height: auto;
+    min-height: 0;
+  }
 }

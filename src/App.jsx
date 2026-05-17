@@ -14,6 +14,8 @@ import SettingsPage from './pages/settings/SettingsPage.jsx';
 import AnalyticsPage from './pages/analytics/AnalyticsPage.jsx';
 import PortfolioPage from './pages/portfolio/PortfolioPage.jsx';
 import RecurringBillsPage from './pages/bills/RecurringBillsPage.jsx';
+import AdminPanel from './pages/admin/AdminPanel.jsx';
+import DiagnosticsPanel from './pages/admin/DiagnosticsPanel.jsx';
 
 // UI Bileşenleri
 import AiChatSystem from './components/chatbot/AiChatSystem.jsx';
@@ -26,16 +28,30 @@ import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext.jsx';
 import { ChatProvider } from './context/ChatContext.jsx';
 import { TransactionProvider } from './context/TransactionContext.jsx';
+import { ThemeProvider } from './context/ThemeContext.jsx';
 
 const AssistantWrapper = () => {
   const location = useLocation();
   const authPaths = ['/login', '/signup', '/']; 
-  if (authPaths.includes(location.pathname)) return null;
+  if (authPaths.includes(location.pathname) || location.pathname.startsWith('/admin')) return null;
   return <AiChatSystem />;
+};
+
+const FloatingElements = () => {
+  const location = useLocation();
+  if (location.pathname.startsWith('/admin')) return null;
+  return (
+    <>
+      <ToastHost />
+      <LogoutButton />
+      <LanguageSwitcher />
+    </>
+  );
 };
 
 const App = () => {
   return (
+    <ThemeProvider>
     <AuthProvider>
       <ToastProvider>
         <ChatProvider>
@@ -47,6 +63,10 @@ const App = () => {
                 <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
                 <Route path="/verify/:token" element={<VerifyEmail />} />
                 <Route path="/" element={<Navigate to="/login" />} />
+                
+                {/* Admin Rotaları */}
+                <Route path="/admin" element={<AdminPanel />} />
+                <Route path="/admin/diagnostics" element={<DiagnosticsPanel />} />
 
                 {/* Korumalı Rotalar */}
                 <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
@@ -62,14 +82,13 @@ const App = () => {
                 </Route>
               </Routes>
               <AssistantWrapper />
-              <ToastHost />
-              <LogoutButton />
-              <LanguageSwitcher />
+              <FloatingElements />
             </div>
           </TransactionProvider>
         </ChatProvider>
       </ToastProvider>
     </AuthProvider>
+    </ThemeProvider>
   );
 };
 

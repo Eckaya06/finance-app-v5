@@ -4,7 +4,9 @@ import api from '../../api.js';
 import LiveRatesBanner from './components/LiveRatesBanner.jsx';
 import MyHoldings from './components/MyHoldings.jsx';
 import RecentTransactions from './components/RecentTransactions.jsx';
+import PnLTracker from './components/PnLTracker.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
+import { useTransactions } from '../../context/TransactionContext.jsx';
 import './Portfolio.css';
 
 const PortfolioPage = () => {
@@ -14,6 +16,11 @@ const PortfolioPage = () => {
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
   const { showToast } = useToast();
+  // AI agent portföye varlık eklediğinde TransactionContext bu sayacı artırır;
+  // değişimi dinleyip portföyü yeniden çekiyoruz (sayfa yenileme gerekmesin).
+  // Kullanıcı kendi al/sat/edit/sil yaptığında da bumpPortfolioVersion ile sayacı
+  // artırıyoruz — bu sayede AnalyticsPage gibi diğer sayfalar da otomatik refetch eder.
+  const { portfolioVersion, bumpPortfolioVersion } = useTransactions();
 
   // ─── Fetch Market Rates ───
   const fetchRates = useCallback(async () => {
@@ -52,12 +59,21 @@ const PortfolioPage = () => {
     return () => clearInterval(interval);
   }, [fetchRates]);
 
+  // ─── AI agent ile portföye varlık eklenirse: TransactionContext'in
+  // portfolioVersion sayacını izleyip otomatik refetch yapıyoruz. ───
+  useEffect(() => {
+    if (portfolioVersion > 0) {
+      fetchPortfolio();
+    }
+  }, [portfolioVersion, fetchPortfolio]);
+
   // ─── Handlers ───
   const handleAdd = async (formData) => {
     try {
       const { data } = await api.post('/portfolio/buy', formData);
       showToast(data.message, 'success');
       await fetchPortfolio();
+      bumpPortfolioVersion();
     } catch (err) {
       const msg = err.response?.data?.message || t('portfolio.addFail');
       showToast(msg, 'error');
@@ -74,6 +90,7 @@ const PortfolioPage = () => {
       });
       showToast(t('portfolio.withdrew', { amount, asset: assetType }), 'success');
       await fetchPortfolio();
+      bumpPortfolioVersion();
     } catch (err) {
       const msg = err.response?.data?.message || t('portfolio.withdrawFail');
       showToast(msg, 'error');
@@ -85,8 +102,21 @@ const PortfolioPage = () => {
       const { data } = await api.delete(`/portfolio/asset/${assetType}`);
       showToast(data.message, 'success');
       await fetchPortfolio();
+      bumpPortfolioVersion();
     } catch (err) {
       const msg = err.response?.data?.message || t('portfolio.deleteFail');
+      showToast(msg, 'error');
+    }
+  };
+
+  const handleDeletePortfolioTx = async (txId) => {
+    try {
+      await api.delete(`/portfolio/transaction/${txId}`);
+      showToast(t('portfolio.deleteTxSuccess'), 'success');
+      await fetchPortfolio();
+      bumpPortfolioVersion();
+    } catch (err) {
+      const msg = err.response?.data?.message || t('portfolio.deleteTxFail');
       showToast(msg, 'error');
     }
   };
@@ -100,6 +130,7 @@ const PortfolioPage = () => {
       });
       showToast(data.message, 'success');
       await fetchPortfolio();
+      bumpPortfolioVersion();
     } catch (err) {
       const msg = err.response?.data?.message || t('portfolio.updateFail');
       showToast(msg, 'error');
@@ -122,6 +153,7 @@ const PortfolioPage = () => {
   // ─── Render ───
   return (
     <div className="portfolio-container">
+      <div className="page-card">
       {/* Page Header */}
       <div className="portfolio-header">
         <h1 className="page-title">{t('portfolio.title')}</h1>
@@ -138,6 +170,9 @@ const PortfolioPage = () => {
         </div>
       </div>
 
+      {/* P&L Tracker */}
+      {!loading && rates && <PnLTracker rates={rates} />}
+
       {/* Live Rates */}
       {loading ? (
         <div className="skeleton-row">
@@ -146,7 +181,7 @@ const PortfolioPage = () => {
           ))}
         </div>
       ) : (
-        <LiveRatesBanner rates={rates} />
+        <LiveRatesBanner rates={rates} lastUpdated={lastUpdated} />
       )}
 
       {/* My Holdings Section */}
@@ -165,8 +200,10 @@ const PortfolioPage = () => {
       {portfolio?.recentTransactions?.length > 0 && (
         <RecentTransactions
           transactions={portfolio.recentTransactions}
+          onDeleteTransaction={handleDeletePortfolioTx}
         />
       )}
+      </div>
     </div>
   );
 };

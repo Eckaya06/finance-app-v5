@@ -5,7 +5,7 @@ import { useTransactions } from '../../context/TransactionContext.jsx';
 import CustomDropdown from '../../components/dropdown/CustomDropdown.jsx';
 import SearchInput from '../../components/search/SearchInput.jsx';
 import Pagination from '../../components/pagination/Pagination.jsx';
-import { getCategoryTheme } from '../../utils/categoryIcons.jsx';
+import { CategoryIcon } from '../../utils/categoryIcons.jsx';
 import { getCategoryColor } from '../../utils/categoryColors.js';
 import './TransactionsPage.css';
 
@@ -109,6 +109,7 @@ const TransactionsPage = () => {
 
   return (
     <div className="page-container">
+      <div className="page-card tp-page-card">
       <h1 className="page-title">{t('transactions.title')}</h1>
       <div className="filters-bar">
         <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder={t('transactions.searchPlaceholder')} />
@@ -136,14 +137,11 @@ const TransactionsPage = () => {
         <div className="table-body">
           {currentItems.length === 0 ? (<div className="no-data-message">{t('transactions.noResults')}</div>) : (
             currentItems.map((tx) => {
-              const theme = getCategoryTheme(tx.category);
               const catColor = getCategoryColor(tx.category);
               return (
                 <div key={tx.id} className="table-row">
                   <div className="recipient-cell">
-                    <div className="tx-avatar" style={{ backgroundColor: theme.bg }}>
-                      <img src={theme.image} alt={tx.category} className="category-img-icon" />
-                    </div>
+                    <CategoryIcon category={tx.category} type={tx.type} />
                     <span className="tx-name">{tx.name}</span>
                   </div>
                   <p className="category-cell">
@@ -162,6 +160,7 @@ const TransactionsPage = () => {
           )}
         </div>
         {currentItems.length > 0 && (<Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />)}
+      </div>
       </div>
     </div>
   );

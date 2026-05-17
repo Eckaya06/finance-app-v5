@@ -4,6 +4,9 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App.jsx';
 import './i18n';
 import './index.css';
+import './styles/darkMode.css';
+import './styles/responsive.css';
+import './styles/charts.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

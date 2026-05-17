@@ -10,6 +10,8 @@ import aiRoutes from './routes/aiRoutes.js';
 import marketRoutes from './routes/marketRoutes.js';
 import portfolioRoutes from './routes/portfolioRoutes.js';
 import recurringBillRoutes from './routes/recurringBillRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
+import diagnosticsRoutes from './routes/diagnosticsRoutes.js';
 import { startBillReminderJob } from './jobs/billReminderJob.js';
 
 dotenv.config();
@@ -29,8 +31,12 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/market', marketRoutes);
 app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/bills', recurringBillRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/diagnostics', diagnosticsRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Finance backend listening on port ${PORT}`);
 });
+
+// Trigger restart for env

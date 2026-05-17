@@ -86,7 +86,7 @@ const AddAssetForm = ({ onAddAsset, onClose, getCurrentRate }) => {
               <li className="select-option" onClick={() => handleAssetSelect(null)}>
                 {t('addAssetForm.chooseAsset')}
               </li>
-              <li disabled className="select-option" style={{ fontWeight: 'bold', backgroundColor: '#f9f9f9', cursor: 'default' }}>
+              <li disabled className="select-option" style={{ fontWeight: 'bold', backgroundColor: 'var(--bg)', cursor: 'default' }}>
                 {t('portfolio.currencies')}
               </li>
               {ASSET_OPTIONS.filter((a) => a.group === 'Currencies').map(option => (
@@ -94,7 +94,7 @@ const AddAssetForm = ({ onAddAsset, onClose, getCurrentRate }) => {
                   {ASSET_META[option.value]?.icon} {ASSET_META[option.value]?.label}
                 </li>
               ))}
-              <li disabled className="select-option" style={{ fontWeight: 'bold', backgroundColor: '#f9f9f9', cursor: 'default' }}>
+              <li disabled className="select-option" style={{ fontWeight: 'bold', backgroundColor: 'var(--bg)', cursor: 'default' }}>
                 {t('portfolio.gold')}
               </li>
               {ASSET_OPTIONS.filter((a) => a.group === 'Gold').map(option => (
@@ -129,13 +129,13 @@ const AddAssetForm = ({ onAddAsset, onClose, getCurrentRate }) => {
         <label>{t('addAssetForm.currentPrice')}</label>
         <div className="input-with-prefix">
           <span>₺</span>
-          <input 
+          <input
             type="text"
-            value={asset && getCurrentRate(asset) 
+            value={asset && getCurrentRate(asset)
               ? getCurrentRate(asset)?.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) || '0'
               : '0.00'}
             readOnly
-            style={{ backgroundColor: '#f9f9f9', color: '#666' }}
+            className="add-asset-price-readonly"
           />
         </div>
       </div>

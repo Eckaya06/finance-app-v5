@@ -4,10 +4,16 @@ import './Sidebar.css';
 
 import { FiHome, FiRepeat, FiPieChart, FiBox, FiClipboard, FiChevronsLeft, FiChevronsRight, FiPlusCircle, FiSettings, FiBarChart2, FiTrendingUp } from 'react-icons/fi';
 
-const Sidebar = ({ isCollapsed, onToggle }) => {
+const Sidebar = ({ isCollapsed, onToggle, isMobile = false, onNavigate }) => {
   const { t } = useTranslation();
 
-  const sidebarClassName = `sidebar ${isCollapsed ? 'collapsed' : ''}`;
+  const sidebarClassName = [
+    'sidebar',
+    isCollapsed ? 'collapsed' : '',
+    isMobile ? 'is-mobile-drawer' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   // Sidebar artık üç bölüme ayrılmış halde render edilir:
   //  1) Üst (kategorisiz): Overview + Analytics
@@ -61,7 +67,7 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
             <ul className="nav-list">
               {group.items.map((item) => (
                 <li key={item.path} className="nav-item">
-                  <NavLink to={item.path} title={item.name}>
+                  <NavLink to={item.path} title={item.name} onClick={onNavigate}>
                     <span className="nav-icon">{item.icon}</span>
                     {/* Span her zaman DOM'da; collapsed iken CSS ile gizleniyor.
                         Koşullu render edersek mount/unmount sırasında flex
@@ -74,12 +80,14 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
           </div>
         ))}
       </nav>
-      <div className="sidebar-footer">
-        <button className="minimize-btn" onClick={onToggle} title={isCollapsed ? t('sidebar.expandMenu') : t('sidebar.minimizeMenu')}>
-          {isCollapsed ? <FiChevronsRight size={20} /> : <FiChevronsLeft size={20} />}
-          <span>{t('sidebar.minimizeMenu')}</span>
-        </button>
-      </div>
+      {!isMobile && (
+        <div className="sidebar-footer">
+          <button className="minimize-btn" onClick={onToggle} title={isCollapsed ? t('sidebar.expandMenu') : t('sidebar.minimizeMenu')}>
+            {isCollapsed ? <FiChevronsRight size={20} /> : <FiChevronsLeft size={20} />}
+            <span>{t('sidebar.minimizeMenu')}</span>
+          </button>
+        </div>
+      )}
     </aside>
   );
 };

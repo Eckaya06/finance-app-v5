@@ -2,6 +2,11 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto'; // Node.js dahili modülü
 import User from '../models/User.js';
+import Transaction from '../models/Transaction.js';
+import Budget from '../models/Budget.js';
+import Pot from '../models/Pot.js';
+import RecurringBill from '../models/RecurringBill.js';
+import Portfolio from '../models/Portfolio.js';
 import { sendEmail } from '../utils/sendEmail.js'; // utils klasörüne eklediğimiz yardımcı fonksiyon
 
 const createToken = (user) => {
@@ -63,15 +68,18 @@ export const signup = async (req, res) => {
     });
     console.log('✅ Email başarıyla gönderildi');
   } catch (error) {
-    console.error("⚠️ Email gönderim hatası (devam ediliyor):", error.message);
-    // Email gönderilemediyse de devam et - test için
-    // Production'da kullanıcıyı silmeliyiz ama şimdi test yapıyoruz
+    console.error("⚠️ Email gönderim hatası:", error.message);
+    // E-posta gönderilemediyse kullanıcı doğrulama linkini alamayacağı için kaydı geri al
+    await User.deleteOne({ _id: user._id });
+    return res.status(500).json({
+      message: 'Doğrulama e-postası gönderilemedi. Lütfen daha sonra tekrar deneyin.'
+    });
   }
 
+  // Kullanıcı doğrulanmadan token verilmez. Frontend bu mesajı gösterip /login'e yönlendirir.
   res.status(201).json({
-    message: 'Kayıt başarılı. E-posta adresiniz doğrulandı. Giriş yapabilirsiniz.',
-    user: { uid: user._id.toString(), email: user.email, displayName: user.displayName },
-    token: createToken(user)
+    message: 'Kayıt başarılı. Hesabınızı etkinleştirmek için e-posta kutunuzu kontrol edip doğrulama linkine tıklayın.',
+    user: { uid: user._id.toString(), email: user.email, displayName: user.displayName }
   });
 };
 
@@ -175,7 +183,7 @@ export const changeEmail = async (req, res) => {
 
   const validPassword = await bcrypt.compare(currentPassword, user.passwordHash);
   if (!validPassword) {
-    return res.status(401).json({ message: 'Current password is incorrect.' });
+    return res.status(400).json({ message: 'Current password is incorrect.' });
   }
 
   const emailTaken = await User.findOne({ email: newEmail.toLowerCase().trim() });
@@ -205,11 +213,64 @@ export const changePassword = async (req, res) => {
 
   const validPassword = await bcrypt.compare(currentPassword, user.passwordHash);
   if (!validPassword) {
-    return res.status(401).json({ message: 'Current password is incorrect.' });
+    return res.status(400).json({ message: 'Current password is incorrect.' });
   }
 
   user.passwordHash = await bcrypt.hash(newPassword, 10);
   await user.save();
 
   res.json({ message: 'Password updated successfully.' });
+};
+
+export const changeDisplayName = async (req, res) => {
+  const { displayName } = req.body;
+  const trimmed = typeof displayName === 'string' ? displayName.trim() : '';
+  if (!trimmed) {
+    return res.status(400).json({ message: 'Display name is required.' });
+  }
+  if (trimmed.length > 60) {
+    return res.status(400).json({ message: 'Display name must be 60 characters or less.' });
+  }
+
+  const user = await User.findById(req.user.uid);
+  if (!user) {
+    return res.status(404).json({ message: 'User not found.' });
+  }
+
+  user.displayName = trimmed;
+  await user.save();
+
+  res.json({
+    message: 'Display name updated successfully.',
+    user: { uid: user._id.toString(), email: user.email, displayName: user.displayName },
+  });
+};
+
+export const deleteAccount = async (req, res) => {
+  const { currentPassword } = req.body;
+  if (!currentPassword) {
+    return res.status(400).json({ message: 'Current password is required.' });
+  }
+
+  const user = await User.findById(req.user.uid);
+  if (!user) {
+    return res.status(404).json({ message: 'User not found.' });
+  }
+
+  const valid = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!valid) {
+    return res.status(400).json({ message: 'Current password is incorrect.' });
+  }
+
+  const userId = user._id;
+  await Promise.all([
+    Transaction.deleteMany({ userId }),
+    Budget.deleteMany({ userId }),
+    Pot.deleteMany({ userId }),
+    RecurringBill.deleteMany({ userId }),
+    Portfolio.deleteMany({ userId }),
+  ]);
+  await User.deleteOne({ _id: userId });
+
+  res.json({ message: 'Account deleted successfully.' });
 };

@@ -8,10 +8,18 @@ import './AIAssistantFAB.css';
 export const AIAssistantFAB = () => {
   const { t } = useTranslation();
   const [isHovered, setIsHovered] = useState(false);
-  const { toggleChat, unreadCount, isOpen } = useChat();
+  const { toggleChat, unreadCount, unreadInsightCount, isOpen } = useChat();
 
   // Çift dikiş güvenlik: Açıksa asla render etme!
   if (isOpen) return null;
+
+  // Tooltip metni: bütçe/fatura uyarısı varsa "AI Bütçe Uyarısı", yoksa generic
+  // "X mesajınız var". Insight sayısı > 0 ise insight tooltip'i öne çıkar.
+  const hasInsight = unreadInsightCount > 0;
+  const tooltipLabel = hasInsight ? t('chat.newInsight') : t('chat.newMessage');
+  const tooltipCount = hasInsight
+    ? t('chat.newInsightCount', { count: unreadInsightCount })
+    : t('chat.newMessageCount', { count: unreadCount });
 
   return (
     <div className="fab-container">
@@ -27,7 +35,7 @@ export const AIAssistantFAB = () => {
             <div className="fab-tooltip-content">
               <div className="fab-tooltip-dot" />
               <p className="fab-tooltip-text">
-                {t('chat.newInsight')} <span>{t('chat.newInsightCount', { count: unreadCount })}</span>
+                {tooltipLabel} <span>{tooltipCount}</span>
               </p>
             </div>
             <div className="fab-tooltip-arrow" />

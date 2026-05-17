@@ -1,4 +1,4 @@
-/* src/components/pots/PotsCard.css */
+/* src/components/pots/PotsCard.css — orijinal görünüm, responsive düzen */
 .card-container {
   background-color: white;
   padding: 1.5rem;
@@ -10,10 +10,11 @@
 }
 
 .pots-card {
-  align-self: stretch;
   padding: 2rem;
   display: flex;
   flex-direction: column;
+  container-type: inline-size;
+  box-sizing: border-box;
 }
 
 .card-header {
@@ -35,10 +36,15 @@
   text-decoration: none;
 }
 
+/* Dar ekranda dikey; geniş kart içinde yan yana (eski görünüm) */
 .pots-content {
   display: flex;
-  gap: 2rem;
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1.5rem;
+  min-width: 0;
+  width: 100%;
+  flex: 0 0 auto;
 }
 
 .total-saved-section {
@@ -48,8 +54,10 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  flex: 1 1 0;
-  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
 .total-saved-jar-icon {
@@ -60,8 +68,8 @@
 
 .total-saved-text {
   flex: 1;
-  text-align: center;
   min-width: 0;
+  text-align: center;
 }
 
 .total-saved-label {
@@ -72,34 +80,33 @@
 
 .total-saved-amount {
   margin: 0.25rem 0 0 0;
-  font-size: 1.75rem;
+  font-size: clamp(1.2rem, 4cqw, 1.75rem);
   font-weight: 700;
   color: #1e293b;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
 }
 
 .pots-list {
-  flex-grow: 1;
+  width: 100%;
+  min-width: 0;
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Resimdeki gibi her zaman 2 sütun */
-  gap: 1.5rem; /* Sütunlar ve satırlar arası boşluk */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
 }
-
 
 .pot-item {
-  display: flex; /* Çizgi ve yazıları yan yana getirmek için */
-  align-items: stretch; /* İçindeki elemanların yüksekliğini eşitle */
-  gap: 0.75rem; /* Çizgi ile yazı arasına boşluk */
-  /* Artık border-bottom'a ihtiyacımız yok, onu silebilirsin */
+  display: flex;
+  align-items: stretch;
+  gap: 0.75rem;
+  min-width: 0;
 }
-
 
 .pot-indicator {
   width: 4px;
-  background-color: #10b981; /* Şimdilik hepsi için yeşil bir renk */
+  flex-shrink: 0;
   border-radius: 4px;
-  
-
-  
+  background-color: #10b981;
 }
 
 .pot-item p {
@@ -109,38 +116,70 @@
 .pot-name {
   font-size: 0.9rem;
   color: #475569;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .pot-amount {
   font-weight: 600;
-  font-size: 1.1rem; 
+  font-size: 1.1rem;
+  color: #1e293b;
 }
+
 .pot-details {
   display: flex;
   flex-direction: column;
   justify-content: center;
-}
-
-.pots-empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 2rem 1rem;
-  color: #94a3b8;
-  font-size: 0.95rem;
-  gap: 1rem;
-  width: 100%;
   min-width: 0;
-  box-sizing: border-box;
+  flex: 1;
 }
 
-.pots-empty-state-img {
-  width: 260px;
-  max-width: 100%;
-  height: auto;
-  display: block;
-  object-fit: contain;
-  mix-blend-mode: multiply;
+.pots-card .es-panel--compact {
+  flex: 0 0 auto;
+}
+
+/* Kart yeterince genişse: sol kutu + sağ 2x2 grid (orijinal) */
+@container (min-width: 520px) {
+  .pots-content {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+
+  .total-saved-section {
+    flex: 0 1 42%;
+    max-width: 42%;
+    min-width: 0;
+  }
+
+  .pots-list {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}
+
+@container (max-width: 519px) {
+  .pots-list {
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .pots-list {
+    grid-template-columns: 1fr;
+  }
+
+  .pots-card {
+    padding: 1.5rem;
+  }
+}
+
+body.theme-dark .total-saved-section {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+body.theme-dark .total-saved-amount,
+body.theme-dark .pot-amount {
+  color: var(--text, #f8fafc);
 }

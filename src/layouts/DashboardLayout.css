@@ -3,8 +3,13 @@
 .dashboard-layout {
   display: flex;
   height: 100vh;
-  background-color: #f8f4f0;
+  background-color: var(--bg, #f8f4f0);
   overflow: hidden;
+  position: relative;
+}
+
+.dashboard-layout.sidebar-right {
+  flex-direction: row-reverse;
 }
 
 .main-content {
@@ -15,4 +20,177 @@
   /* GPU compositing — prevents layout reflow during sidebar animation */
   will-change: transform;
   transform: translateZ(0);
+}
+
+/* Sidebar sağa geçtiğinde köşeleri ayna çevir */
+.dashboard-layout.sidebar-right .sidebar {
+  border-bottom-right-radius: 0;
+  border-top-right-radius: 0;
+  border-bottom-left-radius: 12px;
+  border-top-left-radius: 16px;
+}
+
+/* Dark mode için body class'ı */
+body.theme-dark .dashboard-layout {
+  background-color: #0f1115;
+}
+
+/* =====================================================================
+   MOBİL: Sidebar drawer + hamburger
+   ===================================================================== */
+
+/* Hamburger butonu */
+.mobile-menu-btn {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 10001;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.92);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.10);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #1f2937;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.12s ease, background 0.18s ease;
+}
+
+.mobile-menu-btn:hover {
+  background: #ffffff;
+}
+
+.mobile-menu-btn:active {
+  transform: scale(0.95);
+}
+
+body.theme-dark .mobile-menu-btn {
+  background: rgba(23, 26, 33, 0.92);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #eef2ff;
+}
+
+body.theme-dark .mobile-menu-btn:hover {
+  background: #1f242d;
+}
+
+/* Sidebar sağdayken hamburger sağa geçer */
+.dashboard-layout.sidebar-right .mobile-menu-btn {
+  left: auto;
+  right: 12px;
+}
+
+/* Overlay */
+.mobile-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 9998;
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  animation: dl-fade 0.18s ease;
+}
+
+@keyframes dl-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Mobil modda sidebar drawer'a dönüşür */
+.dashboard-layout.is-mobile .sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100dvh;
+  height: 100vh;
+  width: min(88vw, 320px);
+  max-width: 320px;
+  min-width: 0;
+  z-index: 9999;
+  border-radius: 0;
+  transform: translateX(-100%);
+  transition: transform 0.28s ease-in-out, box-shadow 0.28s ease-in-out;
+  box-shadow: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-top: 1rem;
+  padding-bottom: 1.5rem;
+}
+
+/* Drawer açıkken kapatma butonu panelin sağ kenarına kayar — logo ile çakışmaz */
+.dashboard-layout.is-mobile.drawer-open .mobile-menu-btn {
+  left: calc(min(88vw, 320px) - 54px);
+  transition: left 0.28s ease-in-out, right 0.28s ease-in-out, transform 0.12s ease;
+}
+
+.dashboard-layout.is-mobile.sidebar-right .sidebar {
+  left: auto;
+  right: 0;
+  transform: translateX(100%);
+}
+
+.dashboard-layout.is-mobile.sidebar-right.drawer-open .mobile-menu-btn {
+  left: auto;
+  right: calc(min(88vw, 320px) - 54px);
+}
+
+.dashboard-layout.is-mobile.drawer-open .sidebar {
+  transform: translateX(0);
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.35);
+}
+
+/* Tablet/mobil: üstte sabit dil/çıkış butonları için boşluk */
+.dashboard-layout.is-mobile .main-content {
+  padding: 4rem 1rem 1.25rem;
+  width: 100%;
+}
+
+.dashboard-layout:not(.is-mobile) .main-content {
+  min-width: 0;
+}
+
+/* Tablet: sidebar dar ikon modunda — içerik alanı genişler */
+.dashboard-layout.is-tablet:not(.is-mobile) .main-content {
+  padding: 2rem 1.75rem;
+}
+
+@media (min-width: 1025px) {
+  .dashboard-layout.is-tablet .sidebar.collapsed,
+  .dashboard-layout.is-tablet .sidebar {
+    width: 50px;
+    min-width: 50px;
+    padding: 1.5rem 0.75rem;
+  }
+}
+
+@media (max-width: 1280px) {
+  .dashboard-layout:not(.is-mobile) .main-content {
+    padding-top: 3.75rem;
+  }
+}
+
+/* Geniş masaüstü: biraz daha ferah içerik padding */
+@media (min-width: 1281px) {
+  .dashboard-layout:not(.is-mobile) .main-content {
+    padding: 2.5rem;
+  }
+}
+
+/* Sidebar sağdayken hamburger sağda olduğundan title vb. sağ padding */
+.dashboard-layout.is-mobile.sidebar-right .main-content {
+  padding: 4rem 1rem 1.25rem;
+}
+
+/* Mobilde küçük ekran ek daraltma */
+@media (max-width: 480px) {
+  .dashboard-layout.is-mobile .main-content {
+    padding: 3.5rem 0.75rem 1rem;
+  }
 }

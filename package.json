@@ -14,6 +14,8 @@
     "framer-motion": "^12.34.3",
     "i18next": "^26.0.10",
     "i18next-browser-languagedetector": "^8.2.1",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.7",
     "lucide-react": "^0.575.0",
     "node-fetch": "^3.3.2",
     "react": "^19.1.1",

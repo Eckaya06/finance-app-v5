@@ -2,7 +2,8 @@ import './RecurringBillsCard.css';
 import { useTransactions } from '../../context/TransactionContext';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import emptyBillsImage from '../../assets/recurring_bills.webp';
+import { FiFileText } from 'react-icons/fi';
+import EmptyState from '../emptystate/EmptyState.jsx';
 
 const getDaysUntilDue = (dueDay) => {
   const now = new Date();
@@ -48,10 +49,12 @@ const RecurringBillsCard = () => {
       </div>
 
       {bills.length === 0 ? (
-        <div className="bills-empty-state">
-          <img src={emptyBillsImage} alt="" className="bills-empty-state-img" />
-          <p>{t('billsCard.empty')}</p>
-        </div>
+        <EmptyState
+          compact
+          variant="orange"
+          icon={<FiFileText />}
+          message={t('billsCard.empty')}
+        />
       ) : (
         <div className="bills-list">
           {summaryItems.map(bill => (

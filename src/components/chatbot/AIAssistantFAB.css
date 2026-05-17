@@ -132,3 +132,28 @@
     opacity: 0;
   }
 }
+
+/* Sidebar sağa geçtiğinde AI asistanı butonu sol alta yapışsın
+   ve tooltip / ok ucu da sola hizalansın. */
+body[data-sidebar-side="right"] .fab-container {
+  right: auto;
+  left: 2rem;
+  align-items: flex-start;
+}
+
+body[data-sidebar-side="right"] .fab-tooltip {
+  margin-right: 0;
+  margin-left: 0.5rem;
+}
+
+body[data-sidebar-side="right"] .fab-tooltip-arrow {
+  right: auto;
+  left: 24px;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+body[data-sidebar-side="right"] .fab-badge-wrapper {
+  right: auto;
+  left: 0;
+  transform: translate(-10%, -10%);
+}

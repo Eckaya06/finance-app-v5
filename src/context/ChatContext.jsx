@@ -1,7 +1,45 @@
-import React, { createContext, useContext, useState, useRef, useCallback } from 'react';
+import React, { createContext, useContext, useState, useRef, useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useToast } from './ToastContext.jsx';
+import { useAuth } from './AuthContext';
 
 const ChatContext = createContext();
+
+// ─── Tema (renk) yardımcıları — AI pot/budget oluştururken kullanır ─────
+// Pot ve Budget formlarındaki ortak 7 tema. AI bunlardan biriyle gelmezse
+// kullanıcının söylediği rengi normalize ediyoruz; renk hiç söylenmemişse
+// mevcut pot/budget temalarına bakıp boşta olan birini rastgele veriyoruz.
+const ALL_THEMES = ['blue', 'cyan', 'green', 'orange', 'indigo', 'red', 'purple'];
+
+const COLOR_TO_THEME = {
+  // İngilizce / tema kodları
+  blue: 'blue', cyan: 'cyan', green: 'green', orange: 'orange',
+  indigo: 'indigo', red: 'red', purple: 'purple',
+  // Türkçe karşılıklar
+  mavi: 'blue',
+  'cam göbeği': 'cyan', camgobegi: 'cyan', 'cam gobegi': 'cyan', turkuaz: 'cyan',
+  yeşil: 'green', yesil: 'green',
+  turuncu: 'orange', portakal: 'orange',
+  çivit: 'indigo', civit: 'indigo', lacivert: 'indigo',
+  kırmızı: 'red', kirmizi: 'red', kızıl: 'red', kizil: 'red',
+  mor: 'purple', erguvani: 'purple', menekşe: 'purple', menekse: 'purple',
+};
+
+const normalizeTheme = (raw) => {
+  if (!raw) return null;
+  const key = String(raw).trim().toLowerCase();
+  if (COLOR_TO_THEME[key]) return COLOR_TO_THEME[key];
+  return ALL_THEMES.includes(key) ? key : null;
+};
+
+const pickUnusedTheme = (usedThemes = []) => {
+  const usedSet = new Set(
+    usedThemes.filter(Boolean).map((t) => String(t).toLowerCase())
+  );
+  const available = ALL_THEMES.filter((t) => !usedSet.has(t));
+  const pool = available.length > 0 ? available : ALL_THEMES;
+  return pool[Math.floor(Math.random() * pool.length)];
+};
 
 // Kullanıcının "GOLD" gibi serbest yazımını backend enum'una çevir.
 const ASSET_ALIASES = {
@@ -54,9 +92,40 @@ const resolveBill = (bills, data = {}) => {
 };
 
 export const ChatProvider = ({ children }) => {
+  const { t } = useTranslation();
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  // ✅ Insight (bütçe/fatura uyarısı) okunmamış sayısı — generic unreadCount'tan
+  // ayrı; FAB tooltip metnini "AI Bütçe Uyarısı" vs "X yeni mesaj" arasında
+  // ayırt etmek için kullanılır.
+  const [unreadInsightCount, setUnreadInsightCount] = useState(0);
+
+  // ✅ Oturum karşılaması: kullanıcı siteye her girdiğinde (login veya sayfa
+  // yenileme sonrası /auth/me ile user set olduğunda) bir kez bot mesajı
+  // oluştur ve okunmamış bildirim olarak işaretle. Kullanıcı widget'ı
+  // açtığında bu mesajı görür. Aynı user.uid için tekrar tetiklenmez;
+  // logout olunca sıfırlanır.
+  const lastGreetedUserRef = useRef(null);
+  useEffect(() => {
+    if (!user?.uid) {
+      // Logout: state ve flag sıfırla
+      lastGreetedUserRef.current = null;
+      setMessages([]);
+      setUnreadCount(0);
+      setUnreadInsightCount(0);
+      return;
+    }
+    if (lastGreetedUserRef.current === user.uid) return;
+    lastGreetedUserRef.current = user.uid;
+    const userName = user.displayName?.trim() || 'dostum';
+    const greeting = t('chat.greeting', { name: userName });
+    setMessages([{ sender: 'bot', text: greeting, kind: 'normal' }]);
+    // Idempotent set: StrictMode'da effect iki kez çalışsa bile count 1 kalır.
+    if (!isOpen) setUnreadCount(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, t]);
 
   // ✅ AGENTIC UI: Dinamik grafik modal state'i
   const [isChartModalOpen, setIsChartModalOpen] = useState(false);
@@ -90,17 +159,23 @@ export const ChatProvider = ({ children }) => {
         setMessages([]);
       } else {
         setUnreadCount(0);
+        setUnreadInsightCount(0);
       }
 
       return !prev;
     });
   };
 
-  const addMessage = (sender, text) => {
-    setMessages((prev) => [...prev, { sender, text }]);
+  // kind: 'normal' (varsayılan — karşılama, AI yanıtı) veya 'insight'
+  // (bütçe/fatura uyarısı). Insight olduğunda hem genel hem insight sayacı artar.
+  const addMessage = (sender, text, kind = 'normal') => {
+    setMessages((prev) => [...prev, { sender, text, kind }]);
 
     if (sender === 'bot' && !isOpen) {
       setUnreadCount((prev) => prev + 1);
+      if (kind === 'insight') {
+        setUnreadInsightCount((prev) => prev + 1);
+      }
     }
   };
 
@@ -150,10 +225,16 @@ export const ChatProvider = ({ children }) => {
           if (!handlers.addPot) throw new Error('Pot handler hazır değil.');
           const targetAmount = Number(data.targetAmount ?? data.target ?? 0);
           if (targetAmount <= 0) throw new Error('Pot hedef tutarı geçersiz.');
+          // Renk seçimi: AI/kullanıcı renk verdiyse normalize et; vermediyse
+          // mevcut potlarda boşta olan bir renk rastgele seç.
+          const requestedTheme = normalizeTheme(data.theme || data.color);
+          const potTheme = requestedTheme || pickUnusedTheme(
+            (handlers.getPots?.() || []).map((p) => p.theme)
+          );
           await handlers.addPot({
             name: data.title || data.name || 'Yeni Hedef',
             target: targetAmount,
-            theme: data.theme || 'green',
+            theme: potTheme,
           });
           showAgentToast(`Hedef potu oluşturuldu: ${data.title || data.name} • ${targetAmount} TL`);
           break;
@@ -164,11 +245,15 @@ export const ChatProvider = ({ children }) => {
           if (!handlers.addBudget) throw new Error('Budget handler hazır değil.');
           const limit = Number(data.limit ?? data.maxSpend ?? 0);
           if (limit <= 0) throw new Error('Bütçe limiti geçersiz.');
+          const requestedTheme = normalizeTheme(data.theme || data.color);
+          const budgetTheme = requestedTheme || pickUnusedTheme(
+            (handlers.getBudgets?.() || []).map((b) => b.theme)
+          );
           await handlers.addBudget({
             category: data.category || 'General',
             limit,
             maxSpend: limit, // backend her ikisini de kabul ediyor
-            theme: data.theme || 'blue',
+            theme: budgetTheme,
           });
           showAgentToast(`Bütçe oluşturuldu: ${data.category} • ${limit} TL`);
           break;
@@ -257,6 +342,7 @@ export const ChatProvider = ({ children }) => {
         messages,
         addMessage,
         unreadCount,
+        unreadInsightCount,
         // Chart modal API
         isChartModalOpen,
         chartModalConfig,

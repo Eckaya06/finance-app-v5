@@ -2,7 +2,6 @@
 import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  ResponsiveContainer,
   BarChart,
   Bar,
   XAxis,
@@ -11,6 +10,7 @@ import {
   CartesianGrid,
   Cell,
 } from 'recharts';
+import ResponsiveChart from '../charts/ResponsiveChart.jsx';
 import { useChat } from '../../context/ChatContext';
 import { useTransactions } from '../../context/TransactionContext';
 import { useAuth } from '../../context/AuthContext';
@@ -151,8 +151,8 @@ const AIChartModal = () => {
                 </span>
               </div>
 
-              <div className="ai-chart-modal-chart">
-                <ResponsiveContainer width="100%" height="100%">
+              <div className="ai-chart-modal-chart chart-container">
+                <ResponsiveChart fill>
                   <BarChart data={chartData} margin={{ top: 16, right: 16, left: 0, bottom: 8 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#eef0f3" vertical={false} />
                     <XAxis
@@ -182,7 +182,7 @@ const AIChartModal = () => {
                       ))}
                     </Bar>
                   </BarChart>
-                </ResponsiveContainer>
+                </ResponsiveChart>
               </div>
 
               <ul className="ai-chart-modal-legend">

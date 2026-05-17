@@ -1,0 +1,366 @@
+/* ─── Page shell ──────────────────────────────────────────────────────── */
+.diag-panel {
+  min-height: 100vh;
+  background: #0f1115;
+  color: #e2e8f0;
+  padding: 28px 32px 56px;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+/* ─── Login gate ──────────────────────────────────────────────────────── */
+.diag-login {
+  min-height: 100vh;
+  background: #0f1115;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.diag-login-card {
+  background: #171a21;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 32px;
+  width: 100%;
+  max-width: 360px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+}
+.diag-login-head { text-align: center; margin-bottom: 24px; color: #e2e8f0; }
+.diag-login-icon { font-size: 32px; color: #fbbf24; margin-bottom: 12px; }
+.diag-login-head h1 { margin: 0 0 4px; font-size: 22px; }
+.diag-login-head p { margin: 0; color: #94a3b8; font-size: 13px; }
+.diag-login form { display: flex; flex-direction: column; gap: 12px; }
+.diag-login input {
+  background: #0f1115;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 12px 14px;
+  color: #e2e8f0;
+  font-size: 14px;
+  outline: none;
+  font-family: inherit;
+}
+.diag-login input:focus { border-color: #6366f1; }
+.diag-login button {
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: #6366f1;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.diag-login button:hover { background: #4f46e5; }
+.diag-login-err {
+  background: rgba(220, 38, 38, 0.12);
+  border: 1px solid rgba(220, 38, 38, 0.4);
+  color: #fca5a5;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+/* ─── Header ─────────────────────────────────────────────────────────── */
+.diag-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.diag-header-left { display: flex; gap: 16px; align-items: flex-start; }
+.diag-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #171a21;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+.diag-back:hover { color: #e2e8f0; border-color: rgba(255, 255, 255, 0.18); }
+.diag-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #6366f1;
+}
+.diag-header h1 { margin: 4px 0 4px; font-size: 26px; font-weight: 700; }
+.diag-header p { margin: 0; color: #94a3b8; font-size: 13px; }
+
+.diag-header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.diag-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: #171a21;
+  color: #e2e8f0;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.diag-btn:hover:not(:disabled) { background: #1f232b; border-color: rgba(255, 255, 255, 0.18); }
+.diag-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.diag-btn-primary { background: #6366f1; border-color: #6366f1; color: #fff; }
+.diag-btn-primary:hover:not(:disabled) { background: #4f46e5; border-color: #4f46e5; }
+.diag-btn-ghost { background: transparent; }
+.diag-btn-small { padding: 6px 12px; font-size: 12px; }
+
+/* ─── Summary cards ─────────────────────────────────────────────────── */
+.diag-summary {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.diag-summary-card {
+  background: #171a21;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.diag-summary-card.ok { border-color: rgba(34, 197, 94, 0.3); }
+.diag-summary-card.fail { border-color: rgba(239, 68, 68, 0.35); }
+.diag-summary-card.skipped { border-color: rgba(245, 158, 11, 0.3); }
+.diag-summary-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+.diag-summary-val { font-size: 22px; font-weight: 700; }
+.diag-summary-card.ok .diag-summary-val { color: #22c55e; }
+.diag-summary-card.fail .diag-summary-val { color: #ef4444; }
+.diag-summary-card.skipped .diag-summary-val { color: #f59e0b; }
+
+.diag-cleanup-banner {
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  border: 1px solid;
+}
+.diag-cleanup-banner.ok { background: rgba(34, 197, 94, 0.08); border-color: rgba(34, 197, 94, 0.3); color: #86efac; }
+.diag-cleanup-banner.fail { background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.3); color: #fca5a5; }
+
+.diag-mail-recipient {
+  background: #171a21;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.diag-mail-recipient label { font-size: 12px; color: #94a3b8; }
+.diag-mail-recipient input {
+  background: #0f1115;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: #e2e8f0;
+  font-size: 13px;
+  flex: 1;
+  min-width: 200px;
+  outline: none;
+}
+.diag-mail-recipient input:focus { border-color: #6366f1; }
+
+/* ─── Test groups ───────────────────────────────────────────────────── */
+.diag-group { margin-bottom: 28px; }
+.diag-group-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.diag-group-head h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #cbd5e1;
+}
+
+.diag-test-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 12px;
+}
+
+/* ─── Test card ─────────────────────────────────────────────────────── */
+.diag-test-card {
+  background: #171a21;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 14px 16px;
+  transition: border-color 0.2s;
+}
+.diag-test-card.is-ok { border-color: rgba(34, 197, 94, 0.35); }
+.diag-test-card.is-fail { border-color: rgba(239, 68, 68, 0.4); }
+.diag-test-card.is-skipped { border-color: rgba(245, 158, 11, 0.35); }
+
+.diag-test-top {
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+.diag-test-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(99, 102, 241, 0.12);
+  color: #a5b4fc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+}
+.diag-test-info { min-width: 0; }
+.diag-test-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+.diag-test-meta { display: flex; gap: 8px; align-items: center; }
+
+.diag-latency {
+  font-size: 11px;
+  color: #94a3b8;
+  font-variant-numeric: tabular-nums;
+}
+
+.diag-test-run {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.diag-test-run:hover:not(:disabled) { background: rgba(99, 102, 241, 0.15); color: #a5b4fc; border-color: rgba(99, 102, 241, 0.4); }
+.diag-test-run:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ─── Badges ─────────────────────────────────────────────────────────── */
+.diag-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.diag-badge.idle { background: rgba(148, 163, 184, 0.12); color: #94a3b8; }
+.diag-badge.running { background: rgba(99, 102, 241, 0.18); color: #a5b4fc; }
+.diag-badge.ok { background: rgba(34, 197, 94, 0.15); color: #86efac; }
+.diag-badge.fail { background: rgba(239, 68, 68, 0.16); color: #fca5a5; }
+.diag-badge.skipped { background: rgba(245, 158, 11, 0.16); color: #fcd34d; }
+
+/* ─── Error / Reason / Details ───────────────────────────────────────── */
+.diag-test-error,
+.diag-test-reason {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+.diag-test-error {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+}
+.diag-test-reason {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  color: #fcd34d;
+}
+
+.diag-test-details { margin-top: 10px; }
+.diag-test-details-toggle {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 0;
+}
+.diag-test-details-toggle:hover { color: #cbd5e1; }
+.diag-test-details-body {
+  background: #0f1115;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 11px;
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  color: #cbd5e1;
+  margin: 6px 0 0;
+  overflow-x: auto;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+/* ─── Footer ────────────────────────────────────────────────────────── */
+.diag-footer {
+  margin-top: 32px;
+  padding: 16px 20px;
+  background: #171a21;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+}
+.diag-footer p {
+  margin: 0;
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.6;
+}
+.diag-footer code {
+  background: #0f1115;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  color: #cbd5e1;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .diag-summary { grid-template-columns: repeat(2, 1fr); }
+  .diag-test-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .diag-panel { padding: 18px 14px 40px; }
+  .diag-summary { grid-template-columns: 1fr 1fr; }
+}

@@ -6,6 +6,8 @@ import {
   logout,
   changeEmail,
   changePassword,
+  changeDisplayName,
+  deleteAccount,
   verifyEmail,
 } from '../controllers/authController.js';
 import { protect } from '../middleware/authMiddleware.js';
@@ -17,6 +19,8 @@ router.get('/me', protect, me);
 router.post('/logout', protect, logout);
 router.put('/change-email', protect, changeEmail);
 router.put('/change-password', protect, changePassword);
+router.put('/change-display-name', protect, changeDisplayName);
+router.delete('/account', protect, deleteAccount);
 router.get('/verify/:token', verifyEmail);
 
 export default router;

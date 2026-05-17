@@ -24,19 +24,21 @@ const Home = () => {
   const fmt = (amount) => `₺${amount.toFixed(2)}`;
 
   return (
-    <div>
-      <h1 className="page-title">{t('home.title')}</h1>
-      <div className="stat-cards-grid">
-        <StatCard title={t('home.currentBalance')} amount={loading ? '—' : fmt(balance)} variant="primary" />
-        <StatCard title={t('home.income')} amount={loading ? '—' : fmt(income)} />
-        <StatCard title={t('home.expenses')} amount={loading ? '—' : fmt(expenses)} />
-      </div>
+    <div className="overview-page">
+      <div className="page-card">
+        <h1 className="page-title">{t('home.title')}</h1>
+        <div className="stat-cards-grid">
+          <StatCard title={t('home.currentBalance')} amount={loading ? '—' : fmt(balance)} variant="primary" />
+          <StatCard title={t('home.income')} amount={loading ? '—' : fmt(income)} />
+          <StatCard title={t('home.expenses')} amount={loading ? '—' : fmt(expenses)} />
+        </div>
 
-      <div className="dashboard-main-grid">
-        <PotsCard />
-        <BudgetsCard />
-        <TransactionsList limit={3} showViewAll={true} />
-        <RecurringBillsCard />
+        <div className="dashboard-main-grid">
+          <PotsCard />
+          <BudgetsCard />
+          <TransactionsList limit={3} showViewAll={true} />
+          <RecurringBillsCard />
+        </div>
       </div>
     </div>
   );

@@ -117,8 +117,10 @@
 }
 
 .ai-chart-modal-chart {
+  position: relative;
   width: 100%;
   height: 280px;
+  min-width: 0;
 }
 
 .ai-chart-modal-legend {

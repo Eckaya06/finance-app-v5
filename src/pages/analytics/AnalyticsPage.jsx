@@ -4,15 +4,16 @@ import { useTranslation } from 'react-i18next';
 import { useTransactions } from '../../context/TransactionContext.jsx';
 import api from '../../api.js';
 import {
-  ResponsiveContainer,
-  ComposedChart, Line, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend,
+  ComposedChart, Line, Area, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
   PieChart, Pie, Cell,
-  BarChart
+  BarChart,
 } from 'recharts';
+import ResponsiveChart from '../../components/charts/ResponsiveChart.jsx';
 import { FiTrendingUp, FiTrendingDown, FiPieChart, FiBarChart2, FiActivity } from 'react-icons/fi';
 import { CATEGORY_COLORS, getCategoryColor } from '../../utils/categoryColors.js';
 import ASSET_META from '../portfolio/components/assetMeta.js';
 import PortfolioPerformanceChart from './PortfolioPerformanceChart.jsx';
+import DonutCenterLabel from '../../components/charts/DonutCenterLabel.jsx';
 import './AnalyticsPage.css';
 
 const TIME_FILTERS = [
@@ -31,11 +32,24 @@ const CHART_RESIZE_DEBOUNCE = 350;
 
 // ─── Stable style/config objects (created once, never re-allocated) ───
 const CHART_MARGINS = { top: 10, right: 10, left: 0, bottom: 10 };
-const CASHFLOW_MARGINS = { top: 10, right: 10, left: 0, bottom: 0 };
+
+const truncateLabel = (text, maxLen) => {
+  if (!text) return '';
+  const s = String(text);
+  return s.length > maxLen ? `${s.slice(0, maxLen)}…` : s;
+};
+
+const getCategoryChartLayout = (count) => {
+  if (count >= 6) return { angle: -50, xHeight: 90, bottom: 32, maxLabel: 7, chartH: 320, barSize: 14 };
+  if (count >= 4) return { angle: -42, xHeight: 78, bottom: 28, maxLabel: 9, chartH: 300, barSize: 18 };
+  if (count >= 3) return { angle: -28, xHeight: 62, bottom: 22, maxLabel: 11, chartH: 288, barSize: 22 };
+  return { angle: 0, xHeight: 36, bottom: 14, maxLabel: 14, chartH: 280, barSize: 26 };
+};
+const CASHFLOW_MARGINS = { top: 8, right: 12, left: 4, bottom: 4 };
+const CASHFLOW_AXIS_TICK = { fill: '#9ca3af', fontSize: 11 };
 const PORTFOLIO_MARGINS = { top: 10, right: 30, left: 40, bottom: 0 };
 const TOOLTIP_STYLE = { borderRadius: '12px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' };
 const TOOLTIP_ITEM_STYLE = { fontWeight: 600 };
-const LEGEND_STYLE = { paddingTop: '20px' };
 const AXIS_TICK_STYLE = { fill: 'var(--muted)', fontSize: 12 };
 const Y_AXIS_BOLD_TICK = { fill: 'var(--text)', fontWeight: 600 };
 const TRANSPARENT_CURSOR = { fill: 'transparent' };
@@ -43,6 +57,66 @@ const TRANSPARENT_CURSOR = { fill: 'transparent' };
 const formatCurrency = (val) => `₺${val}`;
 const formatTooltipCurrency = (value) => `₺${Number(value).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
 const formatLocale = (val) => val.toLocaleString('tr-TR', { minimumFractionDigits: 2 });
+
+// Holding miktarını birimiyle birlikte formatla — gereksiz ondalıkları kırpar.
+// USD/EUR vb. para birimleri için kod sona eklenir ("359 USD"); altın çeşitleri
+// için i18n'den çevrilmiş birim ("4 gram", "2 çeyrek", "1 ons").
+const formatHoldingWithUnit = (assetType, holding, t) => {
+  if (holding == null || !Number.isFinite(holding)) return '—';
+  const num = holding.toLocaleString('tr-TR', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 4,
+  });
+  if (assetType === 'GOLD_GRAM')    return `${num} ${t('analytics.pfUnitGram')}`;
+  if (assetType === 'GOLD_QUARTER') return `${num} ${t('analytics.pfUnitQuarter')}`;
+  if (assetType === 'GOLD_OUNCE')   return `${num} ${t('analytics.pfUnitOunce')}`;
+  return `${num} ${assetType}`;
+};
+const formatLocaleCompact = (val) =>
+  Number(val).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+const INCOME_LINE_COLOR = '#6366f1';
+const EXPENSE_LINE_COLOR = '#ef4444';
+
+const formatYAxisCompact = (val) => {
+  const n = Number(val);
+  if (!Number.isFinite(n) || n === 0) return '₺0';
+  if (n >= 1000) {
+    const k = n / 1000;
+    return Number.isInteger(k) ? `₺${k}k` : `₺${k.toFixed(1).replace(/\.0$/, '')}k`;
+  }
+  return `₺${n.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}`;
+};
+
+const formatCashflowTooltipValue = (value) =>
+  `₺${Number(value).toLocaleString('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}`;
+
+const CashflowTooltip = memo(({ active, payload, label }) => {
+  const { t } = useTranslation();
+  if (!active || !payload?.length) return null;
+  const income = payload.find((p) => p.dataKey === 'Income')?.value ?? 0;
+  const expenses = payload.find((p) => p.dataKey === 'Expenses')?.value ?? 0;
+  return (
+    <div className="ap-cashflow-tooltip">
+      <p className="ap-cashflow-tooltip-date">{label}</p>
+      <div className="ap-cashflow-tooltip-row">
+        <span className="ap-cashflow-tooltip-left">
+          <span className="ap-legend-dot" style={{ background: INCOME_LINE_COLOR }} />
+          {t('analytics.cashflowIncome')}
+        </span>
+        <span className="ap-cashflow-tooltip-val">{formatCashflowTooltipValue(income)}</span>
+      </div>
+      <div className="ap-cashflow-tooltip-row">
+        <span className="ap-cashflow-tooltip-left">
+          <span className="ap-legend-dot ap-legend-dot--expense" />
+          {t('analytics.cashflowExpenses')}
+        </span>
+        <span className="ap-cashflow-tooltip-val">{formatCashflowTooltipValue(expenses)}</span>
+      </div>
+    </div>
+  );
+});
+CashflowTooltip.displayName = 'CashflowTooltip';
 
 // Helper to reliably parse dates from MongoDB or Turkish formatted dates
 const getValidDate = (t) => {
@@ -93,76 +167,126 @@ const TimeframeTabs = memo(({ chartKey, activeValue, onChange }) => {
 TimeframeTabs.displayName = 'TimeframeTabs';
 
 // ─── Chart 1: Category Spending Bar Chart ───
-const CategorySpendingChart = memo(({ data }) => (
-  <div className="chart-container" style={{ height: '320px' }}>
-    <ResponsiveContainer width="100%" height="100%" debounce={CHART_RESIZE_DEBOUNCE}>
-      <BarChart data={data} margin={CHART_MARGINS}>
-        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-        <XAxis dataKey="name" type="category" axisLine={false} tickLine={false}
-          tick={AXIS_TICK_STYLE} interval={0} angle={-10} textAnchor="end" height={50} />
-        <YAxis type="number" axisLine={false} tickLine={false}
-          tick={AXIS_TICK_STYLE} dx={-10} tickFormatter={formatCurrency} />
-        <Tooltip contentStyle={TOOLTIP_STYLE} itemStyle={TOOLTIP_ITEM_STYLE}
-          formatter={formatTooltipCurrency} />
-        <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={22}>
-          {data.map((entry, index) => (
-            <Cell key={`cat-cell-${index}`} fill={getCategoryColor(entry.name)} />
-          ))}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
-  </div>
-));
+const CategorySpendingChart = memo(({ data }) => {
+  const count = data?.length ?? 0;
+  const layout = getCategoryChartLayout(count);
+  const categoryMargins = { top: 12, right: 12, left: 8, bottom: layout.bottom };
+  const xTickStyle = { fill: '#9ca3af', fontSize: 10 };
+  const xAnchor = layout.angle === 0 ? 'middle' : 'end';
+
+  return (
+    <div className="chart-container ap-category-chart" style={{ height: layout.chartH }}>
+      <ResponsiveChart fill debounce={CHART_RESIZE_DEBOUNCE}>
+        <BarChart data={data} margin={categoryMargins}>
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+          <XAxis
+            dataKey="name"
+            type="category"
+            axisLine={false}
+            tickLine={false}
+            interval={0}
+            angle={layout.angle}
+            textAnchor={xAnchor}
+            height={layout.xHeight}
+            tick={xTickStyle}
+            tickFormatter={(v) => truncateLabel(v, layout.maxLabel)}
+          />
+          <YAxis
+            type="number"
+            axisLine={false}
+            tickLine={false}
+            tick={{ fill: '#9ca3af', fontSize: 11 }}
+            width={44}
+            dx={-4}
+            tickFormatter={formatYAxisCompact}
+          />
+          <Tooltip
+            contentStyle={TOOLTIP_STYLE}
+            itemStyle={TOOLTIP_ITEM_STYLE}
+            formatter={formatTooltipCurrency}
+            labelFormatter={(label) => label}
+          />
+          <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={layout.barSize} maxBarSize={32}>
+            {data.map((entry, index) => (
+              <Cell key={`cat-cell-${index}`} fill={getCategoryColor(entry.name)} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveChart>
+    </div>
+  );
+});
 CategorySpendingChart.displayName = 'CategorySpendingChart';
 
-// ─── Chart 2: Cashflow Composed Chart ───
-const CashflowChart = memo(({ data, expenseCategories }) => (
-  <div className="chart-container" style={{ height: '320px' }}>
-    <ResponsiveContainer width="100%" height="100%" debounce={CHART_RESIZE_DEBOUNCE}>
+// ─── Chart 2: Cashflow — Income area + Expenses line ───
+const CashflowChart = memo(({ data }) => (
+  <div className="chart-container ap-cashflow-chart" style={{ height: '340px' }}>
+    <ResponsiveChart fill debounce={CHART_RESIZE_DEBOUNCE}>
       <ComposedChart data={data} margin={CASHFLOW_MARGINS}>
-        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-        <XAxis dataKey="label" axisLine={false} tickLine={false} tick={AXIS_TICK_STYLE} dy={10} />
-        <YAxis axisLine={false} tickLine={false} tick={AXIS_TICK_STYLE} dx={-10} tickFormatter={formatCurrency} />
-        <Tooltip contentStyle={TOOLTIP_STYLE} itemStyle={TOOLTIP_ITEM_STYLE} />
-        <Legend iconType="circle" wrapperStyle={LEGEND_STYLE} />
-        {expenseCategories.map((cat, index) => (
-          <Bar key={cat} dataKey={cat} stackId="expenses" fill={getCategoryColor(cat)} barSize={12}
-            radius={index === expenseCategories.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]} />
-        ))}
-        <Line type="monotone" dataKey="Income" stroke={CATEGORY_COLORS.Income}
-          strokeWidth={3} dot={{ r: 3, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+        <defs>
+          <linearGradient id="apIncomeGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={INCOME_LINE_COLOR} stopOpacity={0.22} />
+            <stop offset="100%" stopColor={INCOME_LINE_COLOR} stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#e5e7eb" />
+        <XAxis dataKey="label" axisLine={false} tickLine={false} tick={CASHFLOW_AXIS_TICK} dy={8} />
+        <YAxis
+          axisLine={false}
+          tickLine={false}
+          tick={CASHFLOW_AXIS_TICK}
+          dx={-4}
+          width={48}
+          tickFormatter={formatYAxisCompact}
+        />
+        <Tooltip content={<CashflowTooltip />} cursor={{ stroke: '#e5e7eb', strokeWidth: 1 }} />
+        <Area
+          type="monotone"
+          dataKey="Income"
+          stroke={INCOME_LINE_COLOR}
+          strokeWidth={2.5}
+          fill="url(#apIncomeGradient)"
+          dot={{ r: 3, strokeWidth: 2, fill: '#fff', stroke: INCOME_LINE_COLOR }}
+          activeDot={{ r: 5, strokeWidth: 2, fill: INCOME_LINE_COLOR }}
+        />
+        <Line
+          type="monotone"
+          dataKey="Expenses"
+          stroke={EXPENSE_LINE_COLOR}
+          strokeWidth={2.5}
+          dot={{ r: 3, strokeWidth: 2, fill: '#fff', stroke: EXPENSE_LINE_COLOR }}
+          activeDot={{ r: 5, strokeWidth: 2, fill: EXPENSE_LINE_COLOR }}
+        />
       </ComposedChart>
-    </ResponsiveContainer>
+    </ResponsiveChart>
   </div>
 ));
 CashflowChart.displayName = 'CashflowChart';
 
 // ─── Chart 3: Expense Distribution Pie Chart ───
-const ExpenseDistributionChart = memo(({ data, total }) => {
-  const { t } = useTranslation();
-  return (
-    <div className="chart-container" style={{ height: '300px', position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-      <div style={{ position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center', pointerEvents: 'none', top: '38%' }}>
-        <span style={{ fontSize: '22px', fontWeight: '800', color: 'var(--text)', letterSpacing: '-0.5px' }}>
-          ₺{total.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
-        </span>
-        <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: '600', marginTop: '2px' }}>{t('analytics.totalExpensesLabel')}</span>
-      </div>
-      <ResponsiveContainer width="100%" height="100%" debounce={CHART_RESIZE_DEBOUNCE}>
-        <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 20 }}>
-          <Tooltip formatter={formatTooltipCurrency} contentStyle={TOOLTIP_STYLE} itemStyle={TOOLTIP_ITEM_STYLE} />
-          <Pie
-            data={data}
-            dataKey="value"
-            nameKey="name"
-            cx="50%"
-            cy="50%"
-            innerRadius={85}
-            outerRadius={115}
-            paddingAngle={4}
-            stroke="none"
-          >
-            {data.map((entry, i) => (
+const ExpenseDistributionChart = memo(({ data, total }) => (
+  <div className="chart-container ap-donut-chart-wrap">
+    <DonutCenterLabel
+      variant="budget"
+      value={`₺${total.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`}
+      caption="TOTAL"
+      holeRatio={0.48}
+    />
+    <ResponsiveChart fill debounce={CHART_RESIZE_DEBOUNCE}>
+      <PieChart margin={{ top: 4, right: 4, left: 4, bottom: 4 }}>
+        <Tooltip formatter={formatTooltipCurrency} contentStyle={TOOLTIP_STYLE} itemStyle={TOOLTIP_ITEM_STYLE} />
+        <Pie
+          data={data}
+          dataKey="value"
+          nameKey="name"
+          cx="50%"
+          cy="50%"
+          innerRadius="52%"
+          outerRadius="76%"
+          paddingAngle={4}
+          stroke="none"
+        >
+          {data.map((entry, i) => (
               <Cell
                 key={`pie-${i}`}
                 fill={getCategoryColor(entry.name)}
@@ -170,20 +294,43 @@ const ExpenseDistributionChart = memo(({ data, total }) => {
                 strokeWidth={3}
                 style={{ filter: 'drop-shadow(0px 4px 6px rgba(0,0,0,0.05))' }}
               />
-            ))}
-          </Pie>
-          <Legend
-            layout="horizontal"
-            verticalAlign="bottom"
-            iconType="circle"
-            wrapperStyle={{ paddingTop: '10px', fontSize: '13px', color: 'var(--text)' }}
-          />
-        </PieChart>
-      </ResponsiveContainer>
+          ))}
+        </Pie>
+      </PieChart>
+    </ResponsiveChart>
+  </div>
+));
+ExpenseDistributionChart.displayName = 'ExpenseDistributionChart';
+
+// ─── Budget status bars (category spending as progress rows) ───
+const BudgetStatusBars = memo(({ data, total }) => {
+  if (!data?.length) return null;
+  const top = data.slice(0, 6);
+  const maxVal = top[0]?.value || 1;
+  return (
+    <div className="ap-budget-list">
+      {top.map((item) => {
+        const pct = total > 0 ? Math.round((item.value / total) * 100) : 0;
+        const barW = maxVal > 0 ? (item.value / maxVal) * 100 : 0;
+        return (
+          <div key={item.name} className="ap-budget-row">
+            <div className="ap-budget-row-top">
+              <span className="ap-budget-name">{item.name}</span>
+              <span className="ap-budget-pct">{pct}%</span>
+            </div>
+            <div className="ap-budget-track">
+              <div
+                className="ap-budget-fill"
+                style={{ width: `${barW}%`, background: getCategoryColor(item.name) }}
+              />
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 });
-ExpenseDistributionChart.displayName = 'ExpenseDistributionChart';
+BudgetStatusBars.displayName = 'BudgetStatusBars';
 
 // ─── Chart 4: Portfolio Performance — Rich Card Layout ───
 const PortfolioChart = memo(({ data }) => {
@@ -242,7 +389,7 @@ const PortfolioChart = memo(({ data }) => {
             <div className="pf-perf-footer">
               <div className="pf-perf-stat">
                 <span className="pf-perf-stat-label">{t('analytics.pfHolding', 'Miktar')}</span>
-                <span className="pf-perf-stat-value">{asset.holding?.toFixed(asset.holding < 10 ? 4 : 2)}</span>
+                <span className="pf-perf-stat-value">{formatHoldingWithUnit(asset.name, asset.holding, t)}</span>
               </div>
               <div className="pf-perf-stat">
                 <span className="pf-perf-stat-label">{t('analytics.pfRate', 'Kur')}</span>
@@ -268,7 +415,7 @@ PortfolioChart.displayName = 'PortfolioChart';
 // ═══════════════════════════════════════════════════════════════════
 const AnalyticsPage = () => {
   const { t } = useTranslation();
-  const { transactions } = useTransactions();
+  const { transactions, portfolioVersion } = useTransactions();
   const navigate = useNavigate();
   const [portfolioTx, setPortfolioTx] = useState([]);
   const [marketRates, setMarketRates] = useState(null);
@@ -283,10 +430,15 @@ const AnalyticsPage = () => {
   }, []);
 
   useEffect(() => {
-    const fetchAnalyticsData = async () => {
+    const fetchAnalyticsData = async ({ skipCache = false } = {}) => {
       try {
         const now = Date.now();
-        if (cachedPortfolioHistory && cachedMarketRates && (now - lastFetchTime < CACHE_TTL)) {
+        if (
+          !skipCache &&
+          cachedPortfolioHistory &&
+          cachedMarketRates &&
+          now - lastFetchTime < CACHE_TTL
+        ) {
           setPortfolioTx(cachedPortfolioHistory);
           setMarketRates(cachedMarketRates);
           setLoading(false);
@@ -311,8 +463,10 @@ const AnalyticsPage = () => {
         setLoading(false);
       }
     };
-    fetchAnalyticsData();
-  }, []);
+    // portfolioVersion değişirse cache'i atlayıp gerçek refetch yap.
+    // İlk mount'ta (version=0) cache hâlâ devrede.
+    fetchAnalyticsData({ skipCache: portfolioVersion > 0 });
+  }, [portfolioVersion]);
 
   // ─── Pre-parse dates once (O(n) runs only when raw data changes) ───
   const parsedTransactions = useMemo(() => {
@@ -411,36 +565,31 @@ const AnalyticsPage = () => {
     // --- Chart 2: Cashflow Trend (Line/Composed) ---
     const cashflowTx = filterByTime(parsedTransactions, globalTimeframe);
     const { filterDays: cfFilterDays } = getCutoffTime(globalTimeframe);
-    const activeExpenseCategories = new Set();
-    for (const t of cashflowTx) {
-      if (t.type !== 'income') activeExpenseCategories.add(t.category || 'Uncategorized');
-    }
     const mapByDate = new Map();
     if (cfFilterDays <= 31) {
       for (let i = cfFilterDays - 1; i >= 0; i--) {
         const d = new Date();
         d.setDate(d.getDate() - i);
         const dateKey = d.toISOString().split('T')[0];
-        const defaultRow = { date: dateKey, Income: 0 };
-        activeExpenseCategories.forEach(cat => { defaultRow[cat] = 0; });
-        mapByDate.set(dateKey, defaultRow);
+        mapByDate.set(dateKey, { date: dateKey, Income: 0, Expenses: 0 });
       }
     }
     for (const t of cashflowTx) {
       const key = t._isoDate;
       if (!mapByDate.has(key)) {
-        const defaultRow = { date: key, Income: 0 };
-        activeExpenseCategories.forEach(cat => { defaultRow[cat] = 0; });
-        mapByDate.set(key, defaultRow);
+        mapByDate.set(key, { date: key, Income: 0, Expenses: 0 });
       }
       const row = mapByDate.get(key);
       const amt = Math.abs(Number(t.amount || 0));
       if (t.type === 'income') row.Income += amt;
-      else row[t.category || 'Uncategorized'] += amt;
+      else row.Expenses += amt;
     }
     const cashflowSeries = Array.from(mapByDate.values())
       .sort((a, b) => a.date.localeCompare(b.date))
-      .map(r => ({ ...r, label: r.date.substring(5).replace('-', '/') }));
+      .map((r) => {
+        const [, m, d] = r.date.split('-');
+        return { ...r, label: `${d}/${m}` };
+      });
 
     // --- Chart 3: Category Pie ---
     const pieTx = filterByTime(parsedTransactions, globalTimeframe).filter(t => t.type === 'expense');
@@ -461,10 +610,10 @@ const AnalyticsPage = () => {
       netCashflow,
       totalPortfolioPnl,
       cashflowSeries,
+      cashflowTxCount: cashflowTx.length,
       categoryTrendsData,
       spendingByCategory,
-      portfolioAssetsPnl,
-      activeExpenseCategories: Array.from(activeExpenseCategories)
+      portfolioAssetsPnl
     };
 
   }, [parsedTransactions, parsedPortfolioTx, marketRates, globalTimeframe, loading]);
@@ -483,12 +632,20 @@ const AnalyticsPage = () => {
     );
   }
 
+  const expenseSharePct =
+    computed.totalIncome > 0
+      ? Math.round((computed.totalExpenses / computed.totalIncome) * 100)
+      : 0;
+
   return (
     <div className="analytics-page">
-      <div className="analytics-header">
-        <h1 className="page-title">{t('analytics.title')}</h1>
+      <div className="page-card ap-page-card">
+      <header className="ap-header analytics-header">
+        <div>
+          <h1 className="ap-title page-title">{t('analytics.title')}</h1>
+        </div>
         <TimeframeTabs chartKey="global" activeValue={globalTimeframe} onChange={handleTimeframeChange} />
-      </div>
+      </header>
 
       {hasNoData && (
         <div className="analytics-welcome-banner">
@@ -502,52 +659,59 @@ const AnalyticsPage = () => {
         </div>
       )}
 
-      {/* KPI Cards */}
-      <div className="kpi-grid">
-        <div className="kpi-card glass-card">
-          <div className="kpi-icon income-icon"><FiTrendingUp /></div>
-          <div className="kpi-content">
-            <p className="kpi-label">{t('analytics.totalIncome')}</p>
-            <p className="kpi-value text-green">+₺{formatLocale(computed.totalIncome)}</p>
-          </div>
+      <div className="ap-kpi-grid kpi-grid">
+        <div className="kpi-card glass-card ap-kpi-card">
+          <span className="ap-kpi-pill">{t('analytics.kpiBadgeIncome')}</span>
+          <p className="ap-kpi-label">{t('analytics.kpiLabelIncome')}</p>
+          <p className="ap-kpi-value">+₺{formatLocale(computed.totalIncome)}</p>
+          <p className="ap-kpi-foot">{t(`analytics.timeframes.${globalTimeframe}`)}</p>
         </div>
-        <div className="kpi-card glass-card">
-          <div className="kpi-icon expense-icon"><FiTrendingDown /></div>
-          <div className="kpi-content">
-            <p className="kpi-label">{t('analytics.totalExpenses')}</p>
-            <p className="kpi-value text-red">-₺{formatLocale(computed.totalExpenses)}</p>
-          </div>
+        <div className="kpi-card glass-card ap-kpi-card">
+          <span className="ap-kpi-pill">{t('analytics.kpiBadgeExpense')}</span>
+          <p className="ap-kpi-label">{t('analytics.kpiLabelExpense')}</p>
+          <p className="ap-kpi-value">-₺{formatLocale(computed.totalExpenses)}</p>
+          <p className="ap-kpi-foot">
+            {computed.totalIncome > 0
+              ? t('analytics.kpiExpenseShare', { pct: expenseSharePct })
+              : '—'}
+          </p>
         </div>
-        <div className="kpi-card glass-card">
-          <div className="kpi-icon net-icon"><FiActivity /></div>
-          <div className="kpi-content">
-            <p className="kpi-label">{t('analytics.netCashflow')}</p>
-            <p className={`kpi-value ${computed.netCashflow >= 0 ? 'text-green' : 'text-red'}`}>
-              {computed.netCashflow >= 0 ? '+' : ''}₺{formatLocale(computed.netCashflow)}
-            </p>
-          </div>
+        <div className="kpi-card glass-card ap-kpi-card">
+          <span className="ap-kpi-pill">{t('analytics.kpiBadgeNet')}</span>
+          <p className="ap-kpi-label">{t('analytics.kpiLabelNet')}</p>
+          <p className="ap-kpi-value">
+            {computed.netCashflow >= 0 ? '+' : ''}₺{formatLocale(computed.netCashflow)}
+          </p>
+          <p className="ap-kpi-foot">
+            <span>↑ ₺{formatLocaleCompact(computed.totalIncome)} {t('analytics.kpiIn')}</span>
+            <span className="ap-kpi-foot-sep"> · </span>
+            <span>↓ ₺{formatLocaleCompact(computed.totalExpenses)} {t('analytics.kpiOut')}</span>
+          </p>
         </div>
-        <div className="kpi-card glass-card">
-          <div className="kpi-icon portfolio-icon"><FiPieChart /></div>
-          <div className="kpi-content">
-            <p className="kpi-label">{t('analytics.portfolioProfit')}</p>
-            <p className={`kpi-value ${computed.totalPortfolioPnl >= 0 ? 'text-green' : 'text-red'}`}>
-              {computed.totalPortfolioPnl >= 0 ? '+' : ''}₺{formatLocale(computed.totalPortfolioPnl)}
-            </p>
-          </div>
+        <div className="kpi-card glass-card ap-kpi-card">
+          <span className="ap-kpi-pill">{t('analytics.kpiBadgePortfolio')}</span>
+          <p className="ap-kpi-label">{t('analytics.kpiLabelPortfolio')}</p>
+          <p className="ap-kpi-value">
+            {computed.totalPortfolioPnl >= 0 ? '+' : ''}₺{formatLocale(computed.totalPortfolioPnl)}
+          </p>
+          <p className="ap-kpi-foot">
+            {computed.portfolioAssetsPnl.length > 0
+              ? t('analytics.kpiPortfolioFoot', { count: computed.portfolioAssetsPnl.length })
+              : t('analytics.noPortfolioData')}
+          </p>
         </div>
       </div>
 
-      <div className="analytics-grid">
-        {/* Chart 1: Category Spending Trends */}
-        <div className="analytics-panel glass-panel panel-wide">
-          <div className="panel-header">
-            <div className="panel-title-group">
-              <h3>{t('analytics.categorySpending')}</h3>
-              <span className="panel-subtitle">{t('analytics.categorySpendingSub')}</span>
-            </div>
-          </div>
-          {transactions.length === 0 ? (
+      <div className="analytics-grid ap-analytics-grid">
+        <div className="ap-hero-column ap-hero-column--left">
+          <div className="analytics-panel glass-panel ap-panel ap-panel--category">
+            <div className="panel-header">
+                <div className="panel-title-group">
+                  <h3>{t('analytics.categorySpending')}</h3>
+                  <span className="panel-subtitle">{t('analytics.categorySpendingSub')}</span>
+                </div>
+              </div>
+              {transactions.length === 0 ? (
             <div className="modern-empty-state">
               <div className="modern-empty-banner banner-blue">
                 <FiBarChart2 className="modern-empty-banner-icon icon-blue" />
@@ -564,19 +728,18 @@ const AnalyticsPage = () => {
           ) : (
             <CategorySpendingChart data={computed.categoryTrendsData} />
           )}
-        </div>
-
-        {/* Chart 2: Cashflow Trend */}
-        <div className="analytics-panel glass-panel panel-wide">
-          <div className="panel-header">
-            <div className="panel-title-group">
-              <h3>{t('analytics.cashflowTrend')}</h3>
-              <span className="panel-subtitle">{t('analytics.cashflowTrendSub')}</span>
-            </div>
           </div>
-          {transactions.length === 0 ? (
-            <div className="modern-empty-state">
-              <div className="modern-empty-banner banner-orange">
+
+          <div className="analytics-panel glass-panel ap-panel ap-panel--cashflow">
+            <div className="panel-header">
+              <div className="panel-title-group">
+                <h3>{t('analytics.cashflowTrend')}</h3>
+                <span className="panel-subtitle">{t('analytics.cashflowTrendSub')}</span>
+              </div>
+            </div>
+            {transactions.length === 0 ? (
+                <div className="modern-empty-state">
+                  <div className="modern-empty-banner banner-orange">
                 <FiTrendingUp className="modern-empty-banner-icon icon-orange" />
               </div>
               <div className="modern-empty-icon-wrapper circle-orange">
@@ -589,12 +752,30 @@ const AnalyticsPage = () => {
           ) : computed.cashflowSeries.length === 0 ? (
             <div className="empty-state">{t('analytics.noPeriodCashflow')}</div>
           ) : (
-            <CashflowChart data={computed.cashflowSeries} expenseCategories={computed.activeExpenseCategories} />
+            <>
+              <CashflowChart data={computed.cashflowSeries} />
+              <div className="ap-chart-footer ap-cashflow-footer">
+                <div className="ap-legend">
+                  <span className="ap-legend-item">
+                    <span className="ap-legend-dot" style={{ background: INCOME_LINE_COLOR }} />
+                    {t('analytics.cashflowIncome')}
+                  </span>
+                  <span className="ap-legend-item">
+                    <span className="ap-legend-dot ap-legend-dot--expense" />
+                    {t('analytics.cashflowExpenses')}
+                  </span>
+                </div>
+                <span className="ap-chart-meta">
+                  {t('analytics.cashflowTxCount', { count: computed.cashflowTxCount })}
+                </span>
+              </div>
+            </>
           )}
+          </div>
         </div>
 
-        {/* Chart 3: Expense Distribution */}
-        <div className="analytics-panel glass-panel">
+        <div className="ap-hero-column ap-hero-column--right">
+        <div className="analytics-panel glass-panel ap-panel ap-panel--distribution">
           <div className="panel-header">
             <div className="panel-title-group">
               <h3>{t('analytics.expenseDistribution')}</h3>
@@ -616,12 +797,51 @@ const AnalyticsPage = () => {
           ) : computed.spendingByCategory.length === 0 ? (
             <div className="empty-state">{t('analytics.noPeriodData')}</div>
           ) : (
-            <ExpenseDistributionChart data={computed.spendingByCategory} total={computed.totalExpenses} />
+            <div className="ap-distribution-body">
+              <ExpenseDistributionChart data={computed.spendingByCategory} total={computed.totalExpenses} />
+              <div className="ap-donut-legend">
+                {computed.spendingByCategory.slice(0, 5).map((item) => {
+                  const pct =
+                    computed.totalExpenses > 0
+                      ? Math.round((item.value / computed.totalExpenses) * 100)
+                      : 0;
+                  return (
+                    <div key={item.name} className="ap-donut-legend-row">
+                      <span className="ap-donut-legend-left">
+                        <span className="ap-legend-dot" style={{ background: getCategoryColor(item.name) }} />
+                        <span className="ap-donut-legend-name" title={item.name}>
+                          {item.name}
+                        </span>
+                      </span>
+                      <span className="ap-donut-legend-right">
+                        <span className="ap-donut-pct">{pct}%</span>
+                        <span className="ap-donut-amt">₺{formatLocaleCompact(item.value)}</span>
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           )}
         </div>
 
-        {/* Chart 4: Portfolio Asset Cards (half-width, beside Expense Distribution) */}
-        <div className="analytics-panel glass-panel">
+        <div className="analytics-panel glass-panel ap-panel ap-panel--budget">
+          <div className="panel-header">
+            <div className="panel-title-group">
+              <h3>{t('analytics.categoryBreakdown', 'Kategori Özeti')}</h3>
+              <span className="panel-subtitle">{t('analytics.categoryBreakdownSub', 'Dönem içi harcama payları')}</span>
+            </div>
+          </div>
+          {transactions.length === 0 || computed.categoryTrendsData.length === 0 ? (
+            <div className="empty-state ap-empty-compact">{t('analytics.noPeriodData')}</div>
+          ) : (
+            <BudgetStatusBars data={computed.categoryTrendsData} total={computed.totalExpenses} />
+          )}
+        </div>
+        </div>
+
+        {/* Chart 4: Portfolio performance */}
+        <div className="analytics-panel glass-panel ap-panel ap-panel--portfolio">
           <div className="panel-header">
             <div className="panel-title-group">
               <h3>{t('analytics.portfolioPerformance')}</h3>
@@ -648,7 +868,7 @@ const AnalyticsPage = () => {
         </div>
 
         {/* Chart 5: Portfolio PnL Timeline (full-width, bottom) */}
-        <div className="analytics-panel glass-panel panel-wide">
+        <div className="analytics-panel glass-panel ap-panel ap-panel--ppc">
           <div className="panel-header">
             <div className="panel-title-group">
               <h3>{t('analytics.ppcTitle', 'Portföy K/Z Zaman Çizelgesi')}</h3>
@@ -657,6 +877,7 @@ const AnalyticsPage = () => {
           </div>
           <PortfolioPerformanceChart portfolioTransactions={portfolioTx} marketRates={marketRates} />
         </div>
+      </div>
       </div>
     </div>
   );

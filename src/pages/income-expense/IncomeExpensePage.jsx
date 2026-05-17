@@ -5,9 +5,8 @@ import Modal from '../../components/modal/Modal.jsx';
 import AddTransactionForm from '../../components/income-expense/AddTransactionForm.jsx';
 import EmptyState from '../../components/emptystate/EmptyState.jsx';
 import { FiPlus, FiArrowUpRight, FiArrowDownLeft, FiActivity, FiTrash2 } from 'react-icons/fi';
-import emptyTransactionsImage from '../../assets/empty-transactions.webp';
 import { useTransactions } from '../../context/TransactionContext.jsx';
-import { getCategoryTheme } from '../../utils/categoryIcons.jsx';
+import { CategoryIcon } from '../../utils/categoryIcons.jsx';
 
 const IncomeExpensePage = () => {
   const { t, i18n } = useTranslation();
@@ -56,6 +55,7 @@ const IncomeExpensePage = () => {
 
   return (
     <div className="page-container">
+      <div className="page-card ie-page-card">
       <div className="page-header">
         <h1 className="page-title">{t('incomeExpense.title')}</h1>
         <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
@@ -65,12 +65,13 @@ const IncomeExpensePage = () => {
 
       {transactions.length === 0 ? (
         <EmptyState
+          variant="blue"
+          showRingIcon={false}
           icon={<FiActivity />}
           title={t('incomeExpense.emptyTitle')}
           message={t('incomeExpense.emptyMessage')}
           buttonText={t('incomeExpense.addFirst')}
           onAction={() => setIsModalOpen(true)}
-          backgroundImage={emptyTransactionsImage}
         />
       ) : (
         <>
@@ -97,21 +98,10 @@ const IncomeExpensePage = () => {
             </div>
 
             <div className="ie-list">
-              {transactions.map((item) => {
-                const theme = getCategoryTheme(item.category);
-                return (
+              {transactions.map((item) => (
                   <div key={item.id} className="ie-list-item">
                     <div className="ie-item-left">
-                      <div
-                        className="ie-item-avatar"
-                        style={{ backgroundColor: theme.bg }}
-                      >
-                        <img
-                          src={theme.image}
-                          alt={item.category}
-                          className="category-img-icon"
-                        />
-                      </div>
+                      <CategoryIcon category={item.category} type={item.type} />
 
                       <div className="ie-item-meta">
                         <span className="ie-item-name">{item.name}</span>
@@ -134,12 +124,12 @@ const IncomeExpensePage = () => {
                       </button>
                     </div>
                   </div>
-                );
-              })}
+              ))}
             </div>
           </div>
         </>
       )}
+      </div>
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <AddTransactionForm

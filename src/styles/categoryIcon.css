@@ -1,0 +1,20 @@
+/* Ortak kategori ikon rozeti — Transactions, Income/Expense, Home list */
+.category-icon-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.category-icon-badge--sm {
+  width: 36px;
+  height: 36px;
+}
+
+.category-icon-badge svg {
+  display: block;
+}

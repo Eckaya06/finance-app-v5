@@ -5,7 +5,8 @@ import {
   getPortfolioSummary,
   getTransactionHistory,
   deleteAsset,
-  updateAsset
+  updateAsset,
+  deletePortfolioTransaction
 } from '../controllers/portfolioController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
@@ -21,5 +22,6 @@ router.get('/history', getTransactionHistory);
 
 router.delete('/asset/:assetType', deleteAsset);
 router.put('/asset/:assetType', updateAsset);
+router.delete('/transaction/:txId', deletePortfolioTransaction);
 
 export default router;

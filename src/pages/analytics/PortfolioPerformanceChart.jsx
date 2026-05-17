@@ -15,7 +15,6 @@ import { useMemo } from 'react';
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  ResponsiveContainer,
   AreaChart,
   Area,
   XAxis,
@@ -24,6 +23,7 @@ import {
   CartesianGrid,
   ReferenceLine,
 } from 'recharts';
+import ResponsiveChart from '../../components/charts/ResponsiveChart.jsx';
 import { FiActivity } from 'react-icons/fi';
 import './PortfolioPerformanceChart.css';
 
@@ -234,7 +234,7 @@ const PortfolioPerformanceChart = memo(({ portfolioTransactions, marketRates }) 
 
       {/* Chart */}
       <div className="ppc-chart-wrap" style={{ height: 280 }}>
-        <ResponsiveContainer width="100%" height="100%" debounce={RESIZE_DEBOUNCE}>
+        <ResponsiveChart fill debounce={RESIZE_DEBOUNCE}>
           <AreaChart data={timelineData} margin={CHART_MARGINS}>
             <defs>
               <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
@@ -271,7 +271,7 @@ const PortfolioPerformanceChart = memo(({ portfolioTransactions, marketRates }) 
               animationEasing="ease-out"
             />
           </AreaChart>
-        </ResponsiveContainer>
+        </ResponsiveChart>
       </div>
     </div>
   );

@@ -181,10 +181,14 @@ A) İşlem Ekle (gelir veya gider):
 B) Pot Oluştur (hedef tasarruf):
    Tetikleyici: "Araba için 200000 TL'lik hedef potu aç".
    ###AGENT_COMMAND: {"action":"create_pot","data":{"title":"Car","targetAmount":200000}}###
+   Renk seçimi: Kullanıcı renk belirtirse "theme" alanını ekle. Geçerli değerler: "blue","cyan","green","orange","indigo","red","purple". Türkçe renk adları da olur (kırmızı, mavi, yeşil, turuncu, mor, çivit, turkuaz). Kullanıcı renk söylemediyse "theme" alanını HİÇ EKLEME — frontend boşta olan bir rengi otomatik atayacak.
+   Örnek (kırmızı istendi): ###AGENT_COMMAND: {"action":"create_pot","data":{"title":"Car","targetAmount":200000,"theme":"red"}}###
 
 C) Bütçe Oluştur:
    Tetikleyici: "Education kategorisine 1000 TL aylık bütçe koy".
    ###AGENT_COMMAND: {"action":"create_budget","data":{"category":"Education","limit":1000}}###
+   Renk seçimi: B'deki kurallar aynen geçerli — kullanıcı renk belirtirse "theme" ekle, belirtmediyse HİÇ EKLEME.
+   Örnek (mor istendi): ###AGENT_COMMAND: {"action":"create_budget","data":{"category":"Education","limit":1000,"theme":"purple"}}###
 
 D) Bütçe Yeniden Dağıt (transfer):
    Tetikleyici: "Transport'tan Entertainment'a 200 TL aktar".

@@ -283,3 +283,33 @@
     max-width 0.18s ease-in-out 0s;
   pointer-events: none;
 }
+
+/* Mobil drawer: tam genişlik menü, logo taşması yok */
+.sidebar.is-mobile-drawer {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+.sidebar.is-mobile-drawer .sidebar-logo {
+  width: auto;
+  max-width: 100%;
+  margin-left: 0;
+  margin-bottom: 1rem;
+}
+
+.sidebar.is-mobile-drawer .nav-text,
+.sidebar.is-mobile-drawer .nav-group-title {
+  opacity: 1;
+  max-width: none;
+  pointer-events: auto;
+}
+
+.sidebar.is-mobile-drawer .nav-item a {
+  width: 100%;
+  display: flex;
+}
+
+.sidebar.is-mobile-drawer .nav-icon {
+  margin-right: 1rem;
+  flex-shrink: 0;
+}

@@ -1,10 +1,8 @@
 import './Transactions.css';
-import { getCategoryTheme } from '../../utils/categoryIcons.jsx';
+import { CategoryIcon } from '../../utils/categoryIcons.jsx';
 
 const TransactionItem = ({ transaction }) => {
   const { name, date, amount, type, category } = transaction;
-
-  const theme = getCategoryTheme(category || (type === 'income' ? 'income' : 'general'));
 
   const formattedAmount = type === 'income'
     ? `+₺${Number(amount).toFixed(2)}`
@@ -13,9 +11,7 @@ const TransactionItem = ({ transaction }) => {
   return (
     <li className="transaction-item">
       <div className="transaction-details">
-        <div className="transaction-avatar-wrap" style={{ backgroundColor: theme.bg }}>
-          <img src={theme.image} alt={category} className="transaction-avatar-icon" />
-        </div>
+        <CategoryIcon category={category} type={type} />
         <div>
           <p className="transaction-name">{name}</p>
           <p className="transaction-date">{date}</p>

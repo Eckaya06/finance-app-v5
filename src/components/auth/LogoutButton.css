@@ -60,6 +60,20 @@
   }
 }
 
+/* Sidebar sağa geçtiğinde çıkış butonu da sola, dil seçicinin sağına yapışır.
+   Dil seçici left:20px ve ~95px geniş → logout left:135px (mobil left:95px). */
+body[data-sidebar-side="right"] .logout-fab {
+  right: auto;
+  left: 135px;
+}
+
+@media (max-width: 600px) {
+  body[data-sidebar-side="right"] .logout-fab {
+    right: auto;
+    left: 95px;
+  }
+}
+
 /* ── Logout onay modalı içeriği ── */
 .logout-confirm {
   text-align: left;

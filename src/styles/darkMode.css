@@ -1,0 +1,633 @@
+/* ============================================================================
+   GLOBAL DARK MODE OVERRIDES
+   ----------------------------------------------------------------------------
+   Bu dosya tek başına TÜM uygulamadaki sabit kodlanmış (hardcoded) açık tema
+   renklerini dark moda uyarlar. Yalnızca `body.theme-dark` aktifken çalışır.
+   Light tema dosyalarına dokunulmaz.
+   ============================================================================ */
+
+/* ============================ TOKEN GENİŞLETMELERİ ========================= */
+/* AnalyticsPage --background kullanıyor; --bg ile aynı olsun */
+:root {
+  --background: var(--bg);
+}
+
+/* ============================ ORTAK KART / KONTEYNIRLAR =================== */
+body.theme-dark .card-container,
+body.theme-dark .transactions-container,
+body.theme-dark .stat-card,
+body.theme-dark .transaction-table,
+body.theme-dark .ie-summary-card,
+body.theme-dark .ie-transactions-container,
+body.theme-dark .pot-card,
+body.theme-dark .es-panel,
+body.theme-dark .modal-content,
+body.theme-dark .pot-options-menu,
+body.theme-dark .dropdown-options,
+body.theme-dark .dropdown-menu,
+body.theme-dark .dropdown-selected,
+body.theme-dark .dropdown-trigger {
+  background-color: var(--card) !important;
+  border-color: var(--border) !important;
+  color: var(--text);
+}
+
+body.theme-dark .modal-overlay {
+  background-color: rgba(0, 0, 0, 0.72);
+}
+
+/* ============================ SAYFA BAŞLIKLARI ============================ */
+body.theme-dark .page-title {
+  color: var(--text);
+}
+
+/* ============================ HOME / STAT CARDS =========================== */
+/* Light variant stat-card was white; dark needs --card */
+body.theme-dark .stat-card-title {
+  color: var(--muted);
+}
+
+/* .stat-card.primary kasıtlı koyu (siyah) zaten — dark modda biraz daha
+   ayırt edilebilir ve sınır verelim, görselde okunabilir kalsın */
+body.theme-dark .stat-card.primary {
+  background-color: #1f242d;
+  border: 1px solid var(--border) !important;
+}
+body.theme-dark .stat-card.primary .stat-card-title {
+  color: rgba(238, 242, 255, 0.55);
+}
+
+/* ============================ POTS CARD (dashboard) ======================= */
+body.theme-dark .pots-card .total-saved-section {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+body.theme-dark .total-saved-label,
+body.theme-dark .pot-name,
+body.theme-dark .pot-target,
+body.theme-dark .creation-date-label,
+body.theme-dark .limit-text,
+body.theme-dark .transaction-date,
+body.theme-dark .ie-card-info span,
+body.theme-dark .ie-item-sub,
+body.theme-dark .table-header,
+body.theme-dark .modal-close-btn,
+body.theme-dark .pot-options-btn,
+body.theme-dark .dropdown-arrow {
+  color: var(--muted);
+}
+
+body.theme-dark .total-saved-amount,
+body.theme-dark .recipient-cell,
+body.theme-dark .ie-item-name,
+body.theme-dark .es-panel-title,
+body.theme-dark .delete-header h2 {
+  color: var(--text);
+}
+
+body.theme-dark .see-details-link,
+body.theme-dark .view-all-link {
+  color: #818cf8;
+}
+body.theme-dark .see-details-link:hover,
+body.theme-dark .view-all-link:hover {
+  color: #a5b4fc;
+}
+
+body.theme-dark .no-data-message {
+  color: var(--muted);
+}
+
+/* ============================ POT CARD (detail tile) ====================== */
+body.theme-dark .pot-card:hover {
+  box-shadow: 0 10px 24px -8px rgba(0, 0, 0, 0.55),
+              0 4px 8px -4px rgba(0, 0, 0, 0.35);
+  border-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+body.theme-dark .pot-amounts .amount-label {
+  color: var(--muted);
+}
+
+body.theme-dark .progress-bar {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+body.theme-dark .btn-secondary {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.10);
+  color: var(--text);
+}
+body.theme-dark .btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.09);
+}
+
+body.theme-dark .pot-theme {
+  background-color: transparent;
+}
+
+body.theme-dark .pot-options-menu {
+  /* Dark modda menü ve pot-card aynı --card değişkenini paylaşıyor; arkadaki
+     kartla görsel olarak birbirine karışmasın diye daha güçlü bir shadow. */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+body.theme-dark .pot-options-menu button {
+  color: var(--text);
+}
+body.theme-dark .pot-options-menu button:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+}
+body.theme-dark .pot-options-menu button.delete {
+  color: #fca5a5;
+}
+body.theme-dark .pot-options-menu button.delete:hover {
+  background-color: rgba(220, 38, 38, 0.18);
+  color: #fecaca;
+}
+
+/* ============================ BUDGETS CARD ================================ */
+/* (.card-container already covered above) */
+
+/* ============================ RECURRING BILLS CARD ======================== */
+body.theme-dark .bill-item {
+  background-color: rgba(255, 255, 255, 0.035);
+}
+body.theme-dark .bill-name {
+  color: var(--text);
+}
+
+/* ============================ TRANSACTIONS COMPONENT ====================== */
+body.theme-dark .transaction-amount.expense {
+  color: var(--text);
+}
+body.theme-dark .transaction-amount.income {
+  color: #4ade80;
+}
+
+/* ============================ TRANSACTIONS PAGE =========================== */
+body.theme-dark .search-input {
+  background-color: var(--card);
+  border-color: var(--border);
+  color: var(--text);
+}
+body.theme-dark .search-input::placeholder {
+  color: var(--muted);
+}
+body.theme-dark .search-input:focus {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.18);
+}
+body.theme-dark .search-clear-btn:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  color: #fca5a5;
+}
+body.theme-dark .search-icon {
+  color: var(--muted);
+}
+
+body.theme-dark .table-header {
+  border-bottom-color: var(--border);
+}
+body.theme-dark .table-row {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+body.theme-dark .table-row:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+body.theme-dark .transaction-table .pagination-container {
+  border-top-color: rgba(255, 255, 255, 0.06);
+}
+
+body.theme-dark .category-pill {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.10);
+  color: var(--text);
+}
+
+/* ============================ PAGINATION COMPONENT ======================== */
+body.theme-dark .pagination-button {
+  background-color: var(--card);
+  border-color: var(--border);
+  color: var(--text);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+body.theme-dark .pagination-button:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.24);
+  background-color: rgba(255, 255, 255, 0.04);
+}
+body.theme-dark .pagination-button:disabled {
+  background-color: rgba(255, 255, 255, 0.02);
+  color: rgba(238, 242, 255, 0.30);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+body.theme-dark .page-number.active {
+  background-color: #eef2ff;
+  color: #0f1115;
+  border-color: #eef2ff;
+}
+
+/* TransactionsPage'in kendi inline pagination butonları */
+body.theme-dark .pagination-controls button {
+  background-color: var(--card);
+  border-color: var(--border);
+  color: var(--text);
+}
+body.theme-dark .pagination-controls button:disabled {
+  background-color: rgba(255, 255, 255, 0.02);
+  color: rgba(238, 242, 255, 0.30);
+}
+
+/* ============================ INCOME / EXPENSE PAGE ======================= */
+body.theme-dark .ie-list-header,
+body.theme-dark .ie-list-item {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+body.theme-dark .ie-list-item:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+body.theme-dark .ie-item-amount.expense {
+  color: var(--text);
+}
+body.theme-dark .ie-type-selector {
+  background: rgba(255, 255, 255, 0.05);
+}
+body.theme-dark .ie-type-selector button {
+  color: var(--muted);
+}
+body.theme-dark .btn-delete-transaction:hover {
+  background-color: rgba(220, 38, 38, 0.22);
+}
+
+/* IncomeExpensePage'in dropdown'ı */
+body.theme-dark .dropdown-trigger {
+  color: var(--text);
+}
+body.theme-dark .dropdown-trigger.placeholder-mode {
+  color: var(--muted);
+}
+body.theme-dark .dropdown-trigger:hover,
+body.theme-dark .dropdown-trigger.open {
+  border-color: rgba(255, 255, 255, 0.24) !important;
+}
+body.theme-dark .dropdown-arrow {
+  color: var(--muted);
+}
+body.theme-dark .dropdown-menu {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+body.theme-dark .dropdown-item {
+  color: rgba(238, 242, 255, 0.82);
+}
+body.theme-dark .dropdown-item:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+}
+body.theme-dark .dropdown-item.selected {
+  background-color: rgba(129, 140, 248, 0.14);
+  color: var(--text);
+  border-left-color: #818cf8;
+}
+body.theme-dark .read-only-input {
+  background-color: rgba(255, 255, 255, 0.03);
+  border-color: var(--border);
+  color: var(--muted);
+}
+
+/* Delete cancel button (uses !important in source) */
+body.theme-dark .btn-delete-cancel {
+  background-color: var(--card) !important;
+  color: var(--text) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+}
+body.theme-dark .btn-delete-cancel:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: var(--text) !important;
+  border-color: rgba(255, 255, 255, 0.30) !important;
+}
+
+body.theme-dark .delete-message {
+  color: var(--muted);
+}
+
+/* IncomeExpensePage özet kart ikonları (yumuşat) */
+body.theme-dark .income .ie-card-icon {
+  background: rgba(34, 197, 94, 0.18);
+  color: #86efac;
+}
+body.theme-dark .expense .ie-card-icon {
+  background: rgba(239, 68, 68, 0.18);
+  color: #fca5a5;
+}
+
+/* ============================ CUSTOMDROPDOWN COMPONENT ==================== */
+body.theme-dark .dropdown-selected {
+  color: var(--text);
+}
+body.theme-dark .dropdown-option {
+  color: rgba(238, 242, 255, 0.82);
+}
+body.theme-dark .dropdown-option:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+}
+
+/* ============================ SEARCH INPUT COMPONENT ====================== */
+/* covered above */
+
+/* ============================ MODAL COMPONENT ============================= */
+body.theme-dark .modal-content {
+  color: var(--text);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+}
+body.theme-dark .modal-close-btn:hover {
+  color: var(--text);
+}
+
+/* ============================ ANALYTICS PAGE ============================== */
+/* Zaman aralığı sekmeleri (Daily/Weekly/Monthly/Yearly): aktif tab açık
+   --primary üzerine beyaz yazı taşıyordu, dark'ta okunmuyordu. */
+body.theme-dark .chart-timeframe-tab.active {
+  color: #0f1115;
+}
+
+/* Boş durum butonları (Add Transaction vb.): hardcoded koyu siyah,
+   dark modda kart arka planına karışıyordu — açık tona çevir. */
+body.theme-dark .modern-empty-btn {
+  background: var(--primary);
+  color: #0f1115;
+}
+body.theme-dark .modern-empty-btn:hover {
+  opacity: 0.9;
+}
+
+/* Income/Expense sayfası header'daki "Add Transaction" butonu da
+   .btn-primary kullanıyor (hardcoded #201F24); dark'ta arka plana karışıyor. */
+body.theme-dark .ie-page-card .btn-primary {
+  background-color: var(--primary);
+  color: #0f1115;
+}
+body.theme-dark .ie-page-card .btn-primary:hover {
+  background-color: var(--primary);
+  opacity: 0.9;
+}
+
+/* Portfolio sayfası "Add Asset" butonu da .btn-primary kullanıyor. */
+body.theme-dark .my-holdings-header .btn-primary {
+  background-color: var(--primary);
+  color: #0f1115;
+}
+body.theme-dark .my-holdings-header .btn-primary:hover {
+  background-color: var(--primary);
+  opacity: 0.9;
+}
+
+
+/* ============================ CHATBOT WIDGET ============================== */
+body.theme-dark .ai-chat-widget,
+body.theme-dark .chat-container,
+body.theme-dark .chat-messages,
+body.theme-dark .chat-input-area,
+body.theme-dark .chart-modal-container,
+body.theme-dark .chart-modal-content {
+  background-color: var(--card);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+/* ChatWidget penceresi: light tema beyaz kalsın, dark'ta var(--card) */
+body.theme-dark .chat-window {
+  background-color: var(--card);
+  border-color: var(--border);
+  box-shadow: 0 20px 30px -5px rgba(0, 0, 0, 0.6),
+              0 10px 12px -5px rgba(0, 0, 0, 0.35);
+}
+
+/* Mesajlaşma alanı (gri arka plan → koyu nötr) */
+body.theme-dark .chat-body {
+  background-color: #0f1218;
+}
+
+/* Bot balonu: açık gri → yumuşak koyu, açık text */
+body.theme-dark .chat-message.bot {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+}
+
+/* Kullanıcı balonu: siyah → açık (vurgu), kart üzerinde okunaklı */
+body.theme-dark .chat-message.user {
+  background-color: var(--primary);
+  color: #0f1115;
+}
+
+/* Footer */
+body.theme-dark .chat-footer {
+  background-color: var(--card);
+  border-top-color: var(--border);
+}
+
+/* Footer input */
+body.theme-dark .chat-footer input {
+  background-color: rgba(255, 255, 255, 0.04);
+  border-color: var(--border);
+  color: var(--text);
+}
+body.theme-dark .chat-footer input::placeholder {
+  color: var(--muted);
+}
+body.theme-dark .chat-footer input:focus {
+  border-color: var(--primary);
+}
+
+/* "Sor" butonu — kart arka planına karışmasın */
+body.theme-dark .chat-footer button {
+  background-color: var(--primary);
+  color: #0f1115;
+}
+body.theme-dark .chat-footer button:hover {
+  background-color: var(--primary);
+  opacity: 0.9;
+}
+
+/* ============================ MODAL FORMLARI =============================
+   Pots/Budgets/IncomeExpense/Delete formlarının hardcoded açık renklerini
+   dark modda RecurringBills (bills) modalının renklendirmesine uydurur.
+   Bills modalı zaten var(--text)/--card/--border/--primary kullanıyor;
+   burada diğer formları aynı palete çekiyoruz. */
+
+/* Başlıklar */
+body.theme-dark .add-pot-form h2,
+body.theme-dark .edit-pot-form h2,
+body.theme-dark .edit-budget-form h2,
+body.theme-dark .add-money-form h2,
+body.theme-dark .withdraw-money-form h2,
+body.theme-dark .add-transaction-form h2,
+body.theme-dark .delete-confirmation h2,
+body.theme-dark .delete-modal-container h2 {
+  color: var(--text);
+}
+
+/* Açıklama paragrafları */
+body.theme-dark .add-pot-form p,
+body.theme-dark .edit-pot-form p,
+body.theme-dark .edit-budget-form p,
+body.theme-dark .add-money-form p,
+body.theme-dark .withdraw-money-form p,
+body.theme-dark .add-transaction-form p,
+body.theme-dark .delete-confirmation p,
+body.theme-dark .delete-modal-container p {
+  color: var(--muted);
+}
+
+/* Label */
+body.theme-dark .add-pot-form .form-group label,
+body.theme-dark .edit-pot-form .form-group label,
+body.theme-dark .edit-budget-form .form-group label,
+body.theme-dark .add-money-form .form-group label,
+body.theme-dark .withdraw-money-form .form-group label,
+body.theme-dark .add-transaction-form .form-group label {
+  color: var(--muted);
+}
+
+/* Input / select */
+body.theme-dark .add-pot-form input,
+body.theme-dark .edit-pot-form .form-input,
+body.theme-dark .edit-budget-form .form-input,
+body.theme-dark .edit-budget-form input,
+body.theme-dark .add-money-form input,
+body.theme-dark .withdraw-money-form input,
+body.theme-dark .add-transaction-form input {
+  background-color: var(--card);
+  border-color: var(--border);
+  color: var(--text);
+}
+body.theme-dark .add-pot-form input::placeholder,
+body.theme-dark .edit-pot-form .form-input::placeholder,
+body.theme-dark .edit-budget-form .form-input::placeholder,
+body.theme-dark .edit-budget-form input::placeholder,
+body.theme-dark .add-money-form input::placeholder,
+body.theme-dark .withdraw-money-form input::placeholder,
+body.theme-dark .add-transaction-form input::placeholder {
+  color: var(--muted);
+}
+body.theme-dark .add-pot-form input:focus,
+body.theme-dark .edit-pot-form .form-input:focus,
+body.theme-dark .edit-budget-form .form-input:focus,
+body.theme-dark .edit-budget-form input:focus,
+body.theme-dark .add-money-form input:focus,
+body.theme-dark .withdraw-money-form input:focus,
+body.theme-dark .add-transaction-form input:focus {
+  border-color: var(--primary);
+}
+
+/* Custom select (theme/category seçicisi) */
+body.theme-dark .select-selected-value {
+  background-color: var(--card);
+  border-color: var(--border);
+  color: var(--text);
+}
+body.theme-dark .select-placeholder {
+  color: var(--muted);
+}
+body.theme-dark .select-options {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+body.theme-dark .select-option {
+  color: var(--text);
+}
+body.theme-dark .select-option:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+body.theme-dark .select-option.disabled {
+  color: var(--muted);
+}
+
+/* Input prefix sarmalayıcı (₺) — beyaz arka planlı text rengini düzelt */
+body.theme-dark .input-with-prefix span {
+  color: var(--muted);
+}
+
+/* AddMoney / Withdraw önizleme kartı */
+body.theme-dark .add-money-form .preview-section,
+body.theme-dark .withdraw-money-form .preview-section {
+  background-color: rgba(255, 255, 255, 0.04);
+  border-color: var(--border);
+}
+body.theme-dark .add-money-form .preview-label,
+body.theme-dark .add-money-form .preview-target,
+body.theme-dark .withdraw-money-form .preview-label,
+body.theme-dark .withdraw-money-form .preview-target {
+  color: var(--muted);
+}
+body.theme-dark .add-money-form .preview-amount,
+body.theme-dark .withdraw-money-form .preview-amount {
+  color: var(--text);
+}
+
+/* Submit butonları: light'ta koyu siyah kalsın, dark'ta tersine çevir */
+body.theme-dark .add-pot-form .form-submit-btn,
+body.theme-dark .edit-pot-form .form-submit-btn,
+body.theme-dark .edit-budget-form .form-submit-btn,
+body.theme-dark .add-money-form .form-submit-btn,
+body.theme-dark .withdraw-money-form .form-submit-btn,
+body.theme-dark .add-transaction-form .btn-primary.full-width {
+  background-color: var(--primary);
+  color: #0f1115;
+}
+body.theme-dark .add-pot-form .form-submit-btn:hover,
+body.theme-dark .edit-pot-form .form-submit-btn:hover,
+body.theme-dark .edit-budget-form .form-submit-btn:hover,
+body.theme-dark .add-money-form .form-submit-btn:hover,
+body.theme-dark .withdraw-money-form .form-submit-btn:hover {
+  opacity: 0.92;
+  background-color: var(--primary);
+}
+body.theme-dark .add-money-form .form-submit-btn:disabled,
+body.theme-dark .withdraw-money-form .form-submit-btn:disabled {
+  background-color: rgba(255, 255, 255, 0.18);
+  color: rgba(238, 242, 255, 0.45);
+}
+
+/* Income/Expense tip seçici */
+body.theme-dark .add-transaction-form .ie-type-selector {
+  background: rgba(255, 255, 255, 0.05);
+}
+body.theme-dark .add-transaction-form .ie-type-selector button {
+  color: var(--muted);
+}
+
+/* DeleteConfirmation iptal butonu (Pot silme) */
+body.theme-dark .btn-secondary-outline {
+  background-color: var(--card);
+  color: var(--text);
+  border-color: var(--border);
+}
+body.theme-dark .btn-secondary-outline:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+/* Autofill (Chrome/Edge tarayıcı sarı arka planını engelle) */
+body.theme-dark .add-pot-form input:-webkit-autofill,
+body.theme-dark .add-pot-form input:-webkit-autofill:hover,
+body.theme-dark .add-pot-form input:-webkit-autofill:focus,
+body.theme-dark .add-pot-form input:-webkit-autofill:active,
+body.theme-dark .edit-pot-form input:-webkit-autofill,
+body.theme-dark .edit-budget-form input:-webkit-autofill,
+body.theme-dark .add-money-form input:-webkit-autofill,
+body.theme-dark .withdraw-money-form input:-webkit-autofill,
+body.theme-dark .add-transaction-form input:-webkit-autofill {
+  -webkit-text-fill-color: var(--text) !important;
+  box-shadow: 0 0 0 1000px var(--card) inset !important;
+}
+
+/* ============================ MOBİL: Daha yumuşak ipuçları ================ */
+body.theme-dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+}
+body.theme-dark ::-webkit-scrollbar-track {
+  background: transparent;
+}

@@ -1,71 +1,189 @@
-.empty-state-container {
-  background-color: white;
-  border: 1px dashed #e2e8f0;
-  border-radius: 12px;
-  padding: 3rem 2rem;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  max-width: 650px;
-  height: 350px;
-  margin: 2rem auto;
-  position: relative;
-  overflow: hidden;
-  /* background-size, background-position vb. silindi çünkü img etiketi halledecek */
-}
+/* Unified empty state — light & dark via CSS variables */
+.es-panel {
+  --es-accent: #64748b;
+  --es-accent-soft: rgba(100, 116, 139, 0.14);
+  --es-accent-muted: rgba(100, 116, 139, 0.38);
+  --es-ring-bg: rgba(100, 116, 139, 0.1);
+  --es-ring-border: rgba(100, 116, 139, 0.22);
 
-/* YENİ EKLENEN KISIM: Resmi arka planmış gibi div'in arkasına döşer */
-.empty-state-bg-img {
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
-  height: 100%;
-  object-fit: contain; /* Eski background-size: contain ile birebir aynı işi yapar */
-  object-position: center; /* Eski background-position: center ile aynı */
-  z-index: 0; /* İçeriğin arkasında durmasını sağlar */
+  max-width: 640px;
+  margin: 2rem auto;
+  border-radius: var(--radius, 14px);
+  border: 1px dashed var(--border);
+  background: var(--card);
+  overflow: hidden;
+  text-align: center;
+  color: var(--text);
 }
 
-.empty-state-content {
-  position: relative;
-  z-index: 2; /* Resmin ve sisin en üstünde kalsın */
+.es-panel--blue {
+  --es-accent: #3b82f6;
+  --es-accent-soft: rgba(59, 130, 246, 0.12);
+  --es-accent-muted: rgba(59, 130, 246, 0.38);
+  --es-ring-bg: rgba(59, 130, 246, 0.12);
+  --es-ring-border: rgba(59, 130, 246, 0.28);
+}
+
+.es-panel--green {
+  --es-accent: #22c55e;
+  --es-accent-soft: rgba(34, 197, 94, 0.12);
+  --es-accent-muted: rgba(34, 197, 94, 0.38);
+  --es-ring-bg: rgba(34, 197, 94, 0.12);
+  --es-ring-border: rgba(34, 197, 94, 0.28);
+}
+
+.es-panel--orange {
+  --es-accent: #f97316;
+  --es-accent-soft: rgba(249, 115, 22, 0.12);
+  --es-accent-muted: rgba(249, 115, 22, 0.38);
+  --es-ring-bg: rgba(249, 115, 22, 0.12);
+  --es-ring-border: rgba(249, 115, 22, 0.28);
+}
+
+.es-panel--purple {
+  --es-accent: #8b5cf6;
+  --es-accent-soft: rgba(139, 92, 246, 0.12);
+  --es-accent-muted: rgba(139, 92, 246, 0.38);
+  --es-ring-bg: rgba(139, 92, 246, 0.12);
+  --es-ring-border: rgba(139, 92, 246, 0.28);
+}
+
+.es-panel--teal {
+  --es-accent: #14b8a6;
+  --es-accent-soft: rgba(20, 184, 166, 0.12);
+  --es-accent-muted: rgba(20, 184, 166, 0.38);
+  --es-ring-bg: rgba(20, 184, 166, 0.12);
+  --es-ring-border: rgba(20, 184, 166, 0.28);
+}
+
+.es-panel-banner {
+  height: 96px;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
+  background: linear-gradient(
+    135deg,
+    var(--es-accent-soft) 0%,
+    color-mix(in srgb, var(--es-accent-soft) 55%, transparent) 100%
+  );
 }
 
-.empty-state-icon {
-  font-size: 3rem;
-  color: #cbd5e1;
-  margin-bottom: 1rem;
+.es-panel-banner-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  color: var(--es-accent-muted);
 }
 
-.empty-state-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #201F24;
-  margin: 0 0 0.75rem 0;
+.es-panel-banner-svg {
+  width: 44px;
+  height: 44px;
 }
 
-.empty-state-message-text {
-  color: #334155;
-  max-width: 350px;
+.es-panel-body {
+  padding: 0 1.75rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.es-panel--banner-only .es-panel-body {
+  padding-top: 1.5rem;
+}
+
+.es-panel-icon-ring {
+  width: 40px;
+  height: 40px;
+  margin: -20px auto 1rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--es-ring-bg);
+  border: 1px solid var(--es-ring-border);
+  color: var(--es-accent);
+  line-height: 0;
+}
+
+.es-panel-ring-svg {
+  width: 20px;
+  height: 20px;
+}
+
+.es-panel-title {
+  margin: 0 0 0.65rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.es-panel-message {
+  margin: 0 0 1.35rem;
+  max-width: 380px;
+  font-size: 0.95rem;
   line-height: 1.6;
-  margin: 0 0 1.5rem 0;
+  color: var(--muted);
 }
 
-.empty-state-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1; /* Resmin üstünde, yazıların altında (Sis efekti) */
-  pointer-events: none;
+.es-panel-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 0.65rem 1.35rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--primary);
+  color: #fff;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
 
-  /* ✅ görseli soluk yapan "beyaz sis" */
-  background: rgba(255, 255, 255, 0.65);
+.es-panel-btn:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+body.theme-dark .es-panel-btn {
+  background: #eef2ff;
+  color: #0f1115;
+}
+
+body.theme-dark .es-panel-btn:hover {
+  background: #ffffff;
+}
+
+/* Dashboard / kart içi kompakt */
+.es-panel--compact {
+  max-width: none;
+  margin: 0;
+  border-style: solid;
+  border-width: 1px;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.es-panel--compact .es-panel-body {
+  padding: 1.5rem 1.25rem;
+}
+
+.es-panel--compact .es-panel-icon-ring {
+  margin: 0 auto 0.85rem;
+}
+
+.es-panel--compact .es-panel-title {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.es-panel--compact .es-panel-message {
+  font-size: 0.88rem;
+  margin-bottom: 0;
+}
+
+.es-panel--compact:not(:has(.es-panel-title)) .es-panel-message {
+  margin-top: 0;
 }

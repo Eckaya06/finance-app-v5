@@ -1,7 +1,7 @@
 /* src/pages/pots/PotsPage.css */
 
-.page-container { 
-  padding: 2.5rem; 
+.page-container {
+  padding: 2.5rem;
 }
 
 .page-header {
@@ -36,6 +36,182 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
+}
+
+/* ───── Pots Page v2 — Outer card layout (Budgets ile aynı) ───── */
+.pp-page-card {
+  background: #f3f4f6;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 18px;
+  padding: 1.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  min-height: calc(100vh - 8rem);
+}
+
+body.theme-dark .pp-page-card {
+  background: #14171e;
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.pots-page-v2 .pp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  gap: 16px;
+  border-bottom: 1px solid var(--border, rgba(0, 0, 0, 0.06));
+  padding-bottom: 1.25rem;
+}
+
+.pp-title {
+  margin: 0;
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--text, #201F24);
+  letter-spacing: -0.01em;
+}
+
+.pp-add-btn {
+  background: var(--primary, #201F24);
+  color: var(--card, #fff);
+  border: none;
+  border-radius: 999px;
+  padding: 0.75rem 1.4rem;
+  font-weight: 600;
+  font-size: 0.92rem;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  transition: transform 0.1s ease, opacity 0.15s ease;
+}
+
+body.theme-dark .pp-add-btn {
+  color: #0f1115;
+}
+
+.pp-add-btn:hover {
+  opacity: 0.92;
+}
+.pp-add-btn:active {
+  transform: scale(0.97);
+}
+
+/* Stat tiles */
+.pp-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.pp-stat-tile {
+  background: var(--card, #fff);
+  border: 1px solid var(--border, rgba(0, 0, 0, 0.06));
+  border-radius: 14px;
+  padding: 1.1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  will-change: transform;
+}
+
+.pp-stat-tile:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px -8px rgba(15, 23, 42, 0.18),
+              0 4px 8px -4px rgba(15, 23, 42, 0.06);
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+.pp-stat-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.pp-stat-amount {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: var(--text, #201F24);
+  letter-spacing: -0.02em;
+}
+
+.pp-stat-hint {
+  font-size: 0.8rem;
+  color: var(--muted, #6b7280);
+}
+
+/* Overall progress bar card */
+.pp-overall-bar-card {
+  background: var(--card, #fff);
+  border: 1px solid var(--border, rgba(0, 0, 0, 0.06));
+  border-radius: 14px;
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  will-change: transform;
+}
+
+.pp-overall-bar-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px -8px rgba(15, 23, 42, 0.18),
+              0 4px 8px -4px rgba(15, 23, 42, 0.06);
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+.pp-overall-bar {
+  width: 100%;
+  height: 10px;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+body.theme-dark .pp-overall-bar {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.pp-overall-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: #14b8a6;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pp-overall-foot {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.pp-overall-saved {
+  color: #0f766e;
+}
+
+.pp-overall-left {
+  color: var(--muted, #6b7280);
+}
+
+body.theme-dark .pp-overall-saved {
+  color: #5eead4;
+}
+
+@media (max-width: 900px) {
+  .pp-stats-grid {
+    grid-template-columns: 1fr;
+  }
+  .pots-page-v2 .page-container,
+  .pots-page-v2.page-container {
+    padding: 1.25rem;
+  }
 }
 
 
@@ -307,5 +483,84 @@
   border: 1px solid #e2e8f0;
 }
 .btn-secondary-outline:hover { background-color: #f8fafc; border-color: #cbd5e1;}
+
+/* ─── Goal-reached celebration modal ───────────────────────────────────── */
+.pot-celebrate-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 17, 21, 0.55);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  animation: pot-fade 0.18s ease;
+}
+.pot-celebrate-modal {
+  background: var(--card, #fff);
+  color: var(--text, #0f172a);
+  border: 1px solid var(--border, rgba(0, 0, 0, 0.08));
+  border-radius: 16px;
+  padding: 2rem 1.75rem 1.5rem;
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
+  animation: pot-pop 0.22s ease;
+}
+.pot-celebrate-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(34,197,94,0.18), rgba(16,185,129,0.18));
+  color: #16a34a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pot-celebrate-icon svg { width: 32px; height: 32px; }
+body.theme-dark .pot-celebrate-icon {
+  background: linear-gradient(135deg, rgba(34,197,94,0.24), rgba(16,185,129,0.24));
+  color: #4ade80;
+}
+.pot-celebrate-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text, #0f172a);
+}
+.pot-celebrate-desc {
+  margin: 0 0 1.25rem;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--muted, #6b7280);
+}
+.pot-celebrate-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(34, 197, 94, 0.14);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.pot-celebrate-bar span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+  transform-origin: left;
+  animation: pot-progress 3.2s linear forwards;
+}
+@keyframes pot-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pot-pop {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+@keyframes pot-progress {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
 
 

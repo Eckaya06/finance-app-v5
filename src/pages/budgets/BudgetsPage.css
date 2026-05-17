@@ -1,151 +1,386 @@
 /* src/pages/budgets/BudgetsPage.css */
 
-/* --- Sayfa Genel Stilleri --- */
-.page-container { 
-  padding: 2.5rem; 
+.page-container {
+  padding: 2.5rem;
 }
 
-.page-header {
+/* ─── Outer page card — soluk beyaz (griyi andıran); iç kartlar saf beyaz ─── */
+.bp-page-card {
+  background: #f3f4f6;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 18px;
+  padding: 1.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  min-height: calc(100vh - 8rem);
+}
+
+body.theme-dark .bp-page-card {
+  background: #14171e;
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+/* ─── Header ──────────────────────────────────────────────────────── */
+.budgets-page-v2 .bp-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  gap: 16px;
+  border-bottom: 1px solid var(--border, rgba(0, 0, 0, 0.06));
+  padding-bottom: 1.25rem;
 }
 
-.page-title {
+.bp-header-text {
+  min-width: 0;
+}
+
+.bp-title {
   margin: 0;
-  font-size: 2.25rem;
+  font-size: 1.9rem;
   font-weight: 700;
+  color: var(--text, #201F24);
+  letter-spacing: -0.01em;
 }
 
-.btn-primary {
-  background-color: #201F24;
-  color: white;
+.bp-add-btn {
+  background: var(--primary, #201F24);
+  color: var(--card, #fff);
   border: none;
-  padding: 0.75rem 1.25rem;
-  border-radius: 8px;
+  border-radius: 999px;
+  padding: 0.75rem 1.4rem;
   font-weight: 600;
+  font-size: 0.92rem;
   cursor: pointer;
-  transition: background-color 0.2s;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  transition: transform 0.1s ease, opacity 0.15s ease;
 }
 
-.btn-primary:hover {
-  background-color: #334155;
+body.theme-dark .bp-add-btn {
+  color: #0f1115;
 }
 
-/* ✅ Budgets Grid: Kartları hem hizalı hem de eşit yükseklikte tutar */
-.budget-cards-grid {
+.bp-add-btn:hover {
+  opacity: 0.92;
+}
+.bp-add-btn:active {
+  transform: scale(0.97);
+}
+
+/* ─── Stats row ───────────────────────────────────────────────────── */
+.bp-stats-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.25rem; /* Boşluğu biraz daha daralttık */
-  align-items: stretch;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.25rem;
 }
 
-@media (max-width: 900px) {
-  .budget-cards-grid {
+.bp-stat-tile {
+  background: var(--card, #fff);
+  border: 1px solid var(--border, rgba(0, 0, 0, 0.06));
+  border-radius: 14px;
+  padding: 1.1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  will-change: transform;
+}
+
+.bp-stat-tile:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px -8px rgba(15, 23, 42, 0.18),
+              0 4px 8px -4px rgba(15, 23, 42, 0.06);
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+.bp-stat-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.bp-stat-amount {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: var(--text, #201F24);
+  letter-spacing: -0.02em;
+}
+
+.bp-stat-amount.negative {
+  color: #ef4444;
+}
+
+.bp-stat-hint {
+  font-size: 0.8rem;
+  color: var(--muted, #6b7280);
+}
+
+.bp-stat-hint.ok {
+  color: #15803d;
+  font-weight: 600;
+}
+.bp-stat-hint.warn {
+  color: #b45309;
+  font-weight: 600;
+}
+.bp-stat-hint.danger {
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+body.theme-dark .bp-stat-hint.ok {
+  color: #86efac;
+}
+body.theme-dark .bp-stat-hint.warn {
+  color: #fcd34d;
+}
+body.theme-dark .bp-stat-hint.danger {
+  color: #fca5a5;
+}
+
+/* ─── Two-column body ────────────────────────────────────────────── */
+.bp-body {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .bp-body {
     grid-template-columns: 1fr;
   }
 }
 
-/* ✅ BudgetDetailCard: Esnek ve kesilmeyen yapı */
-.budget-detail-card {
-  background-color: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+.bp-side {
   display: flex;
   flex-direction: column;
-  padding: 1.25rem; /* İç boşluğu biraz azalttık */
-  min-height: 350px; /* 400px çok fazlaydı, 350px'e çektik */
-  gap: 0.75rem; /* Elemanlar arası boşluğu azalttık */
+  gap: 1.25rem;
 }
 
-/* Harcamalar kısmını her zaman en alta iten sihirli dokunuş */
-.latest-spending {
-  margin-top: 1rem; /* auto yerine sabit bir mesafe vererek boşluğu kapattık */
+.bp-side-card {
+  background: var(--card, #fff);
+  border: 1px solid var(--border, rgba(0, 0, 0, 0.06));
+  border-radius: 14px;
+  padding: 1.4rem 1.5rem;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  will-change: transform;
+}
+
+.bp-side-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px -8px rgba(15, 23, 42, 0.18),
+              0 4px 8px -4px rgba(15, 23, 42, 0.06);
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+.bp-side-head h2 {
+  margin: 0 0 4px 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text, #201F24);
+}
+
+.bp-side-head p {
+  margin: 0 0 1rem 0;
+  font-size: 0.82rem;
+  color: var(--muted, #6b7280);
+}
+
+/* Donut */
+.bp-donut-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bp-donut-center {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
 }
 
-/* ✅ LATEST SPENDING LIST: Kesilmeyi önleyen ve scrollbar'ı düzelten kısım */
-.latest-spending-list {
-  max-height: 155px; /* 3 tam satırın sığacağı ideal yükseklik */
-  overflow-y: auto;
-  padding-right: 8px; /* Scrollbar'ın yazıları ezmemesi için */
+.bp-donut-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--muted, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
-/* Scrollbar Özelleştirme: Daha geniş (8px) ve yakalanabilir */
-.latest-spending-list::-webkit-scrollbar {
-  width: 8px; 
+.bp-donut-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text, #201F24);
+  margin-top: 2px;
 }
 
-.latest-spending-list::-webkit-scrollbar-track {
-  background: #f8fafc; 
-  border-radius: 10px;
+/* Legend */
+.bp-legend {
+  list-style: none;
+  margin: 0.75rem 0 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.latest-spending-list::-webkit-scrollbar-thumb {
-  background-color: #cbd5e1;
-  border-radius: 10px;
-  border: 2px solid #f8fafc; /* Çubuğu daha belirgin ve şık yapar */
+.bp-legend li {
+  display: grid;
+  grid-template-columns: 12px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.88rem;
 }
 
-.latest-spending-list::-webkit-scrollbar-thumb:hover {
-  background-color: #94a3b8;
+.bp-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  display: inline-block;
 }
 
-/* Harcama Satırları: Net ve kesilmez */
-.latest-row {
+.bp-legend-name {
+  color: var(--text, #1f2937);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bp-legend-val {
+  color: var(--text, #1f2937);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Usage bar */
+.bp-usage-bar {
+  width: 100%;
+  height: 10px;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+body.theme-dark .bp-usage-bar {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.bp-usage-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bp-usage-foot {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.bp-usage-used {
+  color: #15803d;
+}
+
+.bp-usage-left {
+  color: var(--muted, #6b7280);
+}
+
+body.theme-dark .bp-usage-used {
+  color: #86efac;
+}
+
+/* Per-category mini rows */
+.bp-usage-list {
+  list-style: none;
+  margin: 1rem 0 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.bp-usage-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bp-usage-row-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid #f1f5f9;
-  min-height: 50px;
+  font-size: 0.85rem;
 }
 
-.latest-row:last-child {
-  border-bottom: none;
-}
-
-/* --- AddBudgetForm Stilleri (Değişmedi, stabil) --- */
-.add-budget-form .form-group { display: flex; flex-direction: column; margin-bottom: 1.5rem; }
-.add-budget-form label { margin-bottom: 0.5rem; font-weight: 500; }
-.input-with-prefix {
-  display: flex; align-items: center; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0 0.75rem; 
-}
-.input-with-prefix input { padding: 0.75rem 0.25rem; border: none; outline: none; width: 100%; }
-
-/* Custom Select için eklemeler */
-.select-options {
-  position: absolute; top: 100%; left: 0; right: 0; background-color: white;
-  z-index: 100; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-  max-height: 200px; overflow-y: auto;
-}
-
-.latest-spending-header {
-  display: flex;
-  justify-content: space-between;
+.bp-usage-row-label {
+  display: inline-flex;
   align-items: center;
-  margin-bottom: 0.5rem;
+  gap: 8px;
+  color: var(--text, #1f2937);
+  font-weight: 600;
 }
 
-/* SCROLLBAR & ROW UPDATE */
-.latest-spending-list::-webkit-scrollbar { width: 8px; }
-.latest-spending-list::-webkit-scrollbar-track { background: #f8fafc; border-radius: 10px; }
-.latest-spending-list::-webkit-scrollbar-thumb {
-  background: #cbd5e1; border-radius: 10px; border: 2px solid #f8fafc;
+.bp-usage-row-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
 }
 
-.latest-row {
+.bp-usage-row-pct {
+  color: var(--muted, #6b7280);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.bp-usage-row-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+body.theme-dark .bp-usage-row-bar {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.bp-usage-row-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Right column: budget cards stacked */
+.bp-list {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0; /* Satır dikey boşluğunu azalttık */
-  border-bottom: 1px solid #f1f5f9;
-  min-height: 45px; /* Daha derli toplu satırlar */
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
 }
 
-.latest-name { font-weight: 600; font-size: 0.9rem; color: #334155; }
-.latest-date { font-size: 0.75rem; color: #9ca3af; }
-.latest-amount { font-weight: 700; color: #ef4444; font-size: 0.9rem; }
+/* Responsive */
+@media (max-width: 900px) {
+  .bp-stats-grid {
+    grid-template-columns: 1fr;
+  }
+  .page-container {
+    padding: 1.25rem;
+  }
+}

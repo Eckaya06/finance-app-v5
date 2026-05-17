@@ -1,0 +1,26 @@
+/* Recharts kapsayıcıları — ResponsiveChart ile birlikte kullanılır */
+.chart-container {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.responsive-chart-host--fill {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.bp-donut-wrap {
+  position: relative;
+  width: 100%;
+  min-height: 210px;
+  height: 210px;
+}
+
+.ppc-chart-wrap {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}

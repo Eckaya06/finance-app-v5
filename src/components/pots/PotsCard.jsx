@@ -1,8 +1,9 @@
-import './PotsCard.css';
+﻿import './PotsCard.css';
 import { useTransactions } from '../../context/TransactionContext';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import emptyPotsImage from '../../assets/emptypots_overview.webp';
+import { FiDollarSign } from 'react-icons/fi';
+import EmptyState from '../emptystate/EmptyState.jsx';
 
 const JarIcon = () => (
   <svg
@@ -53,10 +54,12 @@ const PotsCard = () => {
       </div>
 
       {pots.length === 0 ? (
-        <div className="pots-empty-state">
-          <img src={emptyPotsImage} alt="" className="pots-empty-state-img" />
-          <p>{t('potsCard.empty')}</p>
-        </div>
+        <EmptyState
+          compact
+          variant="teal"
+          icon={<FiDollarSign />}
+          message={t('potsCard.empty')}
+        />
       ) : (
         <div className="pots-content">
           <div className="total-saved-section">
@@ -66,8 +69,9 @@ const PotsCard = () => {
               <p className="total-saved-amount">₺{totalSaved.toFixed(2)}</p>
             </div>
           </div>
+
           <div className="pots-list">
-            {pots.slice(0, 4).map(pot => (
+            {pots.slice(0, 4).map((pot) => (
               <div key={pot.id} className="pot-item">
                 <div
                   className="pot-indicator"
@@ -87,3 +91,5 @@ const PotsCard = () => {
 };
 
 export default PotsCard;
+
+

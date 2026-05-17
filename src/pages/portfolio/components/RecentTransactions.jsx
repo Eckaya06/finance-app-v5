@@ -1,11 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
+import { FiTrash2 } from 'react-icons/fi';
 import ASSET_META from './assetMeta.js';
 
-const RecentTransactions = ({ transactions }) => {
+const RecentTransactions = ({ transactions, onDeleteTransaction }) => {
   const { t } = useTranslation();
   const [showAllModal, setShowAllModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null); // tx object pending confirmation
+  const [deleting, setDeleting] = useState(false);
   
   // Modal Filters
   const [filterAsset, setFilterAsset] = useState('All');
@@ -62,11 +65,35 @@ const RecentTransactions = ({ transactions }) => {
             <span>{formatDate(tx.timestamp || tx.createdAt)}</span>
           </div>
         </div>
-        <span className="recent-tx-amount">
-          {tx.amount} × ₺{tx.pricePerUnit?.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
-        </span>
+        <div className="recent-tx-right">
+          <span className="recent-tx-amount">
+            {tx.amount} × ₺{tx.pricePerUnit?.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+          </span>
+          {onDeleteTransaction && tx._id && (
+            <button
+              type="button"
+              className="recent-tx-delete"
+              onClick={() => setDeleteTarget(tx)}
+              title={t('portfolio.deleteTxBtn')}
+              aria-label={t('portfolio.deleteTxBtn')}
+            >
+              <FiTrash2 />
+            </button>
+          )}
+        </div>
       </div>
     );
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget || !onDeleteTransaction) return;
+    setDeleting(true);
+    try {
+      await onDeleteTransaction(deleteTarget._id);
+      setDeleteTarget(null);
+    } finally {
+      setDeleting(false);
+    }
   };
 
   // Filter and Sort Logic for Modal
@@ -198,6 +225,46 @@ const RecentTransactions = ({ transactions }) => {
                   <p>{t('portfolio.noFilterMatch')}</p>
                 </div>
               )}
+            </div>
+          </div>
+        </div>,
+      document.body)}
+
+      {deleteTarget && createPortal(
+        <div
+          className="portfolio-tx-modal-overlay"
+          onClick={() => !deleting && setDeleteTarget(null)}
+          style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 10000, display: 'flex', justifyContent: 'center', alignItems: 'center', backdropFilter: 'blur(2px)' }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ background: 'var(--card)', border: '1px solid var(--border)', width: '90%', maxWidth: '440px', borderRadius: '16px', padding: '24px', boxShadow: '0 20px 40px rgba(0,0,0,0.18)' }}
+          >
+            <h2 style={{ margin: '0 0 12px', fontSize: '20px', fontWeight: 700, color: 'var(--text)' }}>
+              {t('portfolio.deleteTxTitle')}
+            </h2>
+            <p style={{ margin: '0 0 24px', fontSize: '14px', color: 'var(--muted)', lineHeight: 1.55 }}>
+              {t('portfolio.deleteTxMsg', {
+                amount: deleteTarget.amount,
+                asset: deleteTarget.assetType,
+                type: deleteTarget.transactionType === 'BUY' ? t('portfolio.buy') : t('portfolio.sell'),
+              })}
+            </p>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button
+                onClick={handleConfirmDelete}
+                disabled={deleting}
+                style={{ flex: 1, padding: '12px', borderRadius: 8, background: '#dc2626', color: '#fff', fontSize: 14, fontWeight: 700, border: 'none', cursor: deleting ? 'not-allowed' : 'pointer', opacity: deleting ? 0.7 : 1 }}
+              >
+                {deleting ? '⏳ …' : t('portfolio.deleteTxBtn')}
+              </button>
+              <button
+                onClick={() => setDeleteTarget(null)}
+                disabled={deleting}
+                style={{ flex: 1, padding: '12px', borderRadius: 8, background: 'var(--card)', color: 'var(--text)', fontSize: 14, fontWeight: 700, border: '1px solid var(--border)', cursor: deleting ? 'not-allowed' : 'pointer' }}
+              >
+                {t('common.noGoBack')}
+              </button>
             </div>
           </div>
         </div>,

@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import BudgetOptionsMenu from './BudgetOptionsMenu.jsx';
 
 const BudgetDetailCard = ({ budget, onEditRequest, onDeleteRequest, isMenuOpen, onOptionsToggle }) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const spent = Number(budget.spent || 0);
   const limitNum = Number(budget.limit || budget.maxSpend || 0);
   const remaining = limitNum - spent;
@@ -13,54 +13,56 @@ const BudgetDetailCard = ({ budget, onEditRequest, onDeleteRequest, isMenuOpen, 
   const latestTransactions = budget.latestSpending || [];
 
   const spentPercentage = limitNum > 0 ? (spent / limitNum) * 100 : 0;
-  const remainingPercentage = limitNum > 0 ? Math.max(0, (remaining / limitNum) * 100) : 0;
+  // Bar artık "kalan bütçe"yi gösterir: dolu başlar, harcandıkça boşalır.
+  const remainingPercentage = Math.max(0, 100 - spentPercentage);
 
-  const theme = themeOptions.find(t => t.value === budget.theme) || themeOptions[0];
-
-  const dateLocale = i18n.resolvedLanguage?.toLowerCase().startsWith('tr') ? 'tr-TR' : 'en-GB';
-  const creationDate = budget.createdAt
-    ? new Date(budget.createdAt).toLocaleDateString(dateLocale, { day: 'numeric', month: 'long', year: 'numeric' })
-    : t('common.unknown');
+  const theme = themeOptions.find((opt) => opt.value === budget.theme) || themeOptions[0];
 
   return (
     <div className="budget-detail-card" style={{ position: 'relative' }}>
       <div className="card-header">
-        <div className="theme-option-display" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span className="theme-color-swatch" style={{ backgroundColor: theme.color, width: '12px', height: '12px', borderRadius: '50%' }}></span>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <h3 style={{ margin: 0, fontSize: '1.05rem' }}>{t(`categories.${budget.category}`, { defaultValue: budget.category })}</h3>
-            <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>{t('common.createdAt')}: {creationDate}</span>
-          </div>
+        <div className="card-header-main">
+          <h3 className="card-title">
+            {t(`categories.${budget.category}`, { defaultValue: budget.category })}
+          </h3>
+          <p className="budget-limit-text">
+            {t('budgetDetailCard.maxSpend', { limit: limitNum.toFixed(2) })}
+          </p>
         </div>
-        
-        {/* ✅ YENİ: Tıklandığında kendi iç state'ini değil, ana sayfadaki fonksiyonu tetikler */}
-        <button className="pot-options-btn" onClick={onOptionsToggle}>
-          <FiMoreHorizontal size={18} />
-        </button>
+
+        <div className="card-header-actions">
+          <span
+            className={`budget-percent-badge ${
+              spentPercentage >= 90
+                ? 'is-danger'
+                : spentPercentage >= 50
+                  ? 'is-warn'
+                  : 'is-ok'
+            }`}
+          >
+            {spentPercentage.toFixed(0)}%
+          </span>
+          <button className="pot-options-btn" onClick={onOptionsToggle}>
+            <FiMoreHorizontal size={18} />
+          </button>
+        </div>
       </div>
 
       {isMenuOpen && (
-        <BudgetOptionsMenu 
+        <BudgetOptionsMenu
           onEdit={onEditRequest}
           onDelete={onDeleteRequest}
         />
       )}
 
-      <p className="budget-limit-text">{t('budgetDetailCard.maxSpend', { limit: limitNum.toFixed(2) })}</p>
-      
-      <div className="progress-bar-container" style={{ background: '#f8fafc', padding: '3px', height: '12px', marginTop: '5px' }}>
-        <div 
-          className="progress-bar-fill" 
-          style={{ 
-            width: `${remainingPercentage}%`, 
+      <div className="progress-bar-container">
+        <div
+          className="progress-bar-fill"
+          style={{
+            width: `${remainingPercentage}%`,
             backgroundColor: theme.color,
-            transition: 'width 0.6s cubic-bezier(0.4, 0, 0.2, 1)' 
           }}
-        ></div>
-      </div>
-      
-      <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px', textAlign: 'right', fontWeight: '700' }}>
-        {t('budgetDetailCard.spentPercent', { percent: spentPercentage.toFixed(1) })}
+        />
       </div>
 
       <div className="budget-spend-summary">

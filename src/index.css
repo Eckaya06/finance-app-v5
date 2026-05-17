@@ -29,6 +29,21 @@ body {
   color: var(--text);
 }
 
+/* Tüm sayfalar için ortak dış sayfa kartı — Pots / Budgets gibi.
+   Sayfa kökü .page-container'ın hemen altına bu sınıfla bir div sarmak yeterli. */
+.page-card {
+  background: #f3f4f6;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 18px;
+  padding: 1.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+body.theme-dark .page-card {
+  background: #14171e;
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
 a { color: inherit; }
 
 .container { max-width: 1100px; margin: 40px auto; padding: 0 16px; }

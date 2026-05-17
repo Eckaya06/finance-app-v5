@@ -1,7 +1,7 @@
 /* src/components/pots/PotCard.css */
 /* src/components/pots/PotCard.css */
 .pot-card {
-  
+
   position: relative;
   background-color: white;
   border: 1px solid #e2e8f0;
@@ -11,6 +11,15 @@
   flex-direction: column;
   gap: 1rem;
   padding-bottom: 2.5rem;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  will-change: transform;
+}
+
+.pot-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px -8px rgba(15, 23, 42, 0.18),
+              0 4px 8px -4px rgba(15, 23, 42, 0.06);
+  border-color: rgba(15, 23, 42, 0.12);
 }
 .pot-card-header {position: relative; display: flex; align-items: center; gap: 0.75rem; }
 .pot-icon { width: 10px; height: 10px; border-radius: 50%; }
@@ -76,12 +85,16 @@
   width: 100%;
   background: none;
   border: none;
+  /* Browser <button> default color'ı dark modda kart arkaplanına çok yakın
+     bir gri veriyordu — inherit ile menu container'ın renk değişkenini al. */
+  color: inherit;
   padding: 0.6rem 0.75rem;
   text-align: left;
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.9rem;
-  white-space: nowrap; 
+  font-family: inherit;
+  white-space: nowrap;
 }
 
 .pot-options-menu button:hover {
@@ -93,8 +106,54 @@
 }
 
 .pot-options-menu button.delete:hover {
-  background-color: #fee2e2; 
+  background-color: #fee2e2;
 }
+
+/* ─── Completed pot: diyagonal köşe ribbon ─────────────────────────────── */
+.pot-card.is-completed {
+  /* Card kenarına yumuşak yeşil çerçeve — listede tamamlanmış kumbarayı
+     hızlıca taramak için. Kartın geri kalan içeriği aynen okunur. */
+  border-color: rgba(34, 197, 94, 0.5);
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.15);
+  /* Ribbon kartın sınırlarının dışına taşmasın diye clip ediyoruz. */
+  overflow: hidden;
+}
+body.theme-dark .pot-card.is-completed {
+  border-color: rgba(74, 222, 128, 0.55);
+}
+
+/* Ribbon: sağ üst köşede 45° döndürülmüş yeşil şerit. position:absolute +
+   transform rotate ile köşeyi kesiyor gibi görünür. İçerik üstüne yerleşir
+   ama tüm kartı kaplamaz; pot detayları okunur durumda kalır. */
+.pot-completed-ribbon {
+  position: absolute;
+  top: 16px;
+  right: -42px;
+  width: 150px;
+  transform: rotate(45deg);
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: #ffffff;
+  text-align: center;
+  z-index: 5;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.35);
+  pointer-events: none;
+}
+.pot-completed-ribbon span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 0;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.pot-completed-ribbon svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
 
 
 

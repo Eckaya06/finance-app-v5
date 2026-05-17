@@ -19,6 +19,7 @@ export const AuthProvider = ({ children }) => {
         const { data } = await api.get('/auth/me');
         setUser(data.user);
       } catch (err) {
+        // 401 (invalid token) veya 403 (e-posta doğrulanmamış) durumunda oturumu temizle
         localStorage.removeItem('financeapp_token');
         setUser(null);
       } finally {
@@ -56,8 +57,15 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  // Mevcut user objesi üzerine kısmi bir güncelleme uygular. SettingsPage
+  // displayName değişiminden sonra çağırır — AI chatbot'un `user.displayName`'i
+  // anında yeni isimle okuyabilmesi için. user null ise no-op.
+  const updateUser = (partial) => {
+    setUser((prev) => (prev ? { ...prev, ...partial } : prev));
+  };
+
   // Dışarı aktarılan değerler
-  const value = { user, login, signup, logout, loading };
+  const value = { user, login, signup, logout, updateUser, loading };
 
   return (
     <AuthContext.Provider value={value}>

@@ -47,6 +47,10 @@ export const TransactionProvider = ({ children }) => {
   const [pots, setPots] = useState([]);
   const [bills, setBills] = useState([]);
   const [loading, setLoading] = useState(true);
+  // Portfolio state PortfolioPage'in lokalinde tutuluyor; AI agent ile
+  // varlık eklendiğinde sayfanın haberi olsun diye versiyon sayacı.
+  // PortfolioPage bu sayacı izleyip refetch yapar.
+  const [portfolioVersion, setPortfolioVersion] = useState(0);
 
   const user = authContext ? authContext.user : null;
 
@@ -316,6 +320,7 @@ export const TransactionProvider = ({ children }) => {
     if (Number(pricePerUnit) > 0) payload.pricePerUnit = Number(pricePerUnit);
 
     const response = await api.post(endpoint, payload);
+    setPortfolioVersion((v) => v + 1);
     return response.data;
   };
 
@@ -336,6 +341,10 @@ export const TransactionProvider = ({ children }) => {
       // ChatContext.executeAgentCommand fatura adından eşleştirme yaparken
       // güncel listeye ihtiyaç duyar — closure üzerinden hep tazesi okunur.
       getBills: () => bills,
+      // Pot/Budget tema seçimi için mevcut temaları ChatContext'ten
+      // okuyabilelim diye getter'lar.
+      getPots: () => pots,
+      getBudgets: () => computedBudgets,
     });
   }); // bağımlılıksız: her render'da en güncel closure'ı yeniden kayıt eder
 
@@ -346,7 +355,7 @@ export const TransactionProvider = ({ children }) => {
       const limitNum = Number(budget.limit ?? budget.maxSpend ?? 0);
       const relevantTotal = budget.spent + amount;
       if (limitNum > 0 && relevantTotal / limitNum >= 0.75) {
-        addMessage('bot', `⚠️ Budget Alert: You've used %${((relevantTotal / limitNum) * 100).toFixed(0)} of your ${category} budget!`);
+        addMessage('bot', `⚠️ Budget Alert: You've used %${((relevantTotal / limitNum) * 100).toFixed(0)} of your ${category} budget!`, 'insight');
       }
     }
   };
@@ -373,6 +382,8 @@ export const TransactionProvider = ({ children }) => {
         deleteBill,
         markBillPaid,
         markBillUnpaid,
+        portfolioVersion,
+        bumpPortfolioVersion: () => setPortfolioVersion((v) => v + 1),
         loading,
       }}
     >

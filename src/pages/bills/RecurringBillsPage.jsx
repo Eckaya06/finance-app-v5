@@ -9,6 +9,7 @@ import {
   FiFileText, FiSearch, FiMoreVertical, FiCheck,
   FiEdit2, FiTrash2, FiPlus, FiRotateCcw
 } from 'react-icons/fi';
+import EmptyState from '../../components/emptystate/EmptyState.jsx';
 
 const THEME_COLORS = [
   '#636ae8', '#277c78', '#f2cdac', '#82c9d7',
@@ -157,6 +158,7 @@ const RecurringBillsPage = () => {
 
   return (
     <div className="page-container bills-page">
+      <div className="page-card">
       <div className="page-header">
         <h1 className="page-title">{t('bills.title')}</h1>
       </div>
@@ -242,22 +244,16 @@ const RecurringBillsPage = () => {
           )}
 
           {!loading && filteredBills.length === 0 && (
-            <div className="bills-empty">
-              <div className="bills-empty-icon">
-                <FiFileText />
-              </div>
-              <h3>{searchTerm ? t('bills.noBillsFound') : t('bills.noBillsTitle')}</h3>
-              <p>
-                {searchTerm
-                  ? t('bills.tryAdjust')
-                  : t('bills.noBillsMsg')}
-              </p>
-              {!searchTerm && (
-                <button className="btn-empty-add" onClick={() => setIsAddModalOpen(true)}>
-                  {t('bills.addFirst')}
-                </button>
-              )}
-            </div>
+            <EmptyState
+              variant="orange"
+              showRingIcon={false}
+              icon={<FiFileText />}
+              title={searchTerm ? t('bills.noBillsFound') : t('bills.noBillsTitle')}
+              message={searchTerm ? t('bills.tryAdjust') : t('bills.noBillsMsg')}
+              buttonText={!searchTerm ? t('bills.addFirst') : undefined}
+              onAction={!searchTerm ? () => setIsAddModalOpen(true) : undefined}
+              className="bills-page-empty"
+            />
           )}
 
           {!loading && filteredBills.map((bill) => {
@@ -333,6 +329,7 @@ const RecurringBillsPage = () => {
             );
           })}
         </div>
+      </div>
       </div>
 
       <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)}>

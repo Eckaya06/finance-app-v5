@@ -125,3 +125,9 @@
 }
 
 /* Agent action feedback toast moved to global ToastHost (top-center). */
+
+/* Sidebar sağa geçtiğinde sohbet penceresi sola yapışsın. */
+body[data-sidebar-side="right"] .chat-widget-container {
+  right: auto;
+  left: 2rem;
+}

@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
+import { FiTarget, FiTrendingUp, FiAward, FiDollarSign, FiCheck } from 'react-icons/fi';
 import './PotsPage.css';
 import PotCard from '../../components/pots/PotCard.jsx';
 import Modal from '../../components/modal/Modal.jsx';
@@ -8,7 +10,6 @@ import EditPotForm from '../../components/pots/EditPotForm.jsx';
 import AddMoneyForm from '../../components/pots/AddMoneyForm.jsx';
 import WithdrawMoneyForm from '../../components/pots/WithdrawMoneyForm.jsx';
 import EmptyState from '../../components/emptystate/EmptyState.jsx';
-import emptyPotsImage from '../../assets/empty-pots.webp';
 import DeleteConfirmationModal from '../../components/modal/DeleteConfirmationModal.jsx'
 import { useTransactions } from '../../context/TransactionContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
@@ -29,13 +30,9 @@ const PotsPage = () => {
   const [isEditPotModalOpen, setIsEditPotModalOpen] = useState(false);
   const [selectedPot, setSelectedPot] = useState(null);
 
-  // 🕵️ DEDEKTİF LOGU: Ekranda (State'lerde) neler oluyor?
-  console.log("🔄 SAYFA RENDER EDİLDİ | Modal Durumları:", { 
-    AddPot: isAddPotModalOpen, 
-    Edit: isEditPotModalOpen, 
-    AddMoney: isAddMoneyModalOpen, 
-    SelectedPot: selectedPot?.name || "Yok" 
-  });
+  // Hedefe ulaşıldığında ekranda gösterilen kutlama modali. Auto-close
+  // sürelidir; "showPwSuccess" akışındaki gibi belirli bir süre kalır.
+  const [celebrate, setCelebrate] = useState(null); // { name: string } | null
 
   const handleCreatePot = async (newPotData) => {
     const newPot = { name: newPotData.name, saved: 0, target: newPotData.target, theme: newPotData.theme };
@@ -49,19 +46,15 @@ const PotsPage = () => {
   };
 
   const handleOptionsToggle = (potId) => {
-    console.log(`🖱️ Üç Noktaya Tıklandı. Açılan Menü ID: ${potId}`);
     setOpenOptionsMenuId(prevId => (prevId === potId ? null : potId));
   };
 
   const openAddMoneyModal = (potId) => {
-    console.log(`💰 Add Money Tıklandı! Pot ID: ${potId}`);
     if (potActionError.potId === potId) setPotActionError({ potId: null, message: '' });
     const potToEdit = pots.find(p => p.id === potId);
     if (potToEdit) {
       setSelectedPot(potToEdit);
       setIsAddMoneyModalOpen(true);
-    } else {
-      console.log("❌ Add Money için pot bulunamadı!");
     }
   };
 
@@ -75,6 +68,14 @@ const PotsPage = () => {
       const newBalance = potToUpdate.saved + amountToAdd;
       await updatePotBalance(potId, newBalance);
       showToast(t('potsPage.addedAmount', { amount: amountToAdd, name: potToUpdate.name }), 'success');
+
+      // Hedef tam olarak şu eklemeyle ilk kez yakalandı/aşıldı mı? Eski bakiye
+      // hedefin altındayken yeni bakiye eşit veya üzerine çıkıyorsa kutla.
+      // (Zaten dolu olan kumbaraya daha fazla eklenirse tekrar tetiklenmez.)
+      const target = Number(potToUpdate.target || 0);
+      if (target > 0 && potToUpdate.saved < target && newBalance >= target) {
+        setCelebrate({ name: potToUpdate.name });
+      }
     } catch (err) {
       showToast(err?.response?.data?.message || t('potsPage.addFail'), 'error');
     } finally {
@@ -82,13 +83,19 @@ const PotsPage = () => {
     }
   };
 
+  // Kutlama modalı auto-close: 3.2 sn sonra kapanır.
+  useEffect(() => {
+    if (!celebrate) return;
+    const id = setTimeout(() => setCelebrate(null), 3200);
+    return () => clearTimeout(id);
+  }, [celebrate]);
+
   const closeAddMoneyModal = () => {
     setIsAddMoneyModalOpen(false);
     setSelectedPot(null);
   };
 
   const openWithdrawModal = (potId) => {
-    console.log(`💸 Withdraw Tıklandı! Pot ID: ${potId}`);
     const potToEdit = pots.find(p => p.id === potId);
     if (potToEdit) {
       if (potToEdit.saved <= 0) {
@@ -135,24 +142,16 @@ const PotsPage = () => {
   };
 
   const openEditModal = (potId) => {
-    console.log(`✏️ Edit Pot Tıklandı! Pot ID: ${potId}`);
     const potToEdit = pots.find(p => p.id === potId);
     if (potToEdit) {
       setSelectedPot(potToEdit);
       setIsEditPotModalOpen(true);
       setOpenOptionsMenuId(null); 
-    } else {
-      console.log("❌ Edit için pot bulunamadı!");
     }
   };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // 🕵️ DEDEKTİF LOGU: Ekran tıklamalarını dinliyoruz
-      if (openOptionsMenuId !== null) {
-        console.log("🖱️ Ekran dışı tıklama algılandı. Tıklanan yer:", event.target.className);
-      }
-
       if (openOptionsMenuId !== null && 
           !event.target.closest('.pot-options-btn') && 
           !event.target.closest('.pot-options-menu')) 
@@ -170,7 +169,6 @@ const PotsPage = () => {
   }, [openOptionsMenuId, potActionError]);
 
   const openDeleteModal = (potId) => {
-    console.log(`🗑️ Delete Pot Tıklandı! Pot ID: ${potId}`);
     const potToDelete = pots.find(p => p.id === potId);
     if (potToDelete) {
       setSelectedPot(potToDelete);
@@ -195,39 +193,143 @@ const PotsPage = () => {
     setSelectedPot(null);
   };
 
+  // ─── Türetilmiş metrikler ───────────────────────────────────────────
+  const stats = useMemo(() => {
+    const totalSaved = pots.reduce((s, p) => s + Number(p.saved || 0), 0);
+    const totalTarget = pots.reduce((s, p) => s + Number(p.target || 0), 0);
+    const overallPercent = totalTarget > 0 ? (totalSaved / totalTarget) * 100 : 0;
+    const reached = pots.filter(
+      (p) => Number(p.target || 0) > 0 && Number(p.saved || 0) >= Number(p.target),
+    ).length;
+    return { totalSaved, totalTarget, overallPercent, reached };
+  }, [pots]);
+
+  const fmt = (n) =>
+    new Intl.NumberFormat('tr-TR', {
+      style: 'currency',
+      currency: 'TRY',
+      maximumFractionDigits: 2,
+    }).format(Number(n) || 0);
+
   return (
-    <div className="page-container">
-      <div className="page-header">
-        <h1 className="page-title">{t('potsPage.title')}</h1>
-        <button className="btn-primary" onClick={() => setIsAddPotModalOpen(true)}>
-          {t('potsPage.addNew')}
-        </button>
+    <div className="page-container pots-page-v2">
+      <div className="pp-page-card">
+        <div className="pp-header">
+          <div className="pp-header-text">
+            <h1 className="pp-title">{t('potsPage.title')}</h1>
+          </div>
+          <button className="pp-add-btn" onClick={() => setIsAddPotModalOpen(true)}>
+            {t('potsPage.addNew')}
+          </button>
+        </div>
+
+        {pots.length === 0 ? (
+          <EmptyState
+            variant="teal"
+            showRingIcon={false}
+            icon={<FiDollarSign />}
+            title={t('potsPage.emptyTitle')}
+            message={t('potsPage.emptyMessage')}
+            buttonText={t('potsPage.createFirst')}
+            onAction={() => setIsAddPotModalOpen(true)}
+          />
+        ) : (
+          <>
+            {/* === Top stats === */}
+            <div className="pp-stats-grid">
+              <div className="pp-stat-tile">
+                <div className="pp-stat-label">
+                  <FiTarget size={14} /> {t('potsPage.statTotalSaved')}
+                </div>
+                <div className="pp-stat-amount">{fmt(stats.totalSaved)}</div>
+                <div className="pp-stat-hint">
+                  {t('potsPage.statActive', { count: pots.length })}
+                </div>
+              </div>
+
+              <div className="pp-stat-tile">
+                <div className="pp-stat-label">
+                  <FiAward size={14} /> {t('potsPage.statTotalTarget')}
+                </div>
+                <div className="pp-stat-amount">{fmt(stats.totalTarget)}</div>
+                <div className="pp-stat-hint">{t('potsPage.statAcrossAll')}</div>
+              </div>
+
+              <div className="pp-stat-tile">
+                <div className="pp-stat-label">
+                  <FiTrendingUp size={14} /> {t('potsPage.statOverall')}
+                </div>
+                <div className="pp-stat-amount">
+                  {stats.overallPercent.toFixed(1)}%
+                </div>
+                <div className="pp-stat-hint">
+                  {t('potsPage.statReached', {
+                    reached: stats.reached,
+                    total: pots.length,
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* === Overall progress bar === */}
+            <div className="pp-overall-bar-card">
+              <div className="pp-overall-bar">
+                <div
+                  className="pp-overall-fill"
+                  style={{
+                    width: `${Math.min(100, stats.overallPercent).toFixed(2)}%`,
+                  }}
+                />
+              </div>
+              <div className="pp-overall-foot">
+                <span className="pp-overall-saved">
+                  {t('potsPage.savedPercent', {
+                    percent: stats.overallPercent.toFixed(1),
+                  })}
+                </span>
+                <span className="pp-overall-left">
+                  {t('potsPage.remainingPercent', {
+                    percent: Math.max(0, 100 - stats.overallPercent).toFixed(1),
+                  })}
+                </span>
+              </div>
+            </div>
+
+            {/* === Pot cards === */}
+            <div className="pots-grid">
+              {pots.map((pot) => (
+                <PotCard
+                  key={pot.id}
+                  pot={pot}
+                  onAddMoneyClick={openAddMoneyModal}
+                  onWithdrawClick={openWithdrawModal}
+                  potActionError={potActionError}
+                  onOptionsToggle={handleOptionsToggle}
+                  isOptionsMenuOpen={openOptionsMenuId === pot.id}
+                  onDeleteClick={openDeleteModal}
+                  onEditClick={openEditModal}
+                />
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
-      {pots.length === 0 ? (
-        <EmptyState
-          title={t('potsPage.emptyTitle')}
-          message={t('potsPage.emptyMessage')}
-          buttonText={t('potsPage.createFirst')}
-          onAction={() => setIsAddPotModalOpen(true)}
-          backgroundImage={emptyPotsImage}
-        />
-      ) : (
-        <div className="pots-grid">
-          {pots.map(pot => (
-            <PotCard
-              key={pot.id}
-              pot={pot}
-              onAddMoneyClick={openAddMoneyModal}
-              onWithdrawClick={openWithdrawModal}
-              potActionError={potActionError}
-              onOptionsToggle={handleOptionsToggle}
-              isOptionsMenuOpen={openOptionsMenuId === pot.id}
-              onDeleteClick={openDeleteModal}
-              onEditClick={openEditModal} 
-            />
-          ))}
-        </div>
+      {/* Kutlama modali — hedefe ulaşıldığında, kısa süre ekranda kalır */}
+      {celebrate && createPortal(
+        <div className="pot-celebrate-overlay" aria-modal="true" role="dialog">
+          <div className="pot-celebrate-modal">
+            <div className="pot-celebrate-icon" aria-hidden="true">
+              <FiCheck />
+            </div>
+            <h3 className="pot-celebrate-title">{t('potCard.goalReachedModalTitle')}</h3>
+            <p className="pot-celebrate-desc">
+              {t('potCard.goalReachedModalMsg', { name: celebrate.name })}
+            </p>
+            <div className="pot-celebrate-bar"><span /></div>
+          </div>
+        </div>,
+        document.body
       )}
 
       {/* MODALS */}

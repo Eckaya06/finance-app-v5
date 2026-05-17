@@ -48,25 +48,6 @@
   gap: 1rem;
 }
 
-.transaction-avatar-wrap {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  overflow: hidden;
-  background-color: #f1f5f9;
-}
-
-.transaction-avatar-icon {
-  width: 80px;
-  height: 80px;
-  object-fit: contain;
-  display: block;
-}
-
 .transaction-name {
   font-weight: 600;
   margin: 0;
@@ -88,28 +69,4 @@
 
 .transaction-amount.expense {
   color: #334155;
-}
-
-.transactions-empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 2rem 1rem;
-  color: #94a3b8;
-  font-size: 0.95rem;
-  gap: 1rem;
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-}
-
-.transactions-empty-state-img {
-  width: 300px;
-  max-width: 100%;
-  height: auto;
-  display: block;
-  object-fit: contain;
-  mix-blend-mode: multiply;
 }

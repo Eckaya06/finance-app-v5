@@ -1,11 +1,468 @@
 .analytics-page {
   padding: 2.5rem;
   min-height: 100vh;
-  background-color: var(--background);
+  background-color: var(--bg, var(--background, #f8fafc));
   color: var(--text);
   display: flex;
   flex-direction: column;
   gap: 24px;
+}
+
+/* ── Reference layout (ap-*) ── */
+.ap-page-card {
+  background: #f3f4f6;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 18px;
+  padding: 1.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+body.theme-dark .ap-page-card {
+  background: #14171e;
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.ap-header {
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.ap-title {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* KPI cards — referans layout (badge → label → value → foot), nötr renk */
+.ap-kpi-grid {
+  gap: 1rem;
+}
+
+.ap-kpi-grid .kpi-icon {
+  display: none;
+}
+
+.ap-kpi-grid .ap-kpi-card {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  padding: 1.35rem 1.5rem;
+  border-radius: 14px;
+  background: var(--card, #fff);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.ap-kpi-grid .ap-kpi-card:hover {
+  transform: none;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.ap-kpi-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.18rem 0.45rem;
+  border-radius: 5px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: #f3f4f6;
+  color: #111827;
+  border: none;
+  margin-bottom: 0.55rem;
+}
+
+body.theme-dark .ap-kpi-pill {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text, #f1f5f9);
+}
+
+.ap-kpi-label {
+  margin: 0 0 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #9ca3af;
+  line-height: 1.3;
+}
+
+body.theme-dark .ap-kpi-label {
+  color: #94a3b8;
+}
+
+.ap-kpi-value {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: #111827;
+}
+
+body.theme-dark .ap-kpi-value {
+  color: var(--text, #f8fafc);
+}
+
+.ap-kpi-foot {
+  margin: 0.5rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #9ca3af;
+  line-height: 1.4;
+}
+
+body.theme-dark .ap-kpi-foot {
+  color: #94a3b8;
+}
+
+.ap-kpi-foot-sep {
+  color: #d1d5db;
+}
+
+.ap-kpi-grid .text-green,
+.ap-kpi-grid .text-red {
+  color: #111827 !important;
+}
+
+/* Hero grid */
+.ap-analytics-grid {
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  grid-auto-rows: auto;
+  gap: 1.25rem;
+}
+
+.ap-hero-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
+  align-self: stretch;
+}
+
+.ap-hero-column--left {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.ap-hero-column--left > .analytics-panel {
+  flex: 0 0 auto;
+}
+
+.ap-hero-column--right {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.ap-hero-column--right > .analytics-panel {
+  flex: 1 1 auto;
+  min-height: auto;
+  overflow: visible;
+}
+
+.ap-hero-stack {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  min-height: auto;
+  overflow: visible;
+}
+
+.ap-stack-block {
+  padding: 1.25rem 1.5rem;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: visible;
+}
+
+.ap-stack-block .panel-header {
+  margin-bottom: 1rem;
+}
+
+.ap-stack-divider {
+  height: 1px;
+  background: var(--border, rgba(0, 0, 0, 0.08));
+  flex-shrink: 0;
+}
+
+.ap-panel--portfolio {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+
+.ap-panel--ppc {
+  grid-column: 1 / -1;
+  grid-row: 3;
+}
+
+.ap-panel .panel-header {
+  margin-bottom: 1rem;
+}
+
+.ap-chart-footer {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.ap-cashflow-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.ap-chart-meta {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #9ca3af;
+  white-space: nowrap;
+}
+
+.ap-cashflow-chart .recharts-cartesian-grid-horizontal line {
+  stroke: #e5e7eb;
+}
+
+body.theme-dark .ap-cashflow-chart .recharts-cartesian-grid-horizontal line {
+  stroke: rgba(255, 255, 255, 0.08);
+}
+
+.ap-cashflow-tooltip {
+  background: var(--card, #fff);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 10px;
+  padding: 0.65rem 0.85rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
+  min-width: 140px;
+}
+
+.ap-cashflow-tooltip-date {
+  margin: 0 0 0.5rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.ap-cashflow-tooltip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.78rem;
+  color: #374151;
+}
+
+.ap-cashflow-tooltip-row + .ap-cashflow-tooltip-row {
+  margin-top: 0.35rem;
+}
+
+.ap-cashflow-tooltip-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 500;
+}
+
+.ap-cashflow-tooltip-val {
+  font-weight: 700;
+  color: #111827;
+}
+
+body.theme-dark .ap-cashflow-tooltip-date,
+body.theme-dark .ap-cashflow-tooltip-val {
+  color: var(--text, #f8fafc);
+}
+
+body.theme-dark .ap-cashflow-tooltip-row {
+  color: #94a3b8;
+}
+
+.ap-cashflow-footer .ap-legend-item {
+  color: #374151;
+  font-weight: 600;
+}
+
+body.theme-dark .ap-cashflow-footer .ap-legend-item {
+  color: #cbd5e1;
+}
+
+.ap-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.ap-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.ap-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ap-legend-dot--expense {
+  background: #ef4444;
+}
+
+.ap-panel--distribution,
+.ap-panel--budget {
+  overflow: visible;
+  min-width: 0;
+}
+
+.ap-distribution-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+  width: 100%;
+}
+
+.ap-donut-chart-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+  height: clamp(180px, 52vw, 260px);
+  flex-shrink: 0;
+  overflow: visible;
+  padding: 4px 0;
+}
+
+/* Merkez metin: DonutCenterLabel + donutCenterLabel.css */
+
+.ap-analytics-grid .ap-donut-chart-wrap {
+  overflow: visible;
+  contain: none;
+}
+
+.ap-category-chart {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.ap-donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-top: 0;
+  flex-shrink: 0;
+  padding-bottom: 0.15rem;
+}
+
+.ap-donut-legend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.82rem;
+}
+
+.ap-donut-legend-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text);
+  font-weight: 600;
+  min-width: 0;
+  flex: 1;
+}
+
+.ap-donut-legend-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.ap-donut-legend-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-shrink: 0;
+}
+
+.ap-donut-pct {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.ap-donut-amt {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.ap-budget-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.ap-budget-row-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.35rem;
+}
+
+.ap-budget-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.ap-budget-pct {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.ap-budget-track {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+body.theme-dark .ap-budget-track {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.ap-budget-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.6s ease;
+}
+
+.ap-empty-compact {
+  height: 120px;
+}
+
+.ap-panel--cashflow .ap-cashflow-chart {
+  min-height: 300px;
+}
+
+.ap-analytics-grid .analytics-panel {
+  overflow: visible;
 }
 
 /* Header & Timeframe Tabs */
@@ -402,6 +859,9 @@
 .chart-container {
   width: 100%;
   position: relative;
+}
+
+.ap-analytics-grid .chart-container {
   contain: layout style;
 }
 
@@ -643,6 +1103,27 @@ body.theme-dark .pf-perf-bar-track {
 @media (max-width: 1200px) {
   .kpi-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 1100px) {
+  .ap-analytics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ap-hero-column--left,
+  .ap-hero-column--right,
+  .ap-panel--portfolio,
+  .ap-panel--ppc {
+    grid-column: 1;
+    grid-row: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .ap-donut-chart-wrap {
+    max-width: 100%;
+    min-height: clamp(160px, 58vw, 220px);
   }
 }
 
