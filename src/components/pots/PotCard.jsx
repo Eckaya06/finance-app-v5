@@ -18,19 +18,19 @@ const PotCard = ({ pot, onAddMoneyClick, onWithdrawClick, potActionError, onOpti
 
   return (
     <div className={`pot-card theme-${pot.theme} ${isCompleted ? 'is-completed' : ''}`} data-pot-id={pot.id}>
-      {isCompleted && (
-        /* Sağ üst köşede 45° diyagonal "TAMAMLANDI" ribbon'u. Kartın geri
-           kalanı tamamen okunabilir kalır; ribbon kalıcı görsel işaret. */
-        <div className="pot-completed-ribbon" aria-label={t('potCard.completedOverlayTitle')}>
-          <span>
-            <FiCheck aria-hidden="true" />
-            {t('potCard.completedBadge')}
-          </span>
-        </div>
-      )}
+      {/* Tamamlanmış pot için "Completed" ribbon kaldırıldı — kart altındaki
+          locked banner zaten net bir tamamlanma göstergesi ve ribbon sağ
+          üstteki ⋯ menü butonunu görsel olarak kapatıyordu. Yeşil çerçeve
+          ve banner birlikte tamamlanma sinyalini veriyor. */}
       <div className="pot-card-header">
         <div className="pot-icon"></div>
         <h3>{pot.name}</h3>
+        {isCompleted && (
+          <span className="pot-completed-pill" title={t('potCard.lockedTooltip')}>
+            <FiCheck aria-hidden="true" />
+            {t('potCard.completedBadge')}
+          </span>
+        )}
 
         <button
           className="pot-options-btn"
@@ -66,20 +66,29 @@ const PotCard = ({ pot, onAddMoneyClick, onWithdrawClick, potActionError, onOpti
         <span>{progressPercentage.toFixed(0)}%</span>
         <span>{t('potCard.target', { target: pot.target.toFixed(0) })}</span>
       </div>
-      <div className="pot-actions">
-        <button
-          className="btn-secondary"
-          onClick={() => onAddMoneyClick(pot.id)}
-        >
-          {t('potCard.addMoney')}
-        </button>
-        <button
-          className="btn-secondary"
-          onClick={() => onWithdrawClick(pot.id)}
-        >
-          {t('potCard.withdraw')}
-        </button>
-      </div>
+      {isCompleted ? (
+        /* Pot tamamlanmış → butonlar yerine kilitli mesajı göster.
+           Düzenle butonu hâlâ ⋯ menüsünden erişilebilir. */
+        <div className="pot-locked-banner" role="status">
+          <div className="pot-locked-title">{t('potCard.lockedMessage')}</div>
+          <div className="pot-locked-hint">{t('potCard.lockedHint')}</div>
+        </div>
+      ) : (
+        <div className="pot-actions">
+          <button
+            className="btn-secondary"
+            onClick={() => onAddMoneyClick(pot.id)}
+          >
+            {t('potCard.addMoney')}
+          </button>
+          <button
+            className="btn-secondary"
+            onClick={() => onWithdrawClick(pot.id)}
+          >
+            {t('potCard.withdraw')}
+          </button>
+        </div>
+      )}
 
       {showError && (
         <p className="pot-action-error">{potActionError.message}</p>

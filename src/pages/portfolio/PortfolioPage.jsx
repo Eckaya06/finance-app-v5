@@ -27,9 +27,15 @@ const PortfolioPage = () => {
     try {
       const { data } = await api.get('/market/rates');
       setRates(data);
-      setLastUpdated(new Date());
+      // Backend ships truncgil's upstream Update_Date as `timestamp`. Use it
+      // verbatim — otherwise UI shows "0s önce" forever even when upstream
+      // hasn't refreshed in 10+ minutes (which is the normal cadence).
+      // Fallback to client clock only if the payload is missing the field.
+      setLastUpdated(data?.timestamp ? new Date(data.timestamp) : new Date());
+      return data;
     } catch (err) {
       console.error('Failed to fetch rates:', err);
+      return null;
     }
   }, []);
 
@@ -138,8 +144,18 @@ const PortfolioPage = () => {
   };
 
   const handleRefresh = async () => {
-    await Promise.all([fetchRates(), fetchPortfolio()]);
-    showToast(t('portfolio.dataRefreshed'), 'info');
+    // Compare upstream timestamp before/after — if it didn't change, upstream
+    // is still serving the same snapshot. Telling the user "Veri yenilendi"
+    // in that case is misleading; show the honest "no new data" message.
+    const prevTs = rates?.timestamp;
+    const [newData] = await Promise.all([fetchRates(), fetchPortfolio()]);
+    const unchanged = newData?.timestamp && prevTs && newData.timestamp === prevTs;
+    if (unchanged) {
+      const time = new Date(newData.timestamp).toLocaleTimeString('tr-TR');
+      showToast(t('portfolio.dataUnchanged', { time }), 'info');
+    } else {
+      showToast(t('portfolio.dataRefreshed'), 'success');
+    }
   };
 
   // ─── Utility: get current rate for an asset ───

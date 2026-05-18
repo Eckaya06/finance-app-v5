@@ -24,7 +24,6 @@ const AddBudgetForm = ({ onAddBudget, onClose }) => {
   const [error, setError] = useState('');
 
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
-  const [isThemeOpen, setIsThemeOpen] = useState(false);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -52,10 +51,8 @@ const AddBudgetForm = ({ onAddBudget, onClose }) => {
 
   const handleThemeSelect = (selectedTheme) => {
     setTheme(selectedTheme);
-    setIsThemeOpen(false);
     setError('');
   };
-  const selectedThemeObject = themeOptionsMeta.find(opt => opt.value === theme);
 
   const handleCategorySelect = (selectedCategory) => {
     setCategory(selectedCategory);
@@ -118,37 +115,19 @@ const AddBudgetForm = ({ onAddBudget, onClose }) => {
 
       <div className="form-group">
         <label>{t('addBudgetForm.theme')}</label>
-        <div className="custom-select-container">
-          <button
-            type="button"
-            className="select-selected-value"
-            onClick={() => setIsThemeOpen(!isThemeOpen)}
-          >
-            {selectedThemeObject ? (
-              <div className="theme-option-display">
-                <span className="theme-color-swatch" style={{ backgroundColor: selectedThemeObject.color }}></span>
-                <span className="selected-label-text">{t(selectedThemeObject.tKey)}</span>
-              </div>
-            ) : (
-              <span className="select-placeholder">{t('addBudgetForm.chooseTheme')}</span>
-            )}
-            <span className={`select-arrow ${isThemeOpen ? 'open' : ''}`}>▼</span>
-          </button>
-          {isThemeOpen && (
-            <ul className="select-options">
-              <li className="select-option" onClick={() => handleThemeSelect(null)}>
-                {t('addBudgetForm.chooseTheme')}
-              </li>
-              {themeOptionsMeta.map(option => (
-                <li key={option.value} className="select-option" onClick={() => handleThemeSelect(option.value)}>
-                  <div className="theme-option-display">
-                    <span className="theme-color-swatch" style={{ backgroundColor: option.color }}></span>
-                    {t(option.tKey)}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
+        <div className="theme-picker-row" role="radiogroup" aria-label={t('addBudgetForm.theme')}>
+          {themeOptionsMeta.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              role="radio"
+              aria-checked={theme === option.value}
+              className={`theme-picker-dot ${theme === option.value ? 'active' : ''}`}
+              style={{ backgroundColor: option.color }}
+              title={t(option.tKey)}
+              onClick={() => handleThemeSelect(option.value)}
+            />
+          ))}
         </div>
       </div>
 

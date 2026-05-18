@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import ASSET_META from './assetMeta.js';
 
@@ -14,12 +14,32 @@ const ASSET_OPTIONS = [
   { value: 'GOLD_OUNCE', group: 'Gold' },
 ];
 
-const AddAssetForm = ({ onAddAsset, onClose, getCurrentRate }) => {
+// `lockedAsset` — when provided, the form is reused for "add more to an
+// existing holding": asset is pre-selected and not pickable. The user only
+// enters amount + price (with live-rate prefill), same as the regular flow.
+const AddAssetForm = ({ onAddAsset, onClose, getCurrentRate, lockedAsset = null }) => {
   const { t } = useTranslation();
-  const [asset, setAsset] = useState(null);
+  const [asset, setAsset] = useState(lockedAsset || null);
   const [amount, setAmount] = useState('');
+  // User-entered purchase price (TRY per unit). Prefilled with the live rate
+  // when an asset is picked, but the user can override it to reflect what they
+  // actually paid (e.g. "I bought 1g gold at 6800 TL last week"). avgBuyPrice
+  // and PnL on the holdings table are then computed from this real cost basis.
+  const [price, setPrice] = useState(() => {
+    if (!lockedAsset) return '';
+    const rate = getCurrentRate(lockedAsset);
+    return rate ? String(rate) : '';
+  });
   const [isAssetOpen, setIsAssetOpen] = useState(false);
   const [error, setError] = useState('');
+
+  const liveRate = asset ? getCurrentRate(asset) : 0;
+  const priceNum = parseFloat(price);
+  const amountNum = parseFloat(amount);
+  const totalCost = useMemo(() => {
+    if (!Number.isFinite(priceNum) || !Number.isFinite(amountNum)) return 0;
+    return priceNum * amountNum;
+  }, [priceNum, amountNum]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -27,19 +47,21 @@ const AddAssetForm = ({ onAddAsset, onClose, getCurrentRate }) => {
       setError(t('addAssetForm.errors.chooseAsset'));
       return;
     }
-    if (!amount || parseFloat(amount) <= 0) {
+    if (!amount || amountNum <= 0) {
       setError(t('addAssetForm.errors.validAmount'));
       return;
     }
+    if (!price || priceNum <= 0) {
+      setError(t('addAssetForm.errors.validPrice'));
+      return;
+    }
 
-    const price = getCurrentRate(asset);
-    
-    onAddAsset({ 
-      assetType: asset, 
-      amount: parseFloat(amount), 
-      pricePerUnit: price 
+    onAddAsset({
+      assetType: asset,
+      amount: amountNum,
+      pricePerUnit: priceNum,
     });
-    
+
     onClose();
   };
 
@@ -47,22 +69,46 @@ const AddAssetForm = ({ onAddAsset, onClose, getCurrentRate }) => {
     setAsset(selectedAsset);
     setIsAssetOpen(false);
     setError('');
+    // Prefill the price with the live rate so a user who doesn't care about
+    // a historical cost basis can just submit. Empty string when deselected.
+    if (selectedAsset) {
+      const rate = getCurrentRate(selectedAsset);
+      setPrice(rate ? String(rate) : '');
+    } else {
+      setPrice('');
+    }
+  };
+
+  const applyLiveRate = () => {
+    if (!asset) return;
+    const rate = getCurrentRate(asset);
+    if (rate) setPrice(String(rate));
   };
 
   const selectedAssetMeta = asset ? ASSET_META[asset] : null;
 
   return (
     <form onSubmit={handleSubmit} className="add-pot-form">
-      <h2>{t('addAssetForm.title')}</h2>
-      <p>{t('addAssetForm.subtitle')}</p>
-      
+      <h2>
+        {lockedAsset && selectedAssetMeta
+          ? t('addAssetForm.titleLocked', { asset: selectedAssetMeta.label || lockedAsset })
+          : t('addAssetForm.title')}
+      </h2>
+      <p>
+        {lockedAsset
+          ? t('addAssetForm.subtitleLocked')
+          : t('addAssetForm.subtitle')}
+      </p>
+
       {error && (
         <div style={{ padding: '12px 16px', background: 'rgba(220, 38, 38, 0.1)', color: '#dc2626', borderRadius: '8px', fontSize: '13px', fontWeight: '500', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span>⚠️</span> {error}
         </div>
       )}
-      
-      {/* 1. Asset Dropdown */}
+
+      {/* 1. Asset Dropdown — hidden when asset is locked (adding to an
+          existing holding); we already know which asset we're adding to. */}
+      {!lockedAsset && (
       <div className="form-group">
         <label>{t('addAssetForm.asset')}</label>
         <div className="custom-select-container">
@@ -106,7 +152,8 @@ const AddAssetForm = ({ onAddAsset, onClose, getCurrentRate }) => {
           )}
         </div>
       </div>
-      
+      )}
+
       {/* 2. Amount Input */}
       <div className="form-group">
         <label htmlFor="asset-amount">{t('addAssetForm.amount')}</label>
@@ -124,22 +171,54 @@ const AddAssetForm = ({ onAddAsset, onClose, getCurrentRate }) => {
         </div>
       </div>
 
-      {/* 3. Live Price Preview (Read-Only) */}
+      {/* 3. Purchase Price (editable — user enters what they actually paid) */}
       <div className="form-group">
-        <label>{t('addAssetForm.currentPrice')}</label>
+        <label htmlFor="asset-price" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>{t('addAssetForm.purchasePrice')}</span>
+          {asset && liveRate > 0 && (
+            <button
+              type="button"
+              onClick={applyLiveRate}
+              style={{
+                background: 'none', border: 'none', color: 'var(--accent, #6366f1)',
+                cursor: 'pointer', fontSize: '12px', fontWeight: 600, padding: 0,
+              }}
+            >
+              {t('addAssetForm.useLiveRate', { rate: liveRate.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 4 }) })}
+            </button>
+          )}
+        </label>
+        <div className="input-with-prefix">
+          <span>₺</span>
+          <input
+            id="asset-price"
+            type="number"
+            step="any"
+            min="0.000001"
+            value={price}
+            onChange={(e) => { setPrice(e.target.value); setError(''); }}
+            placeholder="0.00"
+            disabled={!asset}
+          />
+        </div>
+      </div>
+
+      {/* 4. Total Cost Preview (computed from amount × purchase price) */}
+      <div className="form-group">
+        <label>{t('addAssetForm.totalCost')}</label>
         <div className="input-with-prefix">
           <span>₺</span>
           <input
             type="text"
-            value={asset && getCurrentRate(asset)
-              ? getCurrentRate(asset)?.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) || '0'
+            value={totalCost > 0
+              ? totalCost.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
               : '0.00'}
             readOnly
             className="add-asset-price-readonly"
           />
         </div>
       </div>
-      
+
       <button type="submit" className="btn-primary form-submit-btn">{t('addAssetForm.submit')}</button>
     </form>
   );

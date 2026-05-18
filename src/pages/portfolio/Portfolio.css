@@ -256,24 +256,45 @@ body.theme-dark .rate-card-new-code.metal { color:#fbbf24; }
 .rate-card-fav:hover { color:#fbbf24; transform: scale(1.15); }
 .rate-card-fav.is-fav { color:#f59e0b; }
 
-.rate-card-new-body { display:flex; flex-direction:column; gap:4px; }
-.rate-card-new-price-row {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 12px;
+.rate-card-new-body { display:flex; flex-direction:column; gap:8px; }
+
+/* Alış / Satış iki kolonlu grid — eski tek-fiyat satırının yerini aldı */
+.rate-card-new-prices {
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  align-items: stretch;
+  gap: 10px;
 }
-.rate-card-new-price-wrap {
+.rate-card-new-price-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.rate-card-new-price-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.rate-card-new-price-value-row {
   display: flex;
   align-items: baseline;
   gap: 6px;
   min-width: 0;
 }
+.rate-card-new-price-divider {
+  width: 1px;
+  background: var(--border);
+  align-self: stretch;
+}
 .rate-card-new-price {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
   color: var(--text);
   letter-spacing: -0.01em;
+  white-space: nowrap;
 }
 .rate-card-new-price.metal { color:#b45309; }
 body.theme-dark .rate-card-new-price.metal { color:#fbbf24; }
@@ -283,9 +304,17 @@ body.theme-dark .rate-card-new-price.metal { color:#fbbf24; }
   color: var(--muted);
   letter-spacing: 0.08em;
 }
+
+/* Sparkline + güncellenme zamanı alt satırda yan yana */
+.rate-card-new-spark-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
 .rate-card-new-spark {
   width: 90px;
-  height: 32px;
+  height: 28px;
   flex-shrink: 0;
 }
 .rate-card-new-spark svg { width:100%; height:100%; display:block; }
@@ -344,11 +373,40 @@ body.theme-dark .rate-card-new-price.metal { color:#fbbf24; }
 .holding-stat { display:flex; flex-direction:column; gap:2px; }
 .holding-stat-label { font-size:11px; color:var(--muted); }
 .holding-stat-value { font-size:13px; font-weight:600; color:var(--text); }
+/* Highlighted "current value" row — sits between the 2×2 stat grid and the
+   total-profit badge. Visually anchors the live market value of the holding. */
+.holding-card-current-value {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.18);
+}
+.holding-current-value-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+.holding-current-value-amount {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+body.theme-dark .holding-card-current-value {
+  background: rgba(129, 140, 248, 0.10);
+  border-color: rgba(129, 140, 248, 0.20);
+}
+
 .holding-card-pnl { display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-radius:8px; margin-bottom:12px; }
 .holding-card-pnl.profit { background:rgba(22,163,74,.06); }
 .holding-card-pnl.loss { background:rgba(220,38,38,.06); }
-.holding-pnl-label { font-size:11px; color:var(--muted); }
-.holding-pnl-value { font-size:13px; font-weight:700; }
+.holding-pnl-label { font-size:12px; font-weight:500; color:var(--muted); letter-spacing:0.02em; }
+.holding-pnl-value { font-size:16px; font-weight:500; letter-spacing:-0.01em; }
 .holding-card-pnl.profit .holding-pnl-value { color:#16a34a; }
 .holding-card-pnl.loss .holding-pnl-value { color:#dc2626; }
 

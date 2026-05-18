@@ -200,12 +200,17 @@ export const TransactionProvider = ({ children }) => {
 
   const updatePotBalance = async (potId, newBalance) => {
     if (!user || !potId) return;
-    try {
-      await api.put(`/pots/${potId}`, { saved: Number(newBalance) });
-      setPots((prev) => prev.map((pot) => (String(pot.id) === String(potId) ? { ...pot, saved: Number(newBalance) } : pot)));
-    } catch (err) {
-      console.error('Pot Bakiye Güncelleme Hatası:', err);
-    }
+
+    // Pot bakiyesi değişimi artık Transactions / Income-Expense sayfalarına
+    // yansıtılmıyor — pot hareketleri yalnızca pot kartında görünür.
+    // (Eskiden delta'ya göre gelir/gider transaction'ı yazılırdı; o bağ
+    // bilinçli olarak koparıldı, ana cüzdandan ayrı bir bakiye olarak kalıyor.)
+    //
+    // ÖNEMLİ: Backend reddederse (400 / network hatası) hata throw ediliyor;
+    // çağıran (AI dispatcher / Pot UI) kendi try/catch'inde gerçek durumu öğrenir.
+    const next = Number(newBalance);
+    await api.put(`/pots/${potId}`, { saved: next });
+    setPots((prev) => prev.map((pot) => (String(pot.id) === String(potId) ? { ...pot, saved: next } : pot)));
   };
 
   const updatePot = async (potId, updatedData) => {
@@ -290,11 +295,30 @@ export const TransactionProvider = ({ children }) => {
     if (moveAmount <= 0) throw new Error('Aktarılacak tutar geçersiz.');
 
     const norm = (s) => String(s || '').trim().toLowerCase();
-    const fromBudget = budgets.find((b) => norm(b.category) === norm(from));
+    // computedBudgets'ten oku — spent alanı dahil; available hesaplayabilelim.
+    const fromBudget = computedBudgets.find((b) => norm(b.category) === norm(from));
     if (!fromBudget) throw new Error(`"${from}" kategorisinde bütçe bulunamadı.`);
 
     const fromCurrentLimit = Number(fromBudget.limit ?? fromBudget.maxSpend ?? 0);
-    const fromNewLimit = Math.max(0, fromCurrentLimit - moveAmount);
+    const fromSpent = Number(fromBudget.spent ?? 0);
+    const available = fromCurrentLimit - fromSpent;
+
+    // Defense in depth: dispatcher pre-check'i geçtikten sonra bile (örn. ileride
+    // başka bir code path direkt reallocateBudget çağırırsa) negatif limit'e
+    // düşmeyi engelle. Hata mesajı dispatcher'ın lokalize ettiğinden farklı
+    // olabilir; o yüzden teknik metin.
+    if (available <= 0) {
+      throw new Error(
+        `"${from}" budget is already over its limit (limit ${fromCurrentLimit} TL, spent ${fromSpent} TL).`
+      );
+    }
+    if (moveAmount > available) {
+      throw new Error(
+        `Not enough transferable amount in "${from}": requested ${moveAmount} TL but only ${available} TL available.`
+      );
+    }
+
+    const fromNewLimit = fromCurrentLimit - moveAmount;
 
     await updateBudget(fromBudget.id, { limit: fromNewLimit });
 
@@ -338,6 +362,13 @@ export const TransactionProvider = ({ children }) => {
       addPortfolio,
       markBillPaid,
       markBillUnpaid,
+      // Pot edit operasyonları (AI agent için tam pot kontrolü)
+      updatePotBalance,
+      updatePot,
+      deletePot,
+      // Budget edit operasyonları (AI agent için tam bütçe kontrolü)
+      updateBudget,
+      deleteBudget,
       // ChatContext.executeAgentCommand fatura adından eşleştirme yaparken
       // güncel listeye ihtiyaç duyar — closure üzerinden hep tazesi okunur.
       getBills: () => bills,

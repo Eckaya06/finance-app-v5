@@ -288,7 +288,12 @@
     "updateFail": "Kumbara güncellenemedi",
     "potDeleted": "\"{{name}}\" kumbarası silindi",
     "deleteFail": "Kumbara silinemedi",
-    "addMoneyFirst": "Lütfen önce para ekleyin."
+    "addMoneyFirst": "Lütfen önce para ekleyin.",
+    "txDeposit": "\"{{name}}\" kumbarasına eklendi",
+    "txWithdraw": "\"{{name}}\" kumbarasından çekildi",
+    "deleteBlockedCompleted": "\"{{name}}\" silinemez: bu kumbara tamamlanmış ve başarın kilitli. Silmek istiyorsan önce hedefi yükselt (artık tamamlanmış sayılmasın), sonra parayı çekip sil.",
+    "deleteBlockedHasFunds": "\"{{name}}\" silinemez: içinde hâlâ {{amount}} TL var. Önce parayı çek, sonra sil.",
+    "withdrawBlockedCompleted": "\"{{name}}\" potundan para çekilemez: hedef tamamlanmış ve başarı kilitli. Çekmek istiyorsan önce hedefi yükselt — pot 'tamamlanmamış' duruma gelir, ardından serbestçe çekebilirsin."
   },
   "potCard": {
     "totalSaved": "Toplam Birikim",
@@ -299,6 +304,9 @@
     "deletePot": "Kumbarayı Sil",
     "completedBadge": "Tamamlandı",
     "completedOverlayTitle": "Hedef Tamamlandı",
+    "lockedTooltip": "Bu pot tamamlanmış — para ekleme/çekme kilitli. Düzenle'den hedefi yükseltirsen tekrar açılır.",
+    "lockedMessage": "🔒 Pot kilitli — hedefe ulaşıldı",
+    "lockedHint": "Para ekleme/çekme için Düzenle'den hedefi yükselt",
     "completedOverlayHint": "Tüm hedef tutarına ulaşıldı",
     "goalReachedModalTitle": "Tebrikler! 🎉",
     "goalReachedModalMsg": "\"{{name}}\" kumbarasında hedefine ulaştın. Birikim disiplinin gerçekten meyvesini verdi!"
@@ -447,6 +455,7 @@
     "live": "Canlı",
     "refresh": "↻ Yenile",
     "dataRefreshed": "Veri yenilendi",
+    "dataUnchanged": "Üst kaynak henüz yeni veri vermedi · son güncelleme {{time}}",
     "exchangeRates": "Döviz Kurları",
     "goldPrices": "Altın Fiyatları",
     "buying": "Alış",
@@ -465,6 +474,9 @@
     "value": "Değer",
     "avgBuy": "Ort. Alış",
     "liveRate": "Canlı Kur",
+    "invested": "Yatırılan",
+    "currentValue": "Güncel Değer",
+    "totalProfit": "Toplam Kâr / Zarar",
     "unrealisedPnl": "Gerçekleşmemiş K/Z",
     "addBtn": "+ Ekle",
     "withdrawBtn": "− Çek",
@@ -532,15 +544,21 @@
   },
   "addAssetForm": {
     "title": "Yeni Varlık Ekle",
+    "titleLocked": "{{asset}} Portföyüne Ekle",
     "subtitle": "Bir varlık seçin ve portföyünüze eklenecek miktarı girin.",
+    "subtitleLocked": "Eklenecek miktarı ve gerçek alış fiyatını girin.",
     "asset": "Varlık",
     "chooseAsset": "Bir varlık seçin",
     "amount": "Miktar",
     "currentPrice": "Güncel Fiyat (₺)",
+    "purchasePrice": "Alış Fiyatı (birim başı ₺)",
+    "totalCost": "Toplam Tutar (₺)",
+    "useLiveRate": "↻ Canlı kuru kullan ({{rate}})",
     "submit": "Varlık Ekle",
     "errors": {
       "chooseAsset": "Devam etmek için lütfen bir varlık seçin.",
-      "validAmount": "Lütfen sıfırdan büyük geçerli bir miktar girin."
+      "validAmount": "Lütfen sıfırdan büyük geçerli bir miktar girin.",
+      "validPrice": "Lütfen sıfırdan büyük geçerli bir alış fiyatı girin."
     }
   },
   "bills": {
@@ -669,7 +687,38 @@
     "newInsightCount_other": "{{count}} yeni içgörü",
     "newMessage": "Yeni mesaj",
     "newMessageCount_one": "{{count}} mesajınız var",
-    "newMessageCount_other": "{{count}} mesajınız var"
+    "newMessageCount_other": "{{count}} mesajınız var",
+    "agent": {
+      "txAdded": "İşlem eklendi: {{title}} • {{amount}} TL",
+      "potCreated": "Hedef potu oluşturuldu: {{name}} • {{amount}} TL",
+      "budgetCreated": "Bütçe oluşturuldu: {{category}} • {{amount}} TL",
+      "budgetMoved": "{{amount}} TL aktarıldı: {{from}} → {{to}}",
+      "potDeposit": "\"{{name}}\" potuna {{amount}} TL eklendi (yeni bakiye: {{balance}} TL)",
+      "potWithdraw": "\"{{name}}\" potundan {{amount}} TL çekildi (kalan: {{balance}} TL)",
+      "potUpdated": "\"{{name}}\" güncellendi: {{changes}}",
+      "potDeleted": "Pot silindi: \"{{name}}\"",
+      "budgetUpdated": "\"{{category}}\" bütçesi güncellendi: {{changes}}",
+      "budgetDeleted": "Bütçe silindi: \"{{category}}\"",
+      "portfolio": "Portföy: {{type}} {{amount}} {{asset}}",
+      "portfolioWithPrice": "Portföy: {{type}} {{amount}} {{asset}} @ {{price}} TL",
+      "billPaid": "Fatura ödendi olarak işaretlendi: {{name}}",
+      "billUnpaid": "Fatura ödenmedi olarak güncellendi: {{name}}",
+      "billAlreadyPaid": "\"{{name}}\" zaten ödendi olarak işaretli.",
+      "billAlreadyUnpaid": "\"{{name}}\" zaten ödenmemiş görünüyor.",
+      "fieldName": "isim → {{value}}",
+      "fieldTarget": "hedef → {{value}} TL",
+      "fieldLimit": "limit → {{value}} TL",
+      "fieldTheme": "renk → {{value}}",
+      "err": "İşlem yapılamadı: {{reason}}",
+      "errPotMissing": "Pot bulunamadı: {{name}}",
+      "errBudgetMissing": "Bütçe bulunamadı: {{name}}",
+      "errBillMissing": "Fatura bulunamadı: {{name}}",
+      "errAmountInvalid": "Tutar geçersiz.",
+      "errInsufficientPot": "\"{{name}}\" potunda yeterli bakiye yok ({{balance}} TL).",
+      "errNothingToEdit": "Düzenlenecek alan belirtilmemiş.",
+      "errBudgetInsufficient": "\"{{from}}\" bütçesinde aktarılabilecek yeterli kalan yok. {{requested}} TL aktarmak istedin ama sadece {{available}} TL aktarılabilir (limit: {{limit}} TL, harcanan: {{spent}} TL).",
+      "errBudgetOverspent": "\"{{from}}\" bütçesi zaten limitini aşmış (limit {{limit}} TL, harcanan {{spent}} TL). Buradan başka bir bütçeye aktarım yapılamaz."
+    }
   },
   "chartModal": {
     "titleExpense": "Son {{days}} Günün Giderleri",

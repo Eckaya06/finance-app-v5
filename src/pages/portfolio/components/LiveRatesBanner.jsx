@@ -117,13 +117,29 @@ const RateCard = ({
       </div>
 
       <div className="rate-card-new-body">
-        <div className="rate-card-new-price-row">
-          <div className="rate-card-new-price-wrap">
-            <span className={`rate-card-new-price ${metalAccentClass}`}>
-              {isGold ? formatMetalPrice(data.rate) : formatPrice(data.rate)}
+        <div className="rate-card-new-prices">
+          <div className="rate-card-new-price-cell">
+            <span className="rate-card-new-price-label">{t('portfolio.buying')}</span>
+            <span className="rate-card-new-price-value-row">
+              <span className={`rate-card-new-price ${metalAccentClass}`}>
+                {isGold ? formatMetalPrice(data.buying) : formatPrice(data.buying)}
+              </span>
+              <span className="rate-card-new-currency">TRY</span>
             </span>
-            <span className="rate-card-new-currency">TRY</span>
           </div>
+          <div className="rate-card-new-price-divider" aria-hidden="true" />
+          <div className="rate-card-new-price-cell">
+            <span className="rate-card-new-price-label">{t('portfolio.selling')}</span>
+            <span className="rate-card-new-price-value-row">
+              <span className={`rate-card-new-price ${metalAccentClass}`}>
+                {isGold ? formatMetalPrice(data.selling) : formatPrice(data.selling)}
+              </span>
+              <span className="rate-card-new-currency">TRY</span>
+            </span>
+          </div>
+        </div>
+
+        <div className="rate-card-new-spark-row">
           <div className="rate-card-new-spark">
             <svg viewBox="0 0 88 30" preserveAspectRatio="none">
               <path
@@ -137,9 +153,9 @@ const RateCard = ({
               />
             </svg>
           </div>
-        </div>
-        <div className="rate-card-new-updated">
-          {ago ? t('portfolio.updatedAgo', { time: ago.value }) : t('portfolio.updatedJustNow')}
+          <div className="rate-card-new-updated">
+            {ago ? t('portfolio.updatedAgo', { time: ago.value }) : t('portfolio.updatedJustNow')}
+          </div>
         </div>
       </div>
 

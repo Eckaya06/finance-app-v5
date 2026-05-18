@@ -16,7 +16,6 @@ const AddPotForm = ({ onAddPot, onClose }) => {
   const [name, setName] = useState('');
   const [target, setTarget] = useState('');
   const [theme, setTheme] = useState(null);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [error, setError] = useState('');
 
   const handleSubmit = (event) => {
@@ -39,11 +38,8 @@ const AddPotForm = ({ onAddPot, onClose }) => {
 
   const handleThemeSelect = (selectedTheme) => {
     setTheme(selectedTheme);
-    setIsDropdownOpen(false);
     setError('');
   };
-
-  const selectedThemeObject = themeOptionsMeta.find(opt => opt.value === theme);
 
   return (
     <form onSubmit={handleSubmit} className="add-pot-form">
@@ -76,52 +72,19 @@ const AddPotForm = ({ onAddPot, onClose }) => {
 
       <div className="form-group">
         <label>{t('addPotForm.theme')}</label>
-        <div className="custom-select-container">
-          <button
-            type="button"
-            className="select-selected-value"
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          >
-            {selectedThemeObject ? (
-              <div className="theme-option-display">
-                <span
-                  className="theme-color-swatch"
-                  style={{ backgroundColor: selectedThemeObject.color }}
-                ></span>
-                <span className="selected-label-text">{t(selectedThemeObject.tKey)}</span>
-              </div>
-            ) : (
-              <span className="select-placeholder">{t('addPotForm.chooseTheme')}</span>
-            )}
-            <span className={`select-arrow ${isDropdownOpen ? 'open' : ''}`}>▼</span>
-          </button>
-
-          {isDropdownOpen && (
-            <ul className="select-options">
-              <li
-                className="select-option"
-                onClick={() => handleThemeSelect(null)}
-              >
-                {t('addPotForm.chooseTheme')}
-              </li>
-
-              {themeOptionsMeta.map(option => (
-                <li
-                  key={option.value}
-                  className="select-option"
-                  onClick={() => handleThemeSelect(option.value)}
-                >
-                  <div className="theme-option-display">
-                    <span
-                      className="theme-color-swatch"
-                      style={{ backgroundColor: option.color }}
-                    ></span>
-                    {t(option.tKey)}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
+        <div className="theme-picker-row" role="radiogroup" aria-label={t('addPotForm.theme')}>
+          {themeOptionsMeta.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              role="radio"
+              aria-checked={theme === option.value}
+              className={`theme-picker-dot ${theme === option.value ? 'active' : ''}`}
+              style={{ backgroundColor: option.color }}
+              title={t(option.tKey)}
+              onClick={() => handleThemeSelect(option.value)}
+            />
+          ))}
         </div>
       </div>
 

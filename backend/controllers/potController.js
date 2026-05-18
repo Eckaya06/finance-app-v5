@@ -33,7 +33,33 @@ export const createPot = async (req, res) => {
 };
 
 export const deletePot = async (req, res) => {
-  await Pot.findOneAndDelete({ _id: req.params.id, userId: req.user.uid });
+  // Silmeden önce potu çek — içinde para varsa veya hedef tamamlanmışsa
+  // silinmesini engelle (kazara veri kaybını önler; AI agent için de
+  // savunma katmanı). Frontend de aynı kontrolü yapar ama backend hâlâ
+  // tek otorite olmalı (defense in depth).
+  const pot = await Pot.findOne({ _id: req.params.id, userId: req.user.uid });
+  if (!pot) {
+    return res.status(404).json({ message: 'Pot not found.' });
+  }
+
+  const saved = Number(pot.saved || 0);
+  const target = Number(pot.target || 0);
+
+  if (target > 0 && saved >= target) {
+    return res.status(400).json({
+      // 'code' alanı frontend'in dile özel mesaj seçmesi için.
+      code: 'POT_COMPLETED',
+      message: `Cannot delete "${pot.name}": this pot has been completed. Withdraw the funds first.`,
+    });
+  }
+  if (saved > 0) {
+    return res.status(400).json({
+      code: 'POT_HAS_FUNDS',
+      message: `Cannot delete "${pot.name}": it still holds ${saved} TL. Withdraw the funds first.`,
+    });
+  }
+
+  await Pot.deleteOne({ _id: pot._id });
   res.json({ message: 'Pot deleted' });
 };
 
@@ -41,6 +67,28 @@ export const updatePot = async (req, res) => {
   const update = { ...req.body };
   if (update.target !== undefined) update.target = Number(update.target);
   if (update.saved !== undefined) update.saved = Number(update.saved);
+
+  // WITHDRAW guard: tamamlanmış (saved >= target) bir pottan para çekmeye
+  // (yani saved'i azaltmaya) izin verme. Hedefe ulaşmış bir potu bozmamalı.
+  // Bu kontrol DELETE guard'ı ile birlikte savunma katmanını tamamlar.
+  // Frontend (PotsPage withdraw modal + AI agent) de aynı kontrolü yapar
+  // ama burası tek otorite olarak son sözü söyler (curl/Postman dâhil).
+  if (update.saved !== undefined) {
+    const existing = await Pot.findOne({ _id: req.params.id, userId: req.user.uid });
+    if (existing) {
+      const oldSaved = Number(existing.saved || 0);
+      const oldTarget = Number(existing.target || 0);
+      const isWithdraw = Number(update.saved) < oldSaved;
+      const wasCompleted = oldTarget > 0 && oldSaved >= oldTarget;
+      if (isWithdraw && wasCompleted) {
+        return res.status(400).json({
+          code: 'POT_WITHDRAW_BLOCKED_COMPLETED',
+          message: `Cannot withdraw from "${existing.name}": this pot is already completed. ` +
+                   `Edit the target or delete the pot if you really want the funds out.`,
+        });
+      }
+    }
+  }
 
   const pot = await Pot.findOneAndUpdate(
     { _id: req.params.id, userId: req.user.uid },

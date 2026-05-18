@@ -114,6 +114,17 @@ const PotsPage = () => {
       closeWithdrawModal();
       return;
     }
+
+    // Tamamlanmış pottan withdraw'ı erken durdur (backend de aynı kontrolü
+    // yapıyor — bu sadece UX için, network gecikmesini engelliyoruz).
+    const saved = Number(potToUpdate.saved || 0);
+    const target = Number(potToUpdate.target || 0);
+    if (target > 0 && saved >= target) {
+      showToast(t('potsPage.withdrawBlockedCompleted', { name: potToUpdate.name }), 'error');
+      closeWithdrawModal();
+      return;
+    }
+
     try {
       const newBalance = Math.max(0, potToUpdate.saved - amountToWithdraw);
       await updatePotBalance(potId, newBalance);
@@ -179,6 +190,24 @@ const PotsPage = () => {
 
   const handleDeletePot = async (potId) => {
     const potToDelete = pots.find(p => p.id === potId);
+    // Frontend guard: backend de aynı kontrolü yapar (defense in depth) ama
+    // burada erken durdurarak gereksiz network çağrısını ve modal kapanma
+    // gecikmesini engelliyoruz.
+    if (potToDelete) {
+      const saved = Number(potToDelete.saved || 0);
+      const target = Number(potToDelete.target || 0);
+      if (target > 0 && saved >= target) {
+        showToast(t('potsPage.deleteBlockedCompleted', { name: potToDelete.name }), 'error');
+        closeDeleteModal();
+        return;
+      }
+      if (saved > 0) {
+        showToast(t('potsPage.deleteBlockedHasFunds', { name: potToDelete.name, amount: saved }), 'error');
+        closeDeleteModal();
+        return;
+      }
+    }
+
     try {
       await deletePot(potId);
       closeDeleteModal();

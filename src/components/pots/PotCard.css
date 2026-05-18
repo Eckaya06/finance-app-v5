@@ -32,7 +32,42 @@
 .progress-bar-fill { height: 100%; border-radius: 4px; }
 .pot-target { display: flex; justify-content: space-between; font-size: 0.8rem; color: #64748b; }
 .pot-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-.btn-secondary { background-color: #F8F4F0; border: 1px solid #F8F4F0; padding: 0.6rem; border-radius: 8px; font-weight: 500; cursor: pointer; }
+.btn-secondary { background-color: #F8F4F0; border: 1px solid #F8F4F0; padding: 0.6rem; border-radius: 8px; font-weight: 500; cursor: pointer; transition: opacity 0.15s, background-color 0.15s; }
+
+/* Tamamlanmış pot: butonlar yerine "kilitli" banner. Yumuşak yeşil
+   gradient — pot zaten yeşil çerçeveli, ribbon yeşil; tüm pot kart dili
+   "başarı" rengiyle tutarlı. */
+.pot-locked-banner {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.10), rgba(16, 185, 129, 0.10));
+  border: 1px dashed rgba(34, 197, 94, 0.45);
+  border-radius: 10px;
+  padding: 12px 14px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pot-locked-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #16a34a;
+  letter-spacing: 0.01em;
+}
+.pot-locked-hint {
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.4;
+}
+body.theme-dark .pot-locked-banner {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.14), rgba(16, 185, 129, 0.14));
+  border-color: rgba(74, 222, 128, 0.45);
+}
+body.theme-dark .pot-locked-title {
+  color: #4ade80;
+}
+body.theme-dark .pot-locked-hint {
+  color: rgba(238, 242, 255, 0.6);
+}
 .pot-theme{
 
     background-color:white ;
@@ -109,50 +144,47 @@
   background-color: #fee2e2;
 }
 
-/* ─── Completed pot: diyagonal köşe ribbon ─────────────────────────────── */
+/* ─── Completed pot: yeşil çerçeve göstergesi ──────────────────────────── */
 .pot-card.is-completed {
-  /* Card kenarına yumuşak yeşil çerçeve — listede tamamlanmış kumbarayı
-     hızlıca taramak için. Kartın geri kalan içeriği aynen okunur. */
+  /* Kart kenarına yumuşak yeşil çerçeve — listede tamamlanmış kumbarayı
+     hızlıca taramak için. Alt kısımdaki locked banner detaylı mesajı verir. */
   border-color: rgba(34, 197, 94, 0.5);
   box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.15);
-  /* Ribbon kartın sınırlarının dışına taşmasın diye clip ediyoruz. */
-  overflow: hidden;
 }
 body.theme-dark .pot-card.is-completed {
   border-color: rgba(74, 222, 128, 0.55);
 }
 
-/* Ribbon: sağ üst köşede 45° döndürülmüş yeşil şerit. position:absolute +
-   transform rotate ile köşeyi kesiyor gibi görünür. İçerik üstüne yerleşir
-   ama tüm kartı kaplamaz; pot detayları okunur durumda kalır. */
-.pot-completed-ribbon {
-  position: absolute;
-  top: 16px;
-  right: -42px;
-  width: 150px;
-  transform: rotate(45deg);
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-  color: #ffffff;
-  text-align: center;
-  z-index: 5;
-  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.35);
-  pointer-events: none;
-}
-.pot-completed-ribbon span {
+/* Başlık yanına inline "Completed" pill — sağ üstteki ⋯ menüyü kapatmaz,
+   header flex layout'unda h3 ile ⋯ butonu arasında durur. h3 flex:1 olduğu
+   için pill da uygun yere yerleşir. */
+.pot-completed-pill {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: 4px;
-  padding: 4px 0;
+  padding: 3px 9px;
   font-size: 10.5px;
   font-weight: 700;
-  letter-spacing: 0.06em;
-}
-.pot-completed-ribbon svg {
-  width: 12px;
-  height: 12px;
+  letter-spacing: 0.04em;
+  color: #16a34a;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.30);
+  border-radius: 999px;
+  white-space: nowrap;
   flex-shrink: 0;
 }
+.pot-completed-pill svg {
+  width: 11px;
+  height: 11px;
+}
+body.theme-dark .pot-completed-pill {
+  color: #4ade80;
+  background: rgba(34, 197, 94, 0.18);
+  border-color: rgba(74, 222, 128, 0.40);
+}
+
+/* h3 flex-grow olduğundan pill onun ardından genişlik daralmadan görünür.
+   Var olan .pot-card-header h3 { flex-grow:1 } kuralı zaten yapıyor bunu. */
 
 
 

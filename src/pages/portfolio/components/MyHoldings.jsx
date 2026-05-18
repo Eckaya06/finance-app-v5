@@ -18,24 +18,21 @@ const ASSET_OPTIONS = [
 
 const MyHoldings = ({ holdings, loading, onAdd, onWithdraw, onDelete, onUpdate, getCurrentRate, rates }) => {
   const { t } = useTranslation();
-  const [editTarget, setEditTarget] = useState(null); // { assetType, mode: 'add'|'withdraw'|'edit_balance' }
+  const [editTarget, setEditTarget] = useState(null); // { assetType, mode: 'withdraw'|'edit_balance' }
   const [deleteTargetModal, setDeleteTargetModal] = useState(null);
   const [editAmount, setEditAmount] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  // "+ Ekle" (add more to an existing holding) — opens the same AddAssetForm
+  // but with the asset pre-selected. Lets the user enter the actual purchase
+  // price instead of silently using the live rate.
+  const [addToAssetType, setAddToAssetType] = useState(null);
 
   const handleEdit = async () => {
     if (!editAmount || parseFloat(editAmount) <= 0) return;
     setSubmitting(true);
 
-    if (editTarget.mode === 'add') {
-      const price = getCurrentRate(editTarget.assetType);
-      await onAdd({
-        assetType: editTarget.assetType,
-        amount: parseFloat(editAmount),
-        pricePerUnit: price,
-      });
-    } else if (editTarget.mode === 'withdraw') {
+    if (editTarget.mode === 'withdraw') {
       await onWithdraw(editTarget.assetType, parseFloat(editAmount));
     } else if (editTarget.mode === 'edit_balance') {
       await onUpdate(editTarget.assetType, parseFloat(editAmount));
@@ -44,6 +41,13 @@ const MyHoldings = ({ holdings, loading, onAdd, onWithdraw, onDelete, onUpdate, 
     setSubmitting(false);
     setEditTarget(null);
     setEditAmount('');
+  };
+
+  const handleAddToExisting = async (assetData) => {
+    setSubmitting(true);
+    await onAdd(assetData);
+    setSubmitting(false);
+    setAddToAssetType(null);
   };
 
   const handleConfirmDelete = async () => {
@@ -100,11 +104,23 @@ const MyHoldings = ({ holdings, loading, onAdd, onWithdraw, onDelete, onUpdate, 
 
       {/* Add New Asset Modal */}
       <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)}>
-        <AddAssetForm 
-          onAddAsset={handleAddNew} 
-          onClose={() => setIsAddModalOpen(false)} 
+        <AddAssetForm
+          onAddAsset={handleAddNew}
+          onClose={() => setIsAddModalOpen(false)}
           getCurrentRate={getCurrentRate}
         />
+      </Modal>
+
+      {/* Add MORE to an existing holding — same form, asset locked */}
+      <Modal isOpen={!!addToAssetType} onClose={() => setAddToAssetType(null)}>
+        {addToAssetType && (
+          <AddAssetForm
+            onAddAsset={handleAddToExisting}
+            onClose={() => setAddToAssetType(null)}
+            getCurrentRate={getCurrentRate}
+            lockedAsset={addToAssetType}
+          />
+        )}
       </Modal>
 
       {/* Empty State */}
@@ -126,7 +142,10 @@ const MyHoldings = ({ holdings, loading, onAdd, onWithdraw, onDelete, onUpdate, 
             const pnlPercent = h.avgBuyPrice > 0
               ? ((h.liveRate - h.avgBuyPrice) / h.avgBuyPrice * 100)
               : 0;
-            const isProfit = pnl >= 0;
+            // Bottom badge shows total profit (realised + unrealised). Color
+            // it against the total too so the +/- color matches the number.
+            const totalPnl = h.totalPnl ?? pnl;
+            const isProfit = totalPnl >= 0;
             const isEditing = editTarget?.assetType === h.assetType;
 
             return (
@@ -174,18 +193,12 @@ const MyHoldings = ({ holdings, loading, onAdd, onWithdraw, onDelete, onUpdate, 
                   </div>
                 </div>
 
-                {/* Middle: Holdings Info */}
+                {/* Middle: Holdings Info — 2×2 grid (amount/avg/live/invested) */}
                 <div className="holding-card-body">
                   <div className="holding-stat">
                     <span className="holding-stat-label">{t('portfolio.amount')}</span>
                     <span className="holding-stat-value">
                       {(h.currentHolding || 0).toLocaleString('tr-TR', { maximumFractionDigits: 6 })}
-                    </span>
-                  </div>
-                  <div className="holding-stat">
-                    <span className="holding-stat-label">{t('portfolio.value')}</span>
-                    <span className="holding-stat-value">
-                      ₺{(h.currentValue || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                   <div className="holding-stat">
@@ -200,22 +213,38 @@ const MyHoldings = ({ holdings, loading, onAdd, onWithdraw, onDelete, onUpdate, 
                       ₺{(h.liveRate || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
+                  <div className="holding-stat">
+                    <span className="holding-stat-label">{t('portfolio.invested')}</span>
+                    <span className="holding-stat-value">
+                      ₺{((h.avgBuyPrice || 0) * (h.currentHolding || 0)).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
                 </div>
 
-                {/* Bottom: PnL */}
-                <div className={`holding-card-pnl ${isProfit ? 'profit' : 'loss'}`}>
-                  <span className="holding-pnl-label">{t('portfolio.unrealisedPnl')}</span>
-                  <span className="holding-pnl-value">
-                    {isProfit ? '+' : ''}₺{(pnl || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                {/* Highlighted: Current Value (live value of the holding) */}
+                <div className="holding-card-current-value">
+                  <span className="holding-current-value-label">{t('portfolio.currentValue')}</span>
+                  <span className="holding-current-value-amount">
+                    ₺{(h.currentValue || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
 
-                {/* Action Buttons: Add / Withdraw */}
+                {/* Bottom: Total Profit / Loss (realised + unrealised) */}
+                <div className={`holding-card-pnl ${isProfit ? 'profit' : 'loss'}`}>
+                  <span className="holding-pnl-label">{t('portfolio.totalProfit')}</span>
+                  <span className="holding-pnl-value">
+                    {isProfit ? '+' : ''}₺{(h.totalPnl ?? pnl ?? 0).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+
+                {/* Action Buttons: Add / Withdraw.
+                    "+ Ekle" opens the full AddAssetForm modal (price editable);
+                    "− Çek" stays inline (withdraw needs only an amount). */}
                 {!isEditing ? (
                   <div className="holding-card-actions">
                     <button
                       className="holding-action-btn add"
-                      onClick={() => { setEditTarget({ assetType: h.assetType, mode: 'add' }); setEditAmount(''); }}
+                      onClick={() => setAddToAssetType(h.assetType)}
                       id={`add-${h.assetType}`}
                     >
                       {t('portfolio.addBtn')}
@@ -235,7 +264,7 @@ const MyHoldings = ({ holdings, loading, onAdd, onWithdraw, onDelete, onUpdate, 
                       step="any"
                       min="0"
                       max={editTarget.mode === 'withdraw' ? h.currentHolding : undefined}
-                      placeholder={editTarget.mode === 'add' ? t('portfolio.addPlaceholder') : editTarget.mode === 'withdraw' ? t('portfolio.withdrawPlaceholder') : t('portfolio.balancePlaceholder')}
+                      placeholder={editTarget.mode === 'withdraw' ? t('portfolio.withdrawPlaceholder') : t('portfolio.balancePlaceholder')}
                       value={editAmount}
                       onChange={(e) => setEditAmount(e.target.value)}
                       autoFocus
@@ -246,7 +275,7 @@ const MyHoldings = ({ holdings, loading, onAdd, onWithdraw, onDelete, onUpdate, 
                       onClick={handleEdit}
                       disabled={!editAmount || parseFloat(editAmount) < 0 || (editTarget.mode === 'withdraw' && parseFloat(editAmount) > h.currentHolding) || submitting}
                     >
-                      {submitting ? '⏳' : editTarget.mode === 'add' ? t('portfolio.addAction') : editTarget.mode === 'withdraw' ? t('portfolio.withdrawAction') : t('portfolio.saveAction')}
+                      {submitting ? '⏳' : editTarget.mode === 'withdraw' ? t('portfolio.withdrawAction') : t('portfolio.saveAction')}
                     </button>
                     <button
                       className="holding-edit-cancel"

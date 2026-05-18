@@ -49,7 +49,10 @@ const CustomDropdown = ({ options, selectedValue, onChange, labelPrefix, display
   return (
     // 4. Referansı (ref={dropdownRef}) en dıştaki kapsayıcıya veriyoruz
     <div className="dropdown-container" ref={dropdownRef}>
-      <button className="dropdown-selected" onClick={onToggle}>
+      {/* type="button" zorunlu — bu komponent form içinde kullanıldığında
+          (örn. RecurringBills "Yeni Fatura" formu) default type="submit"
+          olduğu için tıklama form'u submit ediyordu. */}
+      <button type="button" className="dropdown-selected" onClick={onToggle}>
         <span className="selected-label-text">{getDisplayLabel(selectedValue)}</span>
         <span className={`dropdown-arrow ${isOpen ? 'open' : ''}`}>▼</span>
       </button>

@@ -47,7 +47,7 @@ const parseAgentCommand = (rawText) => {
 };
 
 const ChatWidget = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { toggleChat, messages, addMessage, openChartModal, executeAgentCommand } = useChat();
   const { transactions, budgets, pots, bills } = useTransactions();
   const { user } = useAuth();
@@ -97,6 +97,8 @@ const ChatWidget = () => {
         bills,
         history,
         userName,
+        // Aktif arayüz dili — backend'e gönderiyoruz ki AI da aynı dilde cevap versin.
+        lang: i18n.language,
       });
 
       // 3. ✅ Önce AGENT_COMMAND'ı yakala ve metinden temizle

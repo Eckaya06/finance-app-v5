@@ -288,7 +288,12 @@
     "updateFail": "Failed to update pot",
     "potDeleted": "Pot \"{{name}}\" deleted",
     "deleteFail": "Failed to delete pot",
-    "addMoneyFirst": "Please add money first."
+    "addMoneyFirst": "Please add money first.",
+    "txDeposit": "Deposited to \"{{name}}\" pot",
+    "txWithdraw": "Withdrawn from \"{{name}}\" pot",
+    "deleteBlockedCompleted": "Cannot delete \"{{name}}\": this pot is completed and the achievement is locked. To delete, raise the target first (so it's no longer marked completed), then withdraw and delete.",
+    "deleteBlockedHasFunds": "Cannot delete \"{{name}}\": it still holds {{amount}} TL. Withdraw the funds first, then delete.",
+    "withdrawBlockedCompleted": "Cannot withdraw from \"{{name}}\": this pot is completed and the achievement is locked. To withdraw, raise the target first — the pot becomes 'incomplete' and you can take the funds out freely."
   },
   "potCard": {
     "totalSaved": "Total Saved",
@@ -299,6 +304,9 @@
     "deletePot": "Delete Pot",
     "completedBadge": "Completed",
     "completedOverlayTitle": "Goal Completed",
+    "lockedTooltip": "This pot is completed — deposits and withdrawals are locked. Raise the target via Edit to unlock.",
+    "lockedMessage": "🔒 Pot locked — goal reached",
+    "lockedHint": "To deposit or withdraw, raise the target via Edit",
     "completedOverlayHint": "You've reached the full target",
     "goalReachedModalTitle": "Congratulations! 🎉",
     "goalReachedModalMsg": "You've reached your goal for \"{{name}}\". Your saving discipline really paid off!"
@@ -447,6 +455,7 @@
     "live": "Live",
     "refresh": "↻ Refresh",
     "dataRefreshed": "Data refreshed",
+    "dataUnchanged": "Upstream hasn't published new data yet · last update {{time}}",
     "exchangeRates": "Exchange Rates",
     "goldPrices": "Gold Prices",
     "buying": "Bid",
@@ -465,6 +474,9 @@
     "value": "Value",
     "avgBuy": "Avg. Buy",
     "liveRate": "Live Rate",
+    "invested": "Invested",
+    "currentValue": "Current Value",
+    "totalProfit": "Total Profit / Loss",
     "unrealisedPnl": "Unrealised P&L",
     "addBtn": "+ Add",
     "withdrawBtn": "− Withdraw",
@@ -532,15 +544,21 @@
   },
   "addAssetForm": {
     "title": "Add New Asset",
+    "titleLocked": "Add to {{asset}} Holding",
     "subtitle": "Choose an asset and enter the amount to add to your portfolio.",
+    "subtitleLocked": "Enter the amount and the actual price you paid.",
     "asset": "Asset",
     "chooseAsset": "Choose an asset",
     "amount": "Amount",
     "currentPrice": "Current Price (₺)",
+    "purchasePrice": "Purchase Price (per unit ₺)",
+    "totalCost": "Total Cost (₺)",
+    "useLiveRate": "↻ Use live rate ({{rate}})",
     "submit": "Add Asset",
     "errors": {
       "chooseAsset": "Please choose an asset to continue.",
-      "validAmount": "Please enter a valid amount greater than zero."
+      "validAmount": "Please enter a valid amount greater than zero.",
+      "validPrice": "Please enter a valid purchase price greater than zero."
     }
   },
   "bills": {
@@ -669,7 +687,38 @@
     "newInsightCount_other": "{{count}} new insights",
     "newMessage": "New message",
     "newMessageCount_one": "You have {{count}} message",
-    "newMessageCount_other": "You have {{count}} messages"
+    "newMessageCount_other": "You have {{count}} messages",
+    "agent": {
+      "txAdded": "Transaction added: {{title}} • {{amount}} TL",
+      "potCreated": "Goal pot created: {{name}} • {{amount}} TL",
+      "budgetCreated": "Budget created: {{category}} • {{amount}} TL",
+      "budgetMoved": "{{amount}} TL moved: {{from}} → {{to}}",
+      "potDeposit": "Deposited {{amount}} TL to \"{{name}}\" pot (new balance: {{balance}} TL)",
+      "potWithdraw": "Withdrew {{amount}} TL from \"{{name}}\" pot (remaining: {{balance}} TL)",
+      "potUpdated": "\"{{name}}\" updated: {{changes}}",
+      "potDeleted": "Pot deleted: \"{{name}}\"",
+      "budgetUpdated": "\"{{category}}\" budget updated: {{changes}}",
+      "budgetDeleted": "Budget deleted: \"{{category}}\"",
+      "portfolio": "Portfolio: {{type}} {{amount}} {{asset}}",
+      "portfolioWithPrice": "Portfolio: {{type}} {{amount}} {{asset}} @ {{price}} TL",
+      "billPaid": "Bill marked as paid: {{name}}",
+      "billUnpaid": "Bill marked as unpaid: {{name}}",
+      "billAlreadyPaid": "\"{{name}}\" is already marked as paid.",
+      "billAlreadyUnpaid": "\"{{name}}\" is already marked as unpaid.",
+      "fieldName": "name → {{value}}",
+      "fieldTarget": "target → {{value}} TL",
+      "fieldLimit": "limit → {{value}} TL",
+      "fieldTheme": "color → {{value}}",
+      "err": "Action failed: {{reason}}",
+      "errPotMissing": "Pot not found: {{name}}",
+      "errBudgetMissing": "Budget not found: {{name}}",
+      "errBillMissing": "Bill not found: {{name}}",
+      "errAmountInvalid": "Amount is invalid.",
+      "errInsufficientPot": "Not enough balance in \"{{name}}\" pot ({{balance}} TL).",
+      "errNothingToEdit": "No fields to update.",
+      "errBudgetInsufficient": "Not enough transferable amount in \"{{from}}\" budget. You asked to move {{requested}} TL but only {{available}} TL can be transferred (limit: {{limit}} TL, spent: {{spent}} TL).",
+      "errBudgetOverspent": "\"{{from}}\" budget is already over its limit (limit {{limit}} TL, spent {{spent}} TL). No funds can be transferred out of it."
+    }
   },
   "chartModal": {
     "titleExpense": "Last {{days}} Days Expenses",
