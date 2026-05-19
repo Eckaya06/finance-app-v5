@@ -16,7 +16,7 @@ const categoryOptions = [
 
 const TransactionsPage = () => {
   const { t } = useTranslation();
-  const { transactions, budgets } = useTransactions();
+  const { transactions } = useTransactions();
   const [searchParams] = useSearchParams();
   const urlCategory = searchParams.get('category');
   const urlSince = searchParams.get('since');
@@ -56,20 +56,9 @@ const TransactionsPage = () => {
 
     if (filterCategory !== 'All') {
       result = result.filter(tx => {
-        const isCategoryMatch = tx.category === filterCategory;
-
-        let isAfterBudgetCreation = true;
-
-        if (urlSince) {
-          isAfterBudgetCreation = (tx.createdAt || 0) >= Number(urlSince);
-        } else {
-          const activeBudget = budgets.find(b => b.category === filterCategory);
-          if (activeBudget) {
-            isAfterBudgetCreation = (tx.createdAt || 0) >= (activeBudget.createdAt || 0);
-          }
-        }
-
-        return isCategoryMatch && isAfterBudgetCreation;
+        if (tx.category !== filterCategory) return false;
+        if (urlSince) return (tx.createdAt || 0) >= Number(urlSince);
+        return true;
       });
     }
 
@@ -95,7 +84,7 @@ const TransactionsPage = () => {
       default: break;
     }
     return result;
-  }, [transactions, budgets, sortType, filterCategory, searchTerm, urlSince]);
+  }, [transactions, sortType, filterCategory, searchTerm, urlSince]);
 
   useEffect(() => {
     setCurrentPage(1);

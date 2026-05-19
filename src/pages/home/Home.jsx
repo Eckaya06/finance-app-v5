@@ -21,7 +21,7 @@ const Home = () => {
 
   const balance = income - expenses;
 
-  const fmt = (amount) => `₺${amount.toFixed(2)}`;
+  const fmt = (amount) => `₺${amount.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   return (
     <div className="overview-page">
