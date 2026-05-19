@@ -36,13 +36,19 @@ const TESTS = [
 
   // AI & Market
   { id: 'ai', group: 'External APIs', label: 'Gemini (AI) ping', icon: <FiCpu />, method: 'GET', path: '/ai' },
-  { id: 'market', group: 'External APIs', label: 'Market rates (truncgil)', icon: <FiTrendingUp />, method: 'GET', path: '/market' },
+  { id: 'market', group: 'External APIs', label: 'Market rates (truncgil) — basic', icon: <FiTrendingUp />, method: 'GET', path: '/market' },
+  { id: 'market_v3_deep', group: 'External APIs', label: 'Truncgil v3 deep check (Update_Date, JPY per-1-yen, ons format)', icon: <FiTrendingUp />, method: 'GET', path: '/market/v3-deep' },
+  { id: 'market_api', group: 'External APIs', label: 'Internal /api/market/rates shape (currencies + gold + timestamp)', icon: <FiTrendingUp />, method: 'GET', path: '/market/api' },
 
   // CRUD
   { id: 'crud_transactions', group: 'CRUD Endpoints', label: 'Transactions create/read/update/delete', icon: <FiActivity />, method: 'GET', path: '/crud/transactions' },
   { id: 'crud_budgets', group: 'CRUD Endpoints', label: 'Budgets create/read/update/delete', icon: <FiActivity />, method: 'GET', path: '/crud/budgets' },
+  { id: 'crud_budget_delete', group: 'CRUD Endpoints', label: 'Budget delete (explicit)', icon: <FiActivity />, method: 'GET', path: '/crud/budget-delete' },
   { id: 'crud_pots', group: 'CRUD Endpoints', label: 'Pots create/read/update/delete', icon: <FiBox />, method: 'GET', path: '/crud/pots' },
+  { id: 'crud_pot_delete_guards', group: 'CRUD Endpoints', label: 'Pot delete guards (empty=OK, funded=POT_HAS_FUNDS, completed=POT_COMPLETED)', icon: <FiBox />, method: 'GET', path: '/crud/pot-delete-guards' },
+  { id: 'crud_pot_withdraw_guards', group: 'CRUD Endpoints', label: 'Pot withdraw guards (normal=OK, completed=POT_WITHDRAW_BLOCKED_COMPLETED)', icon: <FiBox />, method: 'GET', path: '/crud/pot-withdraw-guards' },
   { id: 'crud_bills', group: 'CRUD Endpoints', label: 'Recurring bills create/read/update/delete', icon: <FiClipboard />, method: 'GET', path: '/crud/bills' },
+  { id: 'crud_bill_mark_paid', group: 'CRUD Endpoints', label: 'Bill mark paid → unpaid roundtrip', icon: <FiClipboard />, method: 'GET', path: '/crud/bill-mark-paid' },
   { id: 'crud_portfolio', group: 'CRUD Endpoints', label: 'Portfolio buy probe', icon: <FiTrendingUp />, method: 'GET', path: '/crud/portfolio' },
   { id: 'crud_portfolio_tx_delete', group: 'CRUD Endpoints', label: 'Portfolio single-tx delete (buy + sell + delete)', icon: <FiTrendingUp />, method: 'GET', path: '/crud/portfolio-tx-delete' },
 

@@ -7,10 +7,16 @@ import {
   probeMailSend,
   probeAi,
   probeMarket,
+  probeMarketV3Deep,
+  probeMarketApi,
   probeCrudTransactions,
   probeCrudBudgets,
+  probeBudgetDelete,
   probeCrudPots,
+  probePotDeleteGuards,
+  probePotWithdrawGuards,
   probeCrudBills,
+  probeBillMarkPaid,
   probeCrudPortfolio,
   probeCrudPortfolioTxDelete,
   probeNotifyPot,
@@ -35,11 +41,17 @@ router.post('/mail/send', probeMailSend);
 
 router.get('/ai', probeAi);
 router.get('/market', probeMarket);
+router.get('/market/v3-deep', probeMarketV3Deep);
+router.get('/market/api', probeMarketApi);
 
 router.get('/crud/transactions', probeCrudTransactions);
 router.get('/crud/budgets', probeCrudBudgets);
+router.get('/crud/budget-delete', probeBudgetDelete);
 router.get('/crud/pots', probeCrudPots);
+router.get('/crud/pot-delete-guards', probePotDeleteGuards);
+router.get('/crud/pot-withdraw-guards', probePotWithdrawGuards);
 router.get('/crud/bills', probeCrudBills);
+router.get('/crud/bill-mark-paid', probeBillMarkPaid);
 router.get('/crud/portfolio', probeCrudPortfolio);
 router.get('/crud/portfolio-tx-delete', probeCrudPortfolioTxDelete);
 

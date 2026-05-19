@@ -468,6 +468,336 @@ export const probeCrudPortfolioTxDelete = async (req, res) => {
 };
 
 // ────────────────────────────────────────────────────────────────────────────
+// 5b) POT DELETE GUARDS — verifies the controller's defense-in-depth rules:
+//       - empty pot can be deleted
+//       - pot with saved > 0 must reject (POT_HAS_FUNDS)
+//       - completed pot (saved >= target) must reject (POT_COMPLETED)
+// Hits the HTTP layer (not the model) because the guards live in the controller.
+// ────────────────────────────────────────────────────────────────────────────
+
+// Resolve our own backend base URL so probes that need the HTTP layer (auth
+// guards etc.) don't depend on a hardcoded port. Falls back to 5000.
+const selfBase = () => {
+  const port = process.env.PORT || 5000;
+  return `http://localhost:${port}`;
+};
+
+// Sign a short-lived JWT for the diagnostic user so we can hit auth-protected
+// endpoints from within the backend. authMiddleware.protect reads `decoded.id`
+// (not `uid`) — using the wrong key here silently fails every probe with 401.
+const issueDiagJwt = (user) => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) throw new Error('JWT_SECRET missing — cannot exercise HTTP layer');
+  return jwt.sign({ id: String(user._id) }, secret, { expiresIn: '5m' });
+};
+
+export const probePotDeleteGuards = async (req, res) => {
+  res.json(
+    await runProbe(async () => {
+      const userResult = await getDiagnosticUser();
+      if (!userResult.user) {
+        return { ok: false, skipped: true, reason: userResult.reason };
+      }
+      const user = userResult.user;
+      const token = issueDiagJwt(user);
+      const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
+
+      // 3 isolated probe pots: empty / funded / completed.
+      const empty = await Pot.create({ userId: user._id, name: `${PROBE_TAG}-pot-empty-${Date.now()}`, target: 100, saved: 0 });
+      const funded = await Pot.create({ userId: user._id, name: `${PROBE_TAG}-pot-funded-${Date.now()}`, target: 100, saved: 40 });
+      const completed = await Pot.create({ userId: user._id, name: `${PROBE_TAG}-pot-done-${Date.now()}`, target: 100, saved: 100 });
+
+      const callDelete = async (id) => {
+        const r = await fetch(`${selfBase()}/api/pots/${id}`, { method: 'DELETE', headers });
+        const body = await r.json().catch(() => ({}));
+        return { status: r.status, body };
+      };
+
+      try {
+        const emptyRes = await callDelete(empty._id);
+        const fundedRes = await callDelete(funded._id);
+        const completedRes = await callDelete(completed._id);
+
+        const passEmpty = emptyRes.status === 200; // deleted OK
+        const passFunded = fundedRes.status === 400 && fundedRes.body.code === 'POT_HAS_FUNDS';
+        const passCompleted = completedRes.status === 400 && completedRes.body.code === 'POT_COMPLETED';
+
+        const ok = passEmpty && passFunded && passCompleted;
+        return {
+          ok,
+          details: {
+            empty: { status: emptyRes.status, passed: passEmpty },
+            funded: { status: fundedRes.status, code: fundedRes.body.code, passed: passFunded },
+            completed: { status: completedRes.status, code: completedRes.body.code, passed: passCompleted },
+          },
+        };
+      } finally {
+        // Best-effort cleanup: empty may already be gone after the first call.
+        await Pot.deleteMany({ _id: { $in: [empty._id, funded._id, completed._id] } }).catch(() => {});
+      }
+    })
+  );
+};
+
+// ────────────────────────────────────────────────────────────────────────────
+// 5c) POT WITHDRAW GUARDS — controller-level guard:
+//       - normal withdraw (saved 50 → 30) succeeds
+//       - withdraw > saved fails (rejects negative balance)
+//       - withdraw from a completed pot fails (POT_WITHDRAW_BLOCKED_COMPLETED)
+// ────────────────────────────────────────────────────────────────────────────
+
+export const probePotWithdrawGuards = async (req, res) => {
+  res.json(
+    await runProbe(async () => {
+      const userResult = await getDiagnosticUser();
+      if (!userResult.user) {
+        return { ok: false, skipped: true, reason: userResult.reason };
+      }
+      const user = userResult.user;
+      const token = issueDiagJwt(user);
+      const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
+
+      const okPot = await Pot.create({ userId: user._id, name: `${PROBE_TAG}-wd-ok-${Date.now()}`, target: 100, saved: 50 });
+      const donePot = await Pot.create({ userId: user._id, name: `${PROBE_TAG}-wd-done-${Date.now()}`, target: 100, saved: 100 });
+
+      const callUpdate = async (id, saved) => {
+        const r = await fetch(`${selfBase()}/api/pots/${id}`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify({ saved }),
+        });
+        const body = await r.json().catch(() => ({}));
+        return { status: r.status, body };
+      };
+
+      try {
+        // 1) Normal withdraw: 50 → 30. Should succeed.
+        const normalRes = await callUpdate(okPot._id, 30);
+        // 2) Completed pot withdraw: 100 → 80. Should reject with POT_WITHDRAW_BLOCKED_COMPLETED.
+        const completedRes = await callUpdate(donePot._id, 80);
+
+        const passNormal = normalRes.status === 200 && normalRes.body?.saved === 30;
+        const passCompleted = completedRes.status === 400 && completedRes.body.code === 'POT_WITHDRAW_BLOCKED_COMPLETED';
+
+        const ok = passNormal && passCompleted;
+        return {
+          ok,
+          details: {
+            normalWithdraw: { status: normalRes.status, savedAfter: normalRes.body?.saved, passed: passNormal },
+            completedWithdraw: { status: completedRes.status, code: completedRes.body.code, passed: passCompleted },
+          },
+        };
+      } finally {
+        await Pot.deleteMany({ _id: { $in: [okPot._id, donePot._id] } }).catch(() => {});
+      }
+    })
+  );
+};
+
+// ────────────────────────────────────────────────────────────────────────────
+// 5d) BUDGET DELETE — explicit probe (factory's `finally` masked this earlier).
+// ────────────────────────────────────────────────────────────────────────────
+
+export const probeBudgetDelete = async (req, res) => {
+  res.json(
+    await runProbe(async () => {
+      const userResult = await getDiagnosticUser();
+      if (!userResult.user) return { ok: false, skipped: true, reason: userResult.reason };
+      const user = userResult.user;
+
+      const doc = await Budget.create({
+        userId: user._id,
+        category: `${PROBE_TAG}-budget-del-${Date.now()}`,
+        limit: 100,
+      });
+      const r = await Budget.deleteOne({ _id: doc._id });
+      const stillThere = await Budget.findById(doc._id).lean();
+      return {
+        ok: r.deletedCount === 1 && !stillThere,
+        details: { deletedCount: r.deletedCount, stillExists: !!stillThere, id: String(doc._id) },
+      };
+    })
+  );
+};
+
+// ────────────────────────────────────────────────────────────────────────────
+// 5e) BILL MARK PAID / UNPAID — exercises the controller endpoints used by
+//       the AI agent's mark_bill_paid / mark_bill_unpaid commands.
+// ────────────────────────────────────────────────────────────────────────────
+
+export const probeBillMarkPaid = async (req, res) => {
+  res.json(
+    await runProbe(async () => {
+      const userResult = await getDiagnosticUser();
+      if (!userResult.user) return { ok: false, skipped: true, reason: userResult.reason };
+      const user = userResult.user;
+      const token = issueDiagJwt(user);
+      const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
+
+      const bill = await RecurringBill.create({
+        userId: user._id,
+        name: `${PROBE_TAG}-bill-mark-${Date.now()}`,
+        amount: 1,
+        dueDay: 15,
+        frequency: 'monthly',
+        isPaid: false,
+      });
+
+      try {
+        // Toggle paid → true via PUT (matches what the controller exposes).
+        const setPaid = await fetch(`${selfBase()}/api/bills/${bill._id}`, {
+          method: 'PUT', headers, body: JSON.stringify({ isPaid: true }),
+        });
+        const paidBody = await setPaid.json().catch(() => ({}));
+        const passPaid = setPaid.status === 200 && paidBody?.isPaid === true;
+
+        // Toggle paid → false.
+        const setUnpaid = await fetch(`${selfBase()}/api/bills/${bill._id}`, {
+          method: 'PUT', headers, body: JSON.stringify({ isPaid: false }),
+        });
+        const unpaidBody = await setUnpaid.json().catch(() => ({}));
+        const passUnpaid = setUnpaid.status === 200 && unpaidBody?.isPaid === false;
+
+        const ok = passPaid && passUnpaid;
+        return {
+          ok,
+          details: {
+            markPaid: { status: setPaid.status, isPaidAfter: paidBody?.isPaid, passed: passPaid },
+            markUnpaid: { status: setUnpaid.status, isPaidAfter: unpaidBody?.isPaid, passed: passUnpaid },
+          },
+        };
+      } finally {
+        await RecurringBill.findByIdAndDelete(bill._id).catch(() => {});
+      }
+    })
+  );
+};
+
+// ────────────────────────────────────────────────────────────────────────────
+// 5f) MARKET V3 DEEP — verifies truncgil v3 quirks our backend depends on:
+//       - Update_Date present and parseable
+//       - JPY quoted per-1-yen (< 1 TRY)
+//       - ons returns USD-prefixed string we then × USD to TRY
+//       - gram-altin + ceyrek-altin present
+//       - TR-locale format (comma as decimal)
+// ────────────────────────────────────────────────────────────────────────────
+
+export const probeMarketV3Deep = async (req, res) => {
+  res.json(
+    await runProbe(async () => {
+      const r = await fetch('https://finans.truncgil.com/v3/today.json', { timeout: 8000 });
+      if (!r.ok) {
+        return { ok: false, details: { status: r.status, statusText: r.statusText } };
+      }
+      const data = await r.json();
+
+      const parseTr = (s) => {
+        if (s == null) return NaN;
+        return parseFloat(String(s).replace(/[$%₺\s]/g, '').replace(/\./g, '').replace(',', '.'));
+      };
+
+      // Update_Date check
+      const updateRaw = data?.Update_Date;
+      const updateDate = updateRaw ? new Date(String(updateRaw).replace(' ', 'T')) : null;
+      const hasUpdateDate = !!updateRaw && Number.isFinite(updateDate?.getTime());
+
+      // JPY sanity: per-1-yen ⇒ value < 1. v4/devextreme bug produces ~0.003.
+      const jpyRaw = data?.JPY?.Selling;
+      const jpyNum = parseTr(jpyRaw);
+      const jpyPerOneYen = Number.isFinite(jpyNum) && jpyNum > 0.05 && jpyNum < 1;
+
+      // ons must be USD-quoted ("$X.XXX,YY") so backend can do ons × USD → TRY
+      const onsRaw = data?.ons?.Selling;
+      const onsIsUsd = typeof onsRaw === 'string' && onsRaw.includes('$');
+      const onsNum = parseTr(onsRaw);
+      const onsSane = Number.isFinite(onsNum) && onsNum > 1000; // ons ≈ $4500ish
+
+      // Gram + çeyrek
+      const gramRaw = data?.['gram-altin']?.Selling;
+      const ceyrekRaw = data?.['ceyrek-altin']?.Selling;
+      const hasGram = !!gramRaw;
+      const hasCeyrek = !!ceyrekRaw;
+
+      // TR locale: comma as decimal. Spot-check USD.
+      const usdRaw = data?.USD?.Selling;
+      const usdTrLocale = typeof usdRaw === 'string' && usdRaw.includes(',');
+
+      const ok = hasUpdateDate && jpyPerOneYen && onsIsUsd && onsSane && hasGram && hasCeyrek && usdTrLocale;
+
+      return {
+        ok,
+        details: {
+          updateDate: updateRaw,
+          updateDateAgeMinutes: hasUpdateDate
+            ? Math.round((Date.now() - updateDate.getTime()) / 60000)
+            : null,
+          jpy: { raw: jpyRaw, parsed: jpyNum, perOneYen: jpyPerOneYen },
+          ons: { raw: onsRaw, isUsd: onsIsUsd, parsed: onsNum, sane: onsSane },
+          gramAltin: gramRaw,
+          ceyrekAltin: ceyrekRaw,
+          usdTrLocale,
+        },
+      };
+    })
+  );
+};
+
+// ────────────────────────────────────────────────────────────────────────────
+// 5g) INTERNAL MARKET API — verifies our own /api/market/rates response shape
+//       is what the frontend expects, including derived values:
+//       JPY < 1 (per-1-yen), GOLD_OUNCE > 0 (USD × USD computation succeeded).
+// ────────────────────────────────────────────────────────────────────────────
+
+export const probeMarketApi = async (req, res) => {
+  res.json(
+    await runProbe(async () => {
+      const r = await fetch(`${selfBase()}/api/market/rates`, { timeout: 8000 });
+      if (!r.ok) {
+        return { ok: false, details: { status: r.status, statusText: r.statusText } };
+      }
+      const data = await r.json();
+
+      const currencyKeys = ['USD', 'EUR', 'GBP', 'JPY', 'CHF', 'CAD'];
+      const goldKeys = ['GOLD_GRAM', 'GOLD_QUARTER', 'GOLD_OUNCE'];
+
+      const missingCurrencies = currencyKeys.filter((k) => !data?.currencies?.[k]);
+      const missingGold = goldKeys.filter((k) => !data?.gold?.[k]);
+
+      const jpyRate = data?.currencies?.JPY?.rate;
+      const jpyOk = Number.isFinite(jpyRate) && jpyRate > 0.05 && jpyRate < 1;
+
+      const ounceRate = data?.gold?.GOLD_OUNCE?.rate;
+      const ounceOk = Number.isFinite(ounceRate) && ounceRate > 1000; // TRY value, e.g. ~200k
+
+      // timestamp: must be parseable ISO; age informs UI staleness banner.
+      const tsRaw = data?.timestamp;
+      const tsDate = tsRaw ? new Date(tsRaw) : null;
+      const tsOk = !!tsRaw && Number.isFinite(tsDate?.getTime());
+      const tsAgeMin = tsOk ? Math.round((Date.now() - tsDate.getTime()) / 60000) : null;
+
+      const ok =
+        missingCurrencies.length === 0 &&
+        missingGold.length === 0 &&
+        jpyOk && ounceOk && tsOk;
+
+      return {
+        ok,
+        details: {
+          missingCurrencies,
+          missingGold,
+          jpyRate, jpyOk,
+          ounceRate, ounceOk,
+          timestamp: tsRaw,
+          timestampAgeMinutes: tsAgeMin,
+          marketOpen: data?.marketOpen,
+          stale: data?.stale,
+        },
+      };
+    })
+  );
+};
+
+// ────────────────────────────────────────────────────────────────────────────
 // 6) NOTIFICATION PROBES — dry-run logic check (no real email sent)
 // ────────────────────────────────────────────────────────────────────────────
 
